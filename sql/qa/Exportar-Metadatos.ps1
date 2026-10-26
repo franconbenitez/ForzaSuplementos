@@ -1,6 +1,10 @@
 # SOLO LECTURA: consulta catalogos; no consulta filas de tablas de la aplicacion.
+param([string]$SourceServer='localhost')
 $ErrorActionPreference = 'Stop'
 $cn = New-Object System.Data.SqlClient.SqlConnection('Server=localhost;Initial Catalog=ForzaSuplementosDB;Integrated Security=True;TrustServerCertificate=True;ApplicationIntent=ReadOnly;Connect Timeout=5')
+$connectionBuilder=New-Object System.Data.SqlClient.SqlConnectionStringBuilder($cn.ConnectionString)
+$connectionBuilder.set_DataSource($SourceServer)
+$cn.ConnectionString=$connectionBuilder.ConnectionString
 $query = @'
 SELECT (SELECT
  CONVERT(nvarchar(128),SERVERPROPERTY('ServerName')) AS serverName,
@@ -44,6 +48,8 @@ try {
     $json = [string]$cmd.ExecuteScalar()
     $metadata = $json | ConvertFrom-Json
     if ($metadata.sourceDatabase -ne 'ForzaSuplementosDB') { throw 'Origen inesperado.' }
-    [IO.File]::WriteAllText((Join-Path $PSScriptRoot 'source-schema.json'),($metadata | ConvertTo-Json -Depth 30),(New-Object Text.UTF8Encoding($false)))
+    $privateDir=Join-Path $PSScriptRoot 'private'
+    $null=[IO.Directory]::CreateDirectory($privateDir)
+    [IO.File]::WriteAllText((Join-Path $privateDir 'source-schema.local.json'),($metadata | ConvertTo-Json -Depth 30),(New-Object Text.UTF8Encoding($false)))
     Write-Output "Metadatos exportados: $($metadata.tables.Count) tablas, $($metadata.foreignKeys.Count) FK y $($metadata.procedures.Count) SP. Sin filas de negocio."
 } finally { $cn.Dispose() }

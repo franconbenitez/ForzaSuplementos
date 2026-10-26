@@ -1,6 +1,7 @@
-param([string]$ScriptDomPath = "$env:ProgramFiles\Microsoft Visual Studio\18\Community\Common7\IDE\Extensions\Microsoft\SQLCommon\Microsoft.SqlServer.TransactSql.ScriptDom.dll")
+param([string]$ScriptDomPath)
 $ErrorActionPreference = 'Stop'
-Add-Type -Path $ScriptDomPath
+. (Join-Path (Split-Path $PSScriptRoot -Parent) 'scripts\Resolver-ScriptDom.ps1')
+Add-Type -Path (Resolve-ForzaScriptDom $ScriptDomPath)
 $parser = New-Object Microsoft.SqlServer.TransactSql.ScriptDom.TSql160Parser($true)
 $failures = 0
 $projectRoot = Split-Path $PSScriptRoot -Parent

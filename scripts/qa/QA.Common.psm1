@@ -2,9 +2,11 @@ $ErrorActionPreference = 'Stop'
 function Get-QaConfig {
     $root = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
     $path = Join-Path $root 'config\qa.config'
+    if(!(Test-Path -LiteralPath $path)){throw 'Copiar config/qa.example.config a config/qa.config y configurar el servidor local verificado.'}
     [xml]$xml = [IO.File]::ReadAllText($path)
     $cfg = $xml.qa
     if ($cfg.base -ne 'ForzaSuplementosDB_QA' -or $cfg.marca -ne 'Forza-QA-Aislada-v1') { throw 'Destino QA rechazado.' }
+    if([string]$cfg.servidorEsperado -eq 'CONFIGURAR_SERVIDOR_VERIFICADO' -or [string]$cfg.servidorEsperado -notmatch '^[A-Za-z0-9_.\\-]+$'){throw 'Configurar un servidor esperado valido y verificado. No se admiten comillas ni instrucciones SQL.'}
     return [pscustomobject]@{Root=$root;Path=$path;Server=[string]$cfg.servidor;ExpectedServer=[string]$cfg.servidorEsperado;Database=[string]$cfg.base;Marker=[string]$cfg.marca}
 }
 function Assert-QaDestination($Connection,[switch]$Master,[switch]$WithoutMarker) {

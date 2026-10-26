@@ -1,6 +1,6 @@
 # Caja e integración con Ventas
 
-Preparación posterior a ddebb25: consultar `sql/qa/README.md`. Se agregó un perfil de conexión QA por proceso, conservando la cadena habitual; reemplaza para ensayos la indicación histórica de editar una copia de Conexion.vb. SQL QA y las pruebas funcionales aún requieren autorización y ejecución.
+Actualización posterior a 81db955: QA fue creada y validada con autorización expresa. Los 18 ensayos SQL y la prueba de las DLL VB aprobaron; ver `RESULTADOS_QA.md` e `INICIAR_QA_WINDOWS.md`. El perfil QA por proceso conserva la cadena habitual y reemplaza para ensayos la indicación histórica de editar una copia de Conexion.vb. El resto de este documento conserva el estado de la implementación previa a esas pruebas.
 
 ## Estado de la entrega
 

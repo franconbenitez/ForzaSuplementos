@@ -49,7 +49,9 @@ try {
             foreach($param in $contract.parameters){
                 $actual=$cmd.Parameters[$param.name]
                 Check ($null -ne $actual -and $actual.SqlDbType.ToString() -eq $param.type) ('Tipo incompatible: '+$contract.procedure+$param.name)
-                Check (($actual.Direction -eq [Data.ParameterDirection]::Output) -eq [bool]$param.output) ('Direccion incompatible: '+$param.name)
+                # DeriveParameters representa OUTPUT de T-SQL como InputOutput.
+                $hasOutput=$actual.Direction -in @([Data.ParameterDirection]::Output,[Data.ParameterDirection]::InputOutput)
+                Check ($hasOutput -eq [bool]$param.output) ('Direccion incompatible: '+$param.name)
                 if($param.type -eq 'Decimal'){Check ($actual.Precision -eq $param.size -and $actual.Scale -eq $param.scale) ('Precision incompatible: '+$param.name)}
                 if($param.type -eq 'VarChar'){Check ($actual.Size -eq $param.size) ('Tamano incompatible: '+$param.name)}
             }

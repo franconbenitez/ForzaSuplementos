@@ -1,6 +1,8 @@
+param([string]$ScriptDomPath)
 $ErrorActionPreference='Stop'
 $root=Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
-Add-Type -Path "$env:ProgramFiles\Microsoft Visual Studio\18\Community\Common7\IDE\Extensions\Microsoft\SQLCommon\Microsoft.SqlServer.TransactSql.ScriptDom.dll"
+. (Join-Path $root 'scripts\Resolver-ScriptDom.ps1')
+Add-Type -Path (Resolve-ForzaScriptDom $ScriptDomPath)
 $parser=New-Object Microsoft.SqlServer.TransactSql.ScriptDom.TSql160Parser($true)
 $failures=0
 foreach($file in Get-ChildItem (Join-Path $root 'sql\qa\*.sql'),(Join-Path $root 'sql\migrations\*.sql')){

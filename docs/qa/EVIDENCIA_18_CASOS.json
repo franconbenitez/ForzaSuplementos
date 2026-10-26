@@ -1,0 +1,201 @@
+{
+    "pendientes":  [
+
+                   ],
+    "contexto":  {
+                     "sesionConcurrente":  10,
+                     "ventaHistorica":  1,
+                     "inicio":  "2026-10-26T17:38:40.7607378-03:00",
+                     "base":  "ForzaSuplementosDB_QA",
+                     "vendedor":  1,
+                     "sesion1":  7,
+                     "cliente":  1,
+                     "servidor":  "SERVIDOR_QA_VERIFICADO",
+                     "producto":  6,
+                     "productoConcurrente":  7,
+                     "sesion2":  8,
+                     "sesion3":  9
+                 },
+    "casos":  [
+                  {
+                      "id":  3,
+                      "nombre":  "Importes negativos",
+                      "datosIniciales":  "Sin sesión abierta; sin escrituras previas del ensayo.",
+                      "operacion":  "Abrir con -1; cerrar con -1; vender cantidad -1.",
+                      "esperado":  "Errores 51003 y 51011; ninguna sesión/venta creada.",
+                      "consultaVerificacion":  "SELECT COUNT(*) AS abiertas FROM dbo.SesionesCaja WHERE estado=\u0027Abierta\u0027; SELECT stock FROM dbo.Productos WHERE idProducto=@producto;",
+                      "resultadoReal":  "OK (ejecutado sobre QA)",
+                      "estado":  "OK"
+                  },
+                  {
+                      "id":  4,
+                      "nombre":  "Venta sin caja",
+                      "datosIniciales":  "Producto nuevo del ensayo: stock100, precio100; sesión0 inexistente.",
+                      "operacion":  "sp_Ventas_RegistrarConCaja con sesión0",
+                      "esperado":  "Error51006; stock100; no cabecera/detalle/pago.",
+                      "consultaVerificacion":  "SELECT stock FROM dbo.Productos WHERE idProducto=@producto; SELECT COUNT(*) FROM dbo.DetalleVentas WHERE idProducto=@producto;",
+                      "resultadoReal":  "OK (ejecutado sobre QA)",
+                      "estado":  "OK"
+                  },
+                  {
+                      "id":  1,
+                      "nombre":  "Apertura por vendedor",
+                      "datosIniciales":  "Vendedor ficticio activo; sin caja abierta; inicial 500.",
+                      "operacion":  "sp_Caja_Abrir(vendedor,500)",
+                      "esperado":  "Una sesión Abierta del vendedor con inicial 500.",
+                      "consultaVerificacion":  "SELECT idSesion,idUsuarioApertura,montoInicial,estado FROM dbo.SesionesCaja WHERE idSesion=@sesion1;",
+                      "resultadoReal":  "OK (ejecutado sobre QA)",
+                      "estado":  "OK"
+                  },
+                  {
+                      "id":  2,
+                      "nombre":  "Apertura duplicada",
+                      "datosIniciales":  "Sesión1 abierta; otro vendedor activo.",
+                      "operacion":  "sp_Caja_Abrir(otroVendedor,500)",
+                      "esperado":  "Error 51005; exactamente una sesión abierta.",
+                      "consultaVerificacion":  "SELECT COUNT(*) AS abiertas FROM dbo.SesionesCaja WHERE estado=\u0027Abierta\u0027;",
+                      "resultadoReal":  "OK (ejecutado sobre QA)",
+                      "estado":  "OK"
+                  },
+                  {
+                      "id":  18,
+                      "nombre":  "Permisos por perfil y sesión ajena",
+                      "datosIniciales":  "Administrador, gerente e inactivo ficticios; segundo vendedor activo; sesión1 de primer vendedor.",
+                      "operacion":  "Intentar abrir/vender/cerrar/historial con actores no autorizados; consultar/vender sesión ajena.",
+                      "esperado":  "51001 para perfiles/inactivo; reporte ajeno vacío; venta ajena51006.",
+                      "consultaVerificacion":  "EXEC dbo.sp_Caja_Reporte @otroVendedor,@sesion1; EXEC dbo.sp_Caja_Historial @administrador,@desde,@hasta;",
+                      "resultadoReal":  "OK (ejecutado sobre QA)",
+                      "estado":  "OK"
+                  },
+                  {
+                      "id":  5,
+                      "nombre":  "Venta en efectivo",
+                      "datosIniciales":  "Sesión1 inicial500; producto100 con stock100.",
+                      "operacion":  "Una unidad, Efectivo, total100.",
+                      "esperado":  "Venta vinculada; pagoEfectivo100.",
+                      "consultaVerificacion":  "SELECT v.idVenta,v.idSesion,p.medioPago,p.importe FROM dbo.Ventas v JOIN dbo.PagosVenta p ON p.idVenta=v.idVenta WHERE v.idSesion=@sesion1;",
+                      "resultadoReal":  "OK (ejecutado sobre QA)",
+                      "estado":  "OK"
+                  },
+                  {
+                      "id":  6,
+                      "nombre":  "Venta por transferencia",
+                      "datosIniciales":  "Sesión1 con una venta previa.",
+                      "operacion":  "Una unidad, Transferencia, total100.",
+                      "esperado":  "PagoTransferencia100; efectivo esperado sigue600.",
+                      "consultaVerificacion":  "SELECT montoFinalEsperado,ventasEfectivo FROM dbo.vw_Caja_Resumen WHERE idSesion=@sesion1;",
+                      "resultadoReal":  "OK (ejecutado sobre QA)",
+                      "estado":  "OK"
+                  },
+                  {
+                      "id":  7,
+                      "nombre":  "Venta con tarjeta",
+                      "datosIniciales":  "Sesión1 con dos ventas previas.",
+                      "operacion":  "Una unidad, Tarjeta, total100.",
+                      "esperado":  "PagoTarjeta100; efectivo esperado sigue600.",
+                      "consultaVerificacion":  "SELECT medioPago,importe FROM dbo.PagosVenta p JOIN dbo.Ventas v ON v.idVenta=p.idVenta WHERE v.idSesion=@sesion1;",
+                      "resultadoReal":  "OK (ejecutado sobre QA)",
+                      "estado":  "OK"
+                  },
+                  {
+                      "id":  8,
+                      "nombre":  "Asociación venta y sesión",
+                      "datosIniciales":  "Tres ventas nuevas registradas.",
+                      "operacion":  "Consultar cabeceras.",
+                      "esperado":  "Tres ventas del vendedor con sesión1.",
+                      "consultaVerificacion":  "SELECT COUNT(*) FROM dbo.Ventas WHERE idSesion=@sesion1 AND idUsuario=@vendedor AND total=100;",
+                      "resultadoReal":  "OK (ejecutado sobre QA)",
+                      "estado":  "OK"
+                  },
+                  {
+                      "id":  9,
+                      "nombre":  "Descuento de stock",
+                      "datosIniciales":  "Stock inicial100; tres ventas de una unidad.",
+                      "operacion":  "Consultar producto y detalles.",
+                      "esperado":  "Stock97; cantidad vendida3.",
+                      "consultaVerificacion":  "SELECT stock FROM dbo.Productos WHERE idProducto=@producto; SELECT SUM(cantidad) FROM dbo.DetalleVentas WHERE idProducto=@producto;",
+                      "resultadoReal":  "OK (ejecutado sobre QA)",
+                      "estado":  "OK"
+                  },
+                  {
+                      "id":  10,
+                      "nombre":  "Stock insuficiente",
+                      "datosIniciales":  "Stock97; sesión1 abierta.",
+                      "operacion":  "Intentar vender98 unidades.",
+                      "esperado":  "Error51013; snapshot de cantidades/stock intacto.",
+                      "consultaVerificacion":  "SELECT stock FROM dbo.Productos WHERE idProducto=@producto; SELECT COUNT(*) FROM dbo.Ventas; SELECT COUNT(*) FROM dbo.DetalleVentas; SELECT COUNT(*) FROM dbo.PagosVenta;",
+                      "resultadoReal":  "OK (ejecutado sobre QA)",
+                      "estado":  "OK"
+                  },
+                  {
+                      "id":  11,
+                      "nombre":  "Rollback después de descontar stock",
+                      "datosIniciales":  "Sesión1 abierta; trigger QA inerte que falla solo con SESSION_CONTEXT de prueba.",
+                      "operacion":  "Activar fallo de pago en esa conexión; vender una unidad; desactivar el fallo.",
+                      "esperado":  "Error51211 durante inserción del pago; reversión de stock, cabecera, detalle y pago; snapshot idéntico.",
+                      "consultaVerificacion":  "SELECT COUNT(*) FROM dbo.Ventas; SELECT COUNT(*) FROM dbo.DetalleVentas; SELECT COUNT(*) FROM dbo.PagosVenta; SELECT stock FROM dbo.Productos WHERE idProducto=@producto;",
+                      "resultadoReal":  "OK (ejecutado sobre QA)",
+                      "estado":  "OK"
+                  },
+                  {
+                      "id":  15,
+                      "nombre":  "Historial por fecha y vendedor",
+                      "datosIniciales":  "Sesión1 abierta; fechas del día ±1.",
+                      "operacion":  "sp_Caja_Historial del vendedor.",
+                      "esperado":  "Incluye sesión1; ningún responsable ajeno.",
+                      "consultaVerificacion":  "EXEC dbo.sp_Caja_Historial @vendedor,@desde,@hasta;",
+                      "resultadoReal":  "OK (ejecutado sobre QA)",
+                      "estado":  "OK"
+                  },
+                  {
+                      "id":  12,
+                      "nombre":  "Cierre con efectivo correcto",
+                      "datosIniciales":  "Inicial500; efectivo100; transferencia100; tarjeta100.",
+                      "operacion":  "Cerrar con contado600.",
+                      "esperado":  "Esperado600, real600, diferencia0, Cerrada.",
+                      "consultaVerificacion":  "SELECT montoFinalEsperado,montoFinalReal,diferencia,estado,fechaCierre,idUsuarioCierre FROM dbo.SesionesCaja WHERE idSesion=@sesion1;",
+                      "resultadoReal":  "OK (ejecutado sobre QA)",
+                      "estado":  "OK"
+                  },
+                  {
+                      "id":  14,
+                      "nombre":  "Cierre duplicado",
+                      "datosIniciales":  "Sesión1 cerrada.",
+                      "operacion":  "Repetir cierre de sesión1.",
+                      "esperado":  "Error51006; no cambia el cierre persistido.",
+                      "consultaVerificacion":  "SELECT estado,fechaCierre,montoFinalReal,diferencia FROM dbo.SesionesCaja WHERE idSesion=@sesion1;",
+                      "resultadoReal":  "OK (ejecutado sobre QA)",
+                      "estado":  "OK"
+                  },
+                  {
+                      "id":  13,
+                      "nombre":  "Diferencias positiva y negativa",
+                      "datosIniciales":  "Dos sesiones nuevas, cada una inicial500 y ventaEfectivo100.",
+                      "operacion":  "Cerrar sesión2 con610 y sesión3 con590.",
+                      "esperado":  "Diferencias+10 y-10, respectivamente.",
+                      "consultaVerificacion":  "SELECT idSesion,montoFinalEsperado,montoFinalReal,diferencia FROM dbo.SesionesCaja WHERE idSesion IN (@sesion2,@sesion3);",
+                      "resultadoReal":  "OK (ejecutado sobre QA)",
+                      "estado":  "OK"
+                  },
+                  {
+                      "id":  16,
+                      "nombre":  "Separación entre sesiones e históricos",
+                      "datosIniciales":  "Sesión1 con3 ventas, sesión2 con1, sesión3 con1; histórico ficticio sin sesión.",
+                      "operacion":  "Consultar conteos y snapshot del histórico.",
+                      "esperado":  "Conteos3/1/1; total, fecha e idSesion NULL del histórico intactos.",
+                      "consultaVerificacion":  "SELECT idSesion,COUNT(*) FROM dbo.Ventas WHERE idSesion IN (@sesion1,@sesion2,@sesion3) GROUP BY idSesion; SELECT total,fecha,idSesion FROM dbo.Ventas WHERE idVenta=@ventaHistorica;",
+                      "resultadoReal":  "OK (ejecutado sobre QA)",
+                      "estado":  "OK"
+                  },
+                  {
+                      "id":  17,
+                      "nombre":  "Dos ventas simultáneas de última unidad",
+                      "datosIniciales":  "Producto separado stock1/precio100; sesión nueva; dos conexiones independientes.",
+                      "operacion":  "Enviar dos ventas asíncronas tras una barrera de bloqueo transaccional; liberar barrera.",
+                      "esperado":  "Una venta exitosa, un rechazo51013, stock0, una cabecera; cerrar sesión con600.",
+                      "consultaVerificacion":  "SELECT stock FROM dbo.Productos WHERE idProducto=@productoConcurrente; SELECT COUNT(*) FROM dbo.Ventas WHERE idSesion=@sesionConcurrente;",
+                      "resultadoReal":  "OK (ejecutado sobre QA)",
+                      "estado":  "OK"
+                  }
+              ]
+}

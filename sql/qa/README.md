@@ -1,13 +1,19 @@
 # Preparación aislada de ForzaSuplementosDB_QA
 
-Estado: infraestructura creada y validada sin ejecutar DDL/DML. La base QA **no existe todavía**. Se requiere autorización expresa antes de usar los comandos de escritura de este documento.
+## Portabilidad y privacidad de esta copia
+
+El identificador del equipo de validación fue anonimizado en la documentación y la evidencia publicable. La evidencia original y el historial previo se conservan únicamente en copias locales excluidas de Git. `source-schema.json` conserva la estructura sin filas, con el servidor anonimizado; por eso su hash actual no es el hash del snapshot local original registrado durante QA.
+
+Antes de usar las herramientas en otra computadora, copiar `config/qa.example.config` como `config/qa.config`, verificar la instancia mediante lectura y completar `servidor`/`servidorEsperado`. La copia privada no se versiona. Los SQL QA exigen la variable SQLCMD `QaExpectedServer`; el preparador la obtiene de esa configuración, la valida y no elimina guardas. Sin un destino configurado, la ejecución debe fallar de forma segura. No se realizaron operaciones SQL al preparar esta publicación.
+
+Estado actualizado al 26/10/2026: QA fue creada y las migraciones se aplicaron con autorización expresa. Los 18 ensayos automáticos aprobaron, al igual que la prueba adicional de las DLL VB contra SQL QA. Ver `docs/RESULTADOS_QA.md` y `docs/INICIAR_QA_WINDOWS.md`. Los apartados de preparación siguientes conservan el procedimiento reproducible; no volver a crear una QA existente.
 
 ## Destino comprobado en lectura
 
 - Alias de conexión: `localhost`.
 - Servidor: `SERVIDOR_QA_VERIFICADO`; instancia predeterminada: `MSSQLSERVER`.
 - Versión detectada: `17.0.1000.7`; collation de origen: `Modern_Spanish_CI_AS`.
-- Base original: online; no se alteró. `DB_ID('ForzaSuplementosDB_QA')` devolvió NULL.
+- Antes de preparar, `DB_ID('ForzaSuplementosDB_QA')` devolvió NULL. Después se creó únicamente QA. El snapshot de metadatos del origen permanece idéntico; no se ejecutó DML/DDL sobre el origen.
 - Se consultaron exclusivamente `SERVERPROPERTY`, `DB_NAME`, `DB_ID` y catálogos/definiciones; no se seleccionaron filas de negocio ni contraseñas.
 
 La separación es por base de datos independiente en la instancia detectada: no es una instancia física distinta. No hay sinónimos, enlaces ni referencias entre las tablas QA y la base original. Los recursos del motor son compartidos.
@@ -37,7 +43,7 @@ Las copias se generan offline con `Generar-Archivos-QA.ps1` y llevan hash SHA256
 
 Las tres migraciones QA exigen además la marca de entorno en cada lote. La inspección adicional no encontró índices de negocio fuera de PK/UQ, triggers ni vistas que requirieran exportación; la única función adicional era interna de diagramas y se excluyó. Los SP transaccionales se llaman sin una transacción externa: su CATCH puede revertir una transacción ambiente completa; el runner no envuelve sus llamadas en una transacción global.
 
-`source-schema.json` es un snapshot de definiciones, no de datos; contiene la definición original de backup solo para trazabilidad. No es un script ejecutable. `Exportar-Metadatos.ps1` es el único exportador que conecta a la base original, exclusivamente para leer catálogos. No se usa al preparar ni al probar QA.
+`source-schema.json` es un snapshot anonimizado de definiciones, no de datos; contiene la definición original de backup solo para trazabilidad. No es un script ejecutable. `Exportar-Metadatos.ps1` lee exclusivamente catálogos de la instancia indicada con -SourceServer y guarda su salida solo en `sql/qa/private/source-schema.local.json`, ignorado. No sobrescribe el snapshot publicable ni se usa al preparar o probar QA.
 
 ## Comandos exactos, desde la raíz del proyecto
 
@@ -60,12 +66,14 @@ El orquestador comprueba identidad del servidor/base mediante lectura antes de c
 Equivalentes SQLCMD, **también pendientes de autorización**, en este orden:
 
 ```powershell
-sqlcmd -S localhost -d master -E -C -b -i .\sql\qa\000_CrearBase_QA.sql
-sqlcmd -S localhost -d ForzaSuplementosDB_QA -E -C -b -i .\sql\qa\010_EstructuraOriginal_QA.sql
-sqlcmd -S localhost -d ForzaSuplementosDB_QA -E -C -b -i .\sql\qa\020_DatosFicticios_QA.sql
-sqlcmd -S localhost -d ForzaSuplementosDB_QA -E -C -b -i .\sql\qa\001_Caja_Pagos_QA.sql
-sqlcmd -S localhost -d ForzaSuplementosDB_QA -E -C -b -i .\sql\qa\002_Caja_Procedimientos_QA.sql
-sqlcmd -S localhost -d ForzaSuplementosDB_QA -E -C -b -i .\sql\qa\003_Ventas_Caja_Stock_QA.sql
+Import-Module .\scripts\qa\QA.Common.psm1
+$qa = Get-QaConfig
+sqlcmd -S $qa.Server -v "QaExpectedServer=$($qa.ExpectedServer)" -d master -E -C -b -i .\sql\qa\000_CrearBase_QA.sql
+sqlcmd -S $qa.Server -v "QaExpectedServer=$($qa.ExpectedServer)" -d ForzaSuplementosDB_QA -E -C -b -i .\sql\qa\010_EstructuraOriginal_QA.sql
+sqlcmd -S $qa.Server -v "QaExpectedServer=$($qa.ExpectedServer)" -d ForzaSuplementosDB_QA -E -C -b -i .\sql\qa\020_DatosFicticios_QA.sql
+sqlcmd -S $qa.Server -v "QaExpectedServer=$($qa.ExpectedServer)" -d ForzaSuplementosDB_QA -E -C -b -i .\sql\qa\001_Caja_Pagos_QA.sql
+sqlcmd -S $qa.Server -v "QaExpectedServer=$($qa.ExpectedServer)" -d ForzaSuplementosDB_QA -E -C -b -i .\sql\qa\002_Caja_Procedimientos_QA.sql
+sqlcmd -S $qa.Server -v "QaExpectedServer=$($qa.ExpectedServer)" -d ForzaSuplementosDB_QA -E -C -b -i .\sql\qa\003_Ventas_Caja_Stock_QA.sql
 ```
 
 En SSMS, seleccionar expresamente master solo para 000 y QA para el resto; activar **Consulta > Modo SQLCMD**. Ejecutar primero `SELECT SERVERPROPERTY('ServerName'), SERVERPROPERTY('InstanceName'), DB_NAME();` y confirmar el destino. Los scripts vuelven a comprobarlo y fallan en cualquier otra base. El orquestador es preferible porque ya incorpora la comprobación previa de lectura.
@@ -92,7 +100,7 @@ Los 18 casos están en `tests/qa/PLAN_PRUEBAS.md` y `casos.json`, con estado ini
 
 La prueba de rollback crea solo en QA un trigger inerte salvo por SESSION_CONTEXT de esa conexión de ensayo, provoca el error después del descuento de stock y compara snapshots. Limpia esa bandera en finally; el trigger no bloquea otras conexiones. La carrera usa dos conexiones asíncronas retenidas tras una barrera transaccional: exige una venta y un rechazo, stock final cero y una sola cabecera. No es una prueba de carga.
 
-Los resultados reales, IDs de contexto y consultas se guardarán en `tests/artifacts/qa/resultado-*.json`, excluido de Git. No se ejecutó ninguno de esos 18 casos todavía. No copiar al origen datos, triggers ni fixtures de QA.
+Los resultados reales, IDs de contexto y consultas se guardan en `tests/artifacts/qa/resultado-*.json`, excluido de Git. Los 18 casos se ejecutaron dos veces con éxito y una copia de la última evidencia está versionada en `docs/qa/EVIDENCIA_18_CASOS.json`. No copiar al origen datos, triggers ni fixtures de QA.
 
 ## Windows Forms y credenciales ficticias
 
@@ -111,4 +119,4 @@ Comprobar manualmente: visibilidad de Caja/Ventas por perfil, botones según est
 
 ## Límites de la preparación
 
-Las pruebas SQL reales, doble apertura concurrente y carrera cierre/venta requieren la siguiente etapa autorizada; el runner cubre la doble venta de última unidad, pero aún no esos otros dos escenarios simultáneos. La autenticación original con contraseña recuperable y ausencia de idempotencia de ventas siguen pendientes de otra tarea. Si una escritura pierde su respuesta, consultar el historial antes de repetirla. El aislamiento protege del destino accidental, no de un administrador que edite guardas o ejecute comandos distintos.
+Las pruebas SQL de los 18 casos y la integración VB ya se ejecutaron. La doble apertura se probó secuencialmente y la concurrencia de última unidad con dos conexiones; siguen fuera del alcance ejecutado la doble apertura simultánea y la carrera simultánea cierre/venta. La interacción visual requiere el ensayo manual indicado. La autenticación original con contraseña recuperable y ausencia de idempotencia de ventas siguen pendientes de otra tarea. Si una escritura pierde su respuesta, consultar el historial antes de repetirla. El aislamiento protege del destino accidental, no de un administrador que edite guardas o ejecute comandos distintos.

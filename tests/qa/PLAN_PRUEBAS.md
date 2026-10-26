@@ -1,6 +1,6 @@
 # Plan reproducible de pruebas Caja QA
 
-Todos los resultados SQL están pendientes de autorización. Ejecutar con el runner protegido; sus resultados incluyen los IDs para sustituir los parámetros de las consultas. No usar estas consultas de operación sobre la base original.
+Este documento es la plantilla inicial de los casos reproducibles. Los resultados reales actuales (18/18 aprobados) están en docs/RESULTADOS_QA.md y docs/qa/EVIDENCIA_18_CASOS.json; los renglones de resultado pendiente de esta plantilla describen el estado previo a la primera ejecución. Ejecutar con el runner protegido; sus resultados incluyen los IDs para sustituir los parámetros de las consultas. No usar estas consultas de operación sobre la base original.
 
 ## 1. Apertura por vendedor
 

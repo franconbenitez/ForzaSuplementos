@@ -3,6 +3,7 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $m = Get-Content (Join-Path $PSScriptRoot 'source-schema.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 if ($m.sourceDatabase -ne 'ForzaSuplementosDB' -or $m.tables.Count -ne 9) { throw 'Snapshot inesperado.' }
+# Variable SQLCMD obligatoria: el preparador la obtiene de la configuracion privada.
 $expectedServer = '$'+'(QaExpectedServer)'
 $options = @'
 SET ANSI_NULLS ON;
