@@ -7,6 +7,7 @@ Public Class FrmPrincipal
 
     Public Sub New(usuario As Usuario)
         InitializeComponent()
+        If Environment.GetEnvironmentVariable("FORZA_ENTORNO") = "QA" Then Me.Text &= " [QA — ForzaSuplementosDB_QA]"
         _usuarioLogueado = usuario
     End Sub
 

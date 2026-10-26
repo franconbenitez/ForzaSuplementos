@@ -1,5 +1,7 @@
 # Caja e integración con Ventas
 
+Preparación posterior a ddebb25: consultar `sql/qa/README.md`. Se agregó un perfil de conexión QA por proceso, conservando la cadena habitual; reemplaza para ensayos la indicación histórica de editar una copia de Conexion.vb. SQL QA y las pruebas funcionales aún requieren autorización y ejecución.
+
 ## Estado de la entrega
 
 Implementación VB.NET en las cuatro capas, con migraciones preparadas y sin ejecutarlas. Rebuild Debug/AnyCPU con MSBuild completado con código 0. Las 20 comprobaciones de reglas/construcción del formulario pasaron sin conectar SQL; ScriptDom aceptó la sintaxis de los tres scripts. Esto no prueba operaciones SQL, integridad bajo concurrencia ni funcionamiento completo contra la base.

@@ -1,0 +1,1110 @@
+{
+    "serverName":  "CONFIGURAR_SERVIDOR_VERIFICADO",
+    "instanceName":  "MSSQLSERVER",
+    "productVersion":  "17.0.1000.7",
+    "sourceDatabase":  "ForzaSuplementosDB",
+    "collation":  "Modern_Spanish_CI_AS",
+    "tables":  [
+                   {
+                       "schemaName":  "dbo",
+                       "tableName":  "AuditoriaBackups",
+                       "columns":  [
+                                       {
+                                           "name":  "idBackup",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  true,
+                                           "identitySeed":  1,
+                                           "identityIncrement":  1
+                                       },
+                                       {
+                                           "name":  "idUsuario",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "fecha",
+                                           "typeName":  "datetime",
+                                           "maxLength":  8,
+                                           "precision":  23,
+                                           "scale":  3,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "defaultDefinition":  "(getdate())"
+                                       },
+                                       {
+                                           "name":  "rutaArchivo",
+                                           "typeName":  "varchar",
+                                           "maxLength":  255,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       }
+                                   ],
+                       "keys":  [
+                                    {
+                                        "name":  "PK__Auditori__F34D6CE0C214ECFA",
+                                        "keyType":  "PK",
+                                        "indexType":  "CLUSTERED",
+                                        "columns":  [
+                                                        {
+                                                            "name":  "idBackup",
+                                                            "descendingKey":  false
+                                                        }
+                                                    ]
+                                    }
+                                ]
+                   },
+                   {
+                       "schemaName":  "dbo",
+                       "tableName":  "Categorias",
+                       "columns":  [
+                                       {
+                                           "name":  "idCategoria",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  true,
+                                           "identitySeed":  1,
+                                           "identityIncrement":  1
+                                       },
+                                       {
+                                           "name":  "nombreCategoria",
+                                           "typeName":  "varchar",
+                                           "maxLength":  50,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       }
+                                   ],
+                       "keys":  [
+                                    {
+                                        "name":  "PK__Categori__8A3D240CC7BE2120",
+                                        "keyType":  "PK",
+                                        "indexType":  "CLUSTERED",
+                                        "columns":  [
+                                                        {
+                                                            "name":  "idCategoria",
+                                                            "descendingKey":  false
+                                                        }
+                                                    ]
+                                    }
+                                ]
+                   },
+                   {
+                       "schemaName":  "dbo",
+                       "tableName":  "Clientes",
+                       "columns":  [
+                                       {
+                                           "name":  "idCliente",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  true,
+                                           "identitySeed":  1,
+                                           "identityIncrement":  1
+                                       },
+                                       {
+                                           "name":  "dni",
+                                           "typeName":  "varchar",
+                                           "maxLength":  20,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       },
+                                       {
+                                           "name":  "nombre",
+                                           "typeName":  "varchar",
+                                           "maxLength":  50,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       },
+                                       {
+                                           "name":  "apellido",
+                                           "typeName":  "varchar",
+                                           "maxLength":  50,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       },
+                                       {
+                                           "name":  "telefono",
+                                           "typeName":  "varchar",
+                                           "maxLength":  30,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  true,
+                                           "identityColumn":  false,
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       },
+                                       {
+                                           "name":  "email",
+                                           "typeName":  "varchar",
+                                           "maxLength":  100,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  true,
+                                           "identityColumn":  false,
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       },
+                                       {
+                                           "name":  "activo",
+                                           "typeName":  "bit",
+                                           "maxLength":  1,
+                                           "precision":  1,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "defaultDefinition":  "((1))"
+                                       }
+                                   ],
+                       "keys":  [
+                                    {
+                                        "name":  "PK__Clientes__885457EEB20DAE12",
+                                        "keyType":  "PK",
+                                        "indexType":  "CLUSTERED",
+                                        "columns":  [
+                                                        {
+                                                            "name":  "idCliente",
+                                                            "descendingKey":  false
+                                                        }
+                                                    ]
+                                    }
+                                ]
+                   },
+                   {
+                       "schemaName":  "dbo",
+                       "tableName":  "DetalleVentas",
+                       "columns":  [
+                                       {
+                                           "name":  "idDetalle",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  true,
+                                           "identitySeed":  1,
+                                           "identityIncrement":  1
+                                       },
+                                       {
+                                           "name":  "idVenta",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "idProducto",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "cantidad",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "precioUnitario",
+                                           "typeName":  "decimal",
+                                           "maxLength":  9,
+                                           "precision":  10,
+                                           "scale":  2,
+                                           "nullable":  false,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "subtotal",
+                                           "typeName":  "decimal",
+                                           "maxLength":  9,
+                                           "precision":  10,
+                                           "scale":  2,
+                                           "nullable":  false,
+                                           "identityColumn":  false
+                                       }
+                                   ],
+                       "keys":  [
+                                    {
+                                        "name":  "PK__DetalleV__49CAE2FB138EB16A",
+                                        "keyType":  "PK",
+                                        "indexType":  "CLUSTERED",
+                                        "columns":  [
+                                                        {
+                                                            "name":  "idDetalle",
+                                                            "descendingKey":  false
+                                                        }
+                                                    ]
+                                    }
+                                ]
+                   },
+                   {
+                       "schemaName":  "dbo",
+                       "tableName":  "Perfiles",
+                       "columns":  [
+                                       {
+                                           "name":  "idPerfil",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  true,
+                                           "identitySeed":  1,
+                                           "identityIncrement":  1
+                                       },
+                                       {
+                                           "name":  "nombrePerfil",
+                                           "typeName":  "varchar",
+                                           "maxLength":  50,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       },
+                                       {
+                                           "name":  "descripcion",
+                                           "typeName":  "varchar",
+                                           "maxLength":  150,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  true,
+                                           "identityColumn":  false,
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       }
+                                   ],
+                       "keys":  [
+                                    {
+                                        "name":  "PK_Perfiles",
+                                        "keyType":  "PK",
+                                        "indexType":  "CLUSTERED",
+                                        "columns":  [
+                                                        {
+                                                            "name":  "idPerfil",
+                                                            "descendingKey":  false
+                                                        }
+                                                    ]
+                                    },
+                                    {
+                                        "name":  "UQ_Perfiles_Nombre",
+                                        "keyType":  "UQ",
+                                        "indexType":  "NONCLUSTERED",
+                                        "columns":  [
+                                                        {
+                                                            "name":  "nombrePerfil",
+                                                            "descendingKey":  false
+                                                        }
+                                                    ]
+                                    }
+                                ]
+                   },
+                   {
+                       "schemaName":  "dbo",
+                       "tableName":  "Productos",
+                       "columns":  [
+                                       {
+                                           "name":  "idProducto",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  true,
+                                           "identitySeed":  1,
+                                           "identityIncrement":  1
+                                       },
+                                       {
+                                           "name":  "idCategoria",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "nombre",
+                                           "typeName":  "varchar",
+                                           "maxLength":  100,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       },
+                                       {
+                                           "name":  "descripcion",
+                                           "typeName":  "varchar",
+                                           "maxLength":  255,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  true,
+                                           "identityColumn":  false,
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       },
+                                       {
+                                           "name":  "precio",
+                                           "typeName":  "decimal",
+                                           "maxLength":  9,
+                                           "precision":  10,
+                                           "scale":  2,
+                                           "nullable":  false,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "stock",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "activo",
+                                           "typeName":  "bit",
+                                           "maxLength":  1,
+                                           "precision":  1,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "defaultDefinition":  "((1))"
+                                       }
+                                   ],
+                       "keys":  [
+                                    {
+                                        "name":  "PK__Producto__07F4A132E33100FE",
+                                        "keyType":  "PK",
+                                        "indexType":  "CLUSTERED",
+                                        "columns":  [
+                                                        {
+                                                            "name":  "idProducto",
+                                                            "descendingKey":  false
+                                                        }
+                                                    ]
+                                    }
+                                ]
+                   },
+                   {
+                       "schemaName":  "dbo",
+                       "tableName":  "SesionesCaja",
+                       "columns":  [
+                                       {
+                                           "name":  "idSesion",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  true,
+                                           "identitySeed":  1,
+                                           "identityIncrement":  1
+                                       },
+                                       {
+                                           "name":  "idUsuarioApertura",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "idUsuarioCierre",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  true,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "fechaApertura",
+                                           "typeName":  "datetime",
+                                           "maxLength":  8,
+                                           "precision":  23,
+                                           "scale":  3,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "defaultDefinition":  "(getdate())"
+                                       },
+                                       {
+                                           "name":  "fechaCierre",
+                                           "typeName":  "datetime",
+                                           "maxLength":  8,
+                                           "precision":  23,
+                                           "scale":  3,
+                                           "nullable":  true,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "montoInicial",
+                                           "typeName":  "decimal",
+                                           "maxLength":  9,
+                                           "precision":  10,
+                                           "scale":  2,
+                                           "nullable":  false,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "montoFinalEsperado",
+                                           "typeName":  "decimal",
+                                           "maxLength":  9,
+                                           "precision":  10,
+                                           "scale":  2,
+                                           "nullable":  true,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "montoFinalReal",
+                                           "typeName":  "decimal",
+                                           "maxLength":  9,
+                                           "precision":  10,
+                                           "scale":  2,
+                                           "nullable":  true,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "diferencia",
+                                           "typeName":  "decimal",
+                                           "maxLength":  9,
+                                           "precision":  10,
+                                           "scale":  2,
+                                           "nullable":  true,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "estado",
+                                           "typeName":  "varchar",
+                                           "maxLength":  20,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "defaultDefinition":  "(\u0027Abierta\u0027)",
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       }
+                                   ],
+                       "keys":  [
+                                    {
+                                        "name":  "PK__Sesiones__DB6C2DE6E7EDBD99",
+                                        "keyType":  "PK",
+                                        "indexType":  "CLUSTERED",
+                                        "columns":  [
+                                                        {
+                                                            "name":  "idSesion",
+                                                            "descendingKey":  false
+                                                        }
+                                                    ]
+                                    }
+                                ]
+                   },
+                   {
+                       "schemaName":  "dbo",
+                       "tableName":  "Usuarios",
+                       "columns":  [
+                                       {
+                                           "name":  "idUsuario",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  true,
+                                           "identitySeed":  1,
+                                           "identityIncrement":  1
+                                       },
+                                       {
+                                           "name":  "idPerfil",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "nombre",
+                                           "typeName":  "varchar",
+                                           "maxLength":  50,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       },
+                                       {
+                                           "name":  "apellido",
+                                           "typeName":  "varchar",
+                                           "maxLength":  50,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       },
+                                       {
+                                           "name":  "usuario",
+                                           "typeName":  "varchar",
+                                           "maxLength":  50,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       },
+                                       {
+                                           "name":  "contrasena",
+                                           "typeName":  "varchar",
+                                           "maxLength":  100,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       },
+                                       {
+                                           "name":  "email",
+                                           "typeName":  "varchar",
+                                           "maxLength":  100,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       },
+                                       {
+                                           "name":  "dni",
+                                           "typeName":  "varchar",
+                                           "maxLength":  20,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       },
+                                       {
+                                           "name":  "telefono",
+                                           "typeName":  "varchar",
+                                           "maxLength":  30,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       },
+                                       {
+                                           "name":  "fechaNacimiento",
+                                           "typeName":  "date",
+                                           "maxLength":  3,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "sexo",
+                                           "typeName":  "char",
+                                           "maxLength":  1,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       },
+                                       {
+                                           "name":  "activo",
+                                           "typeName":  "bit",
+                                           "maxLength":  1,
+                                           "precision":  1,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "defaultDefinition":  "((1))"
+                                       },
+                                       {
+                                           "name":  "fechaAlta",
+                                           "typeName":  "datetime",
+                                           "maxLength":  8,
+                                           "precision":  23,
+                                           "scale":  3,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "defaultDefinition":  "(getdate())"
+                                       },
+                                       {
+                                           "name":  "calle",
+                                           "typeName":  "varchar",
+                                           "maxLength":  100,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "defaultDefinition":  "(\u0027\u0027)",
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       },
+                                       {
+                                           "name":  "altura",
+                                           "typeName":  "varchar",
+                                           "maxLength":  20,
+                                           "precision":  0,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "defaultDefinition":  "(\u0027\u0027)",
+                                           "collation":  "Modern_Spanish_CI_AS"
+                                       }
+                                   ],
+                       "keys":  [
+                                    {
+                                        "name":  "PK_Usuarios",
+                                        "keyType":  "PK",
+                                        "indexType":  "CLUSTERED",
+                                        "columns":  [
+                                                        {
+                                                            "name":  "idUsuario",
+                                                            "descendingKey":  false
+                                                        }
+                                                    ]
+                                    },
+                                    {
+                                        "name":  "UQ_Usuarios_Dni",
+                                        "keyType":  "UQ",
+                                        "indexType":  "NONCLUSTERED",
+                                        "columns":  [
+                                                        {
+                                                            "name":  "dni",
+                                                            "descendingKey":  false
+                                                        }
+                                                    ]
+                                    },
+                                    {
+                                        "name":  "UQ_Usuarios_Usuario",
+                                        "keyType":  "UQ",
+                                        "indexType":  "NONCLUSTERED",
+                                        "columns":  [
+                                                        {
+                                                            "name":  "usuario",
+                                                            "descendingKey":  false
+                                                        }
+                                                    ]
+                                    }
+                                ],
+                       "checks":  [
+                                      {
+                                          "name":  "CK_Usuarios_Sexo",
+                                          "definition":  "([sexo]=\u0027F\u0027 OR [sexo]=\u0027M\u0027)"
+                                      }
+                                  ]
+                   },
+                   {
+                       "schemaName":  "dbo",
+                       "tableName":  "Ventas",
+                       "columns":  [
+                                       {
+                                           "name":  "idVenta",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  true,
+                                           "identitySeed":  1,
+                                           "identityIncrement":  1
+                                       },
+                                       {
+                                           "name":  "idCliente",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "idUsuario",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  false,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "fecha",
+                                           "typeName":  "datetime",
+                                           "maxLength":  8,
+                                           "precision":  23,
+                                           "scale":  3,
+                                           "nullable":  false,
+                                           "identityColumn":  false,
+                                           "defaultDefinition":  "(getdate())"
+                                       },
+                                       {
+                                           "name":  "total",
+                                           "typeName":  "decimal",
+                                           "maxLength":  9,
+                                           "precision":  10,
+                                           "scale":  2,
+                                           "nullable":  false,
+                                           "identityColumn":  false
+                                       },
+                                       {
+                                           "name":  "idSesion",
+                                           "typeName":  "int",
+                                           "maxLength":  4,
+                                           "precision":  10,
+                                           "scale":  0,
+                                           "nullable":  true,
+                                           "identityColumn":  false
+                                       }
+                                   ],
+                       "keys":  [
+                                    {
+                                        "name":  "PK__Ventas__077D5614CD141ADB",
+                                        "keyType":  "PK",
+                                        "indexType":  "CLUSTERED",
+                                        "columns":  [
+                                                        {
+                                                            "name":  "idVenta",
+                                                            "descendingKey":  false
+                                                        }
+                                                    ]
+                                    }
+                                ]
+                   }
+               ],
+    "foreignKeys":  [
+                        {
+                            "name":  "FK__Auditoria__idUsu__1DB06A4F",
+                            "schemaName":  "dbo",
+                            "tableName":  "AuditoriaBackups",
+                            "referenceSchema":  "dbo",
+                            "referenceTable":  "Usuarios",
+                            "deleteAction":  "NO_ACTION",
+                            "updateAction":  "NO_ACTION",
+                            "columns":  [
+                                            {
+                                                "name":  "idUsuario",
+                                                "referenceColumn":  "idUsuario"
+                                            }
+                                        ]
+                        },
+                        {
+                            "name":  "FK__DetalleVe__idPro__76969D2E",
+                            "schemaName":  "dbo",
+                            "tableName":  "DetalleVentas",
+                            "referenceSchema":  "dbo",
+                            "referenceTable":  "Productos",
+                            "deleteAction":  "NO_ACTION",
+                            "updateAction":  "NO_ACTION",
+                            "columns":  [
+                                            {
+                                                "name":  "idProducto",
+                                                "referenceColumn":  "idProducto"
+                                            }
+                                        ]
+                        },
+                        {
+                            "name":  "FK__DetalleVe__idVen__75A278F5",
+                            "schemaName":  "dbo",
+                            "tableName":  "DetalleVentas",
+                            "referenceSchema":  "dbo",
+                            "referenceTable":  "Ventas",
+                            "deleteAction":  "NO_ACTION",
+                            "updateAction":  "NO_ACTION",
+                            "columns":  [
+                                            {
+                                                "name":  "idVenta",
+                                                "referenceColumn":  "idVenta"
+                                            }
+                                        ]
+                        },
+                        {
+                            "name":  "FK__Productos__idCat__619B8048",
+                            "schemaName":  "dbo",
+                            "tableName":  "Productos",
+                            "referenceSchema":  "dbo",
+                            "referenceTable":  "Categorias",
+                            "deleteAction":  "NO_ACTION",
+                            "updateAction":  "NO_ACTION",
+                            "columns":  [
+                                            {
+                                                "name":  "idCategoria",
+                                                "referenceColumn":  "idCategoria"
+                                            }
+                                        ]
+                        },
+                        {
+                            "name":  "FK__SesionesC__idUsu__17F790F9",
+                            "schemaName":  "dbo",
+                            "tableName":  "SesionesCaja",
+                            "referenceSchema":  "dbo",
+                            "referenceTable":  "Usuarios",
+                            "deleteAction":  "NO_ACTION",
+                            "updateAction":  "NO_ACTION",
+                            "columns":  [
+                                            {
+                                                "name":  "idUsuarioApertura",
+                                                "referenceColumn":  "idUsuario"
+                                            }
+                                        ]
+                        },
+                        {
+                            "name":  "FK__SesionesC__idUsu__18EBB532",
+                            "schemaName":  "dbo",
+                            "tableName":  "SesionesCaja",
+                            "referenceSchema":  "dbo",
+                            "referenceTable":  "Usuarios",
+                            "deleteAction":  "NO_ACTION",
+                            "updateAction":  "NO_ACTION",
+                            "columns":  [
+                                            {
+                                                "name":  "idUsuarioCierre",
+                                                "referenceColumn":  "idUsuario"
+                                            }
+                                        ]
+                        },
+                        {
+                            "name":  "FK__Ventas__idClient__70DDC3D8",
+                            "schemaName":  "dbo",
+                            "tableName":  "Ventas",
+                            "referenceSchema":  "dbo",
+                            "referenceTable":  "Clientes",
+                            "deleteAction":  "NO_ACTION",
+                            "updateAction":  "NO_ACTION",
+                            "columns":  [
+                                            {
+                                                "name":  "idCliente",
+                                                "referenceColumn":  "idCliente"
+                                            }
+                                        ]
+                        },
+                        {
+                            "name":  "FK__Ventas__idSesion__19DFD96B",
+                            "schemaName":  "dbo",
+                            "tableName":  "Ventas",
+                            "referenceSchema":  "dbo",
+                            "referenceTable":  "SesionesCaja",
+                            "deleteAction":  "NO_ACTION",
+                            "updateAction":  "NO_ACTION",
+                            "columns":  [
+                                            {
+                                                "name":  "idSesion",
+                                                "referenceColumn":  "idSesion"
+                                            }
+                                        ]
+                        },
+                        {
+                            "name":  "FK__Ventas__idUsuari__71D1E811",
+                            "schemaName":  "dbo",
+                            "tableName":  "Ventas",
+                            "referenceSchema":  "dbo",
+                            "referenceTable":  "Usuarios",
+                            "deleteAction":  "NO_ACTION",
+                            "updateAction":  "NO_ACTION",
+                            "columns":  [
+                                            {
+                                                "name":  "idUsuario",
+                                                "referenceColumn":  "idUsuario"
+                                            }
+                                        ]
+                        },
+                        {
+                            "name":  "FK_Usuarios_Perfiles",
+                            "schemaName":  "dbo",
+                            "tableName":  "Usuarios",
+                            "referenceSchema":  "dbo",
+                            "referenceTable":  "Perfiles",
+                            "deleteAction":  "NO_ACTION",
+                            "updateAction":  "NO_ACTION",
+                            "columns":  [
+                                            {
+                                                "name":  "idPerfil",
+                                                "referenceColumn":  "idPerfil"
+                                            }
+                                        ]
+                        }
+                    ],
+    "procedures":  [
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Backup_Generar",
+                           "definition":  "\r\nCREATE   PROCEDURE sp_Backup_Generar\r\n    @rutaDestino VARCHAR(255)\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    -- Genera la copia de seguridad física de la base de datos\r\n    BACKUP DATABASE ForzaSuplementosDB TO DISK = @rutaDestino WITH INIT;\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Categorias_Listar",
+                           "definition":  "\r\n-- 3. Stored Procedures del CRUD\r\nCREATE   PROCEDURE sp_Categorias_Listar\r\nAS \r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    SELECT idCategoria, nombreCategoria FROM Categorias ORDER BY nombreCategoria;\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Clientes_CambiarEstado",
+                           "definition":  "\r\nCREATE   PROCEDURE sp_Clientes_CambiarEstado\r\n    @idCliente INT,\r\n    @activo BIT\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    UPDATE Clientes SET activo = @activo WHERE idCliente = @idCliente;\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Clientes_Insertar",
+                           "definition":  "\r\nCREATE   PROCEDURE sp_Clientes_Insertar\r\n    @dni VARCHAR(20),\r\n    @nombre VARCHAR(50),\r\n    @apellido VARCHAR(50),\r\n    @telefono VARCHAR(30),\r\n    @email VARCHAR(100),\r\n    @nuevoId INT OUTPUT\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    INSERT INTO Clientes (dni, nombre, apellido, telefono, email, activo)\r\n    VALUES (@dni, @nombre, @apellido, @telefono, @email, 1);\r\n    SET @nuevoId = SCOPE_IDENTITY();\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Clientes_ListarPorEstado",
+                           "definition":  "\r\nCREATE   PROCEDURE sp_Clientes_ListarPorEstado\r\n    @activo BIT\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    SELECT idCliente, dni, nombre, apellido, telefono, email, activo\r\n    FROM Clientes\r\n    WHERE activo = @activo\r\n    ORDER BY apellido, nombre;\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Clientes_Modificar",
+                           "definition":  "\r\nCREATE   PROCEDURE sp_Clientes_Modificar\r\n    @idCliente INT,\r\n    @dni VARCHAR(20),\r\n    @nombre VARCHAR(50),\r\n    @apellido VARCHAR(50),\r\n    @telefono VARCHAR(30),\r\n    @email VARCHAR(100)\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    UPDATE Clientes\r\n    SET dni = @dni, nombre = @nombre, apellido = @apellido, telefono = @telefono, email = @email\r\n    WHERE idCliente = @idCliente;\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_DetalleVentas_Insertar",
+                           "definition":  "\r\nCREATE   PROCEDURE sp_DetalleVentas_Insertar\r\n    @idVenta INT,\r\n    @idProducto INT,\r\n    @cantidad INT,\r\n    @precioUnitario DECIMAL(10,2),\r\n    @subtotal DECIMAL(10,2)\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    -- Insertar el detalle\r\n    INSERT INTO DetalleVentas (idVenta, idProducto, cantidad, precioUnitario, subtotal)\r\n    VALUES (@idVenta, @idProducto, @cantidad, @precioUnitario, @subtotal);\r\n\r\n    -- Descontar stock del producto automáticamente\r\n    UPDATE Productos \r\n    SET stock = stock - @cantidad \r\n    WHERE idProducto = @idProducto;\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Perfiles_Listar",
+                           "definition":  "\r\n-- ==========================================================\r\n-- PROCEDIMIENTOS ALMACENADOS (STORED PROCEDURES)\r\n-- ==========================================================\r\n\r\n-- SP: LISTAR PERFILES PARA EL COMBOBOX\r\nCREATE   PROCEDURE sp_Perfiles_Listar\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    SELECT idPerfil, nombrePerfil FROM Perfiles ORDER BY nombrePerfil ASC;\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Productos_CambiarEstado",
+                           "definition":  "\r\nCREATE   PROCEDURE sp_Productos_CambiarEstado\r\n    @idProducto INT, \r\n    @activo BIT\r\nAS \r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    UPDATE Productos SET activo = @activo WHERE idProducto = @idProducto;\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Productos_Insertar",
+                           "definition":  "\r\nCREATE   PROCEDURE sp_Productos_Insertar\r\n    @idCategoria INT, \r\n    @nombre VARCHAR(100), \r\n    @descripcion VARCHAR(255),\r\n    @precio DECIMAL(10,2), \r\n    @stock INT, \r\n    @nuevoId INT OUTPUT\r\nAS \r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    INSERT INTO Productos (idCategoria, nombre, descripcion, precio, stock, activo)\r\n    VALUES (@idCategoria, @nombre, @descripcion, @precio, @stock, 1);\r\n    \r\n    SET @nuevoId = SCOPE_IDENTITY();\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Productos_ListarPorEstado",
+                           "definition":  "\r\nCREATE   PROCEDURE sp_Productos_ListarPorEstado\r\n    @activo BIT\r\nAS \r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    SELECT p.idProducto, p.idCategoria, c.nombreCategoria, p.nombre, p.descripcion, p.precio, p.stock, p.activo\r\n    FROM Productos p\r\n    INNER JOIN Categorias c ON p.idCategoria = c.idCategoria\r\n    WHERE p.activo = @activo\r\n    ORDER BY p.nombre ASC;\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Productos_Modificar",
+                           "definition":  "\r\nCREATE   PROCEDURE sp_Productos_Modificar\r\n    @idProducto INT, \r\n    @idCategoria INT, \r\n    @nombre VARCHAR(100), \r\n    @descripcion VARCHAR(255),\r\n    @precio DECIMAL(10,2), \r\n    @stock INT\r\nAS \r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    UPDATE Productos\r\n    SET idCategoria = @idCategoria, \r\n        nombre = @nombre, \r\n        descripcion = @descripcion,\r\n        precio = @precio, \r\n        stock = @stock\r\n    WHERE idProducto = @idProducto;\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Reporte_BajoStock",
+                           "definition":  "\r\n-- Reporte 2: Productos con Bajo Stock (Para Admin y Gerente)\r\nCREATE   PROCEDURE sp_Reporte_BajoStock\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    SELECT c.nombreCategoria AS [Categoría], p.nombre AS [Producto], \r\n           p.stock AS [Stock Actual], p.precio AS [Precio Unitario]\r\n    FROM Productos p\r\n    INNER JOIN Categorias c ON p.idCategoria = c.idCategoria\r\n    WHERE p.stock \u003c= 5 AND p.activo = 1\r\n    ORDER BY p.stock ASC;\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Reporte_HistorialVentas",
+                           "definition":  "\r\n-- Reporte 1: Historial de Ventas (Para Admin y Gerente)\r\nCREATE   PROCEDURE sp_Reporte_HistorialVentas\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    SELECT v.idVenta AS [Nro Factura], v.fecha AS [Fecha], \r\n           c.nombre + \u0027 \u0027 + c.apellido AS [Cliente], \r\n           u.nombre AS [Vendedor], v.total AS [Total ($)]\r\n    FROM Ventas v\r\n    INNER JOIN Clientes c ON v.idCliente = c.idCliente\r\n    INNER JOIN Usuarios u ON v.idUsuario = u.idUsuario\r\n    ORDER BY v.fecha DESC;\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Reporte_MisVentas",
+                           "definition":  "\r\n-- Reporte 3: Mis Ventas (Exclusivo para el Vendedor)\r\nCREATE   PROCEDURE sp_Reporte_MisVentas\r\n    @idUsuario INT\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    SELECT v.fecha AS [Fecha], c.nombre + \u0027 \u0027 + c.apellido AS [Cliente], v.total AS [Total ($)]\r\n    FROM Ventas v\r\n    INNER JOIN Clientes c ON v.idCliente = c.idCliente\r\n    WHERE v.idUsuario = @idUsuario\r\n    ORDER BY v.fecha DESC;\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Usuarios_CambiarEstado",
+                           "definition":  "\r\n-- SP: BAJA LÓGICA Y REACTIVACIÓN DE USUARIOS\r\nCREATE   PROCEDURE sp_Usuarios_CambiarEstado\r\n    @idUsuario INT,\r\n    @activo BIT\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    BEGIN TRY\r\n        UPDATE Usuarios\r\n        SET activo = @activo\r\n        WHERE idUsuario = @idUsuario;\r\n    END TRY\r\n    BEGIN CATCH\r\n        THROW;\r\n    END CATCH\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Usuarios_Insertar",
+                           "definition":  "\r\n-- 3. Actualizar SP Insertar\r\nCREATE   PROCEDURE sp_Usuarios_Insertar\r\n    @idPerfil INT, @nombre VARCHAR(50), @apellido VARCHAR(50), @usuario VARCHAR(50),\r\n    @contrasena VARCHAR(100), @email VARCHAR(100), @dni VARCHAR(20), \r\n    @calle VARCHAR(100), @altura VARCHAR(20), @telefono VARCHAR(30), \r\n    @fechaNacimiento DATE, @sexo CHAR(1), @nuevoId INT OUTPUT\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    BEGIN TRY\r\n        IF EXISTS (SELECT 1 FROM Usuarios WHERE usuario = @usuario)\r\n            BEGIN RAISERROR(\u0027El usuario ya está registrado.\u0027, 16, 1); RETURN; END\r\n        IF EXISTS (SELECT 1 FROM Usuarios WHERE dni = @dni)\r\n            BEGIN RAISERROR(\u0027El DNI ya pertenece a otro usuario.\u0027, 16, 1); RETURN; END\r\n\r\n        INSERT INTO Usuarios (idPerfil, nombre, apellido, usuario, contrasena, email, dni, calle, altura, telefono, fechaNacimiento, sexo, activo)\r\n        VALUES (@idPerfil, @nombre, @apellido, @usuario, @contrasena, @email, @dni, @calle, @altura, @telefono, @fechaNacimiento, @sexo, 1);\r\n\r\n        SET @nuevoId = SCOPE_IDENTITY();\r\n    END TRY\r\n    BEGIN CATCH THROW; END CATCH\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Usuarios_ListarPorEstado",
+                           "definition":  "\r\n-- 2. Actualizar SP Listar\r\nCREATE   PROCEDURE sp_Usuarios_ListarPorEstado\r\n    @activo BIT\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    SELECT \r\n        u.idUsuario, u.idPerfil, p.nombrePerfil, u.nombre, u.apellido, \r\n        u.usuario, u.contrasena, u.email, u.dni, u.calle, u.altura, \r\n        u.telefono, u.fechaNacimiento, u.sexo, u.activo\r\n    FROM Usuarios u\r\n    INNER JOIN Perfiles p ON u.idPerfil = p.idPerfil\r\n    WHERE u.activo = @activo\r\n    ORDER BY u.apellido ASC, u.nombre ASC;\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Usuarios_Login",
+                           "definition":  "\r\nCREATE   PROCEDURE sp_Usuarios_Login\r\n    @usuario VARCHAR(50),\r\n    @contrasena VARCHAR(100)\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    SELECT u.idUsuario, u.idPerfil, p.nombrePerfil, u.nombre, u.apellido\r\n    FROM Usuarios u\r\n    INNER JOIN Perfiles p ON u.idPerfil = p.idPerfil\r\n    WHERE u.usuario COLLATE Latin1_General_CS_AS = @usuario \r\n      AND u.contrasena COLLATE Latin1_General_CS_AS = @contrasena \r\n      AND u.activo = 1;\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Usuarios_Modificar",
+                           "definition":  "\r\n-- 4. Actualizar SP Modificar\r\nCREATE   PROCEDURE sp_Usuarios_Modificar\r\n    @idUsuario INT, @idPerfil INT, @nombre VARCHAR(50), @apellido VARCHAR(50), @usuario VARCHAR(50),\r\n    @contrasena VARCHAR(100), @email VARCHAR(100), @dni VARCHAR(20), \r\n    @calle VARCHAR(100), @altura VARCHAR(20), @telefono VARCHAR(30), \r\n    @fechaNacimiento DATE, @sexo CHAR(1)\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    BEGIN TRY\r\n        IF EXISTS (SELECT 1 FROM Usuarios WHERE usuario = @usuario AND idUsuario \u003c\u003e @idUsuario)\r\n            BEGIN RAISERROR(\u0027El usuario ya está en uso.\u0027, 16, 1); RETURN; END\r\n        IF EXISTS (SELECT 1 FROM Usuarios WHERE dni = @dni AND idUsuario \u003c\u003e @idUsuario)\r\n            BEGIN RAISERROR(\u0027El DNI ya pertenece a otro.\u0027, 16, 1); RETURN; END\r\n\r\n        UPDATE Usuarios\r\n        SET idPerfil = @idPerfil, nombre = @nombre, apellido = @apellido, usuario = @usuario, contrasena = @contrasena, \r\n            email = @email, dni = @dni, calle = @calle, altura = @altura, telefono = @telefono, fechaNacimiento = @fechaNacimiento, sexo = @sexo\r\n        WHERE idUsuario = @idUsuario;\r\n    END TRY\r\n    BEGIN CATCH THROW; END CATCH\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       },
+                       {
+                           "schemaName":  "dbo",
+                           "name":  "sp_Ventas_Registrar",
+                           "definition":  "\r\n-- 3. Stored Procedure para registrar la venta de forma atómica y descontar stock\r\nCREATE   PROCEDURE sp_Ventas_Registrar\r\n    @idCliente INT,\r\n    @idUsuario INT,\r\n    @total DECIMAL(10,2),\r\n    @nuevaVentaId INT OUTPUT\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    INSERT INTO Ventas (idCliente, idUsuario, fecha, total)\r\n    VALUES (@idCliente, @idUsuario, GETDATE(), @total);\r\n    \r\n    SET @nuevaVentaId = SCOPE_IDENTITY();\r\nEND\r\n",
+                           "uses_ansi_nulls":  true,
+                           "uses_quoted_identifier":  true
+                       }
+                   ]
+}

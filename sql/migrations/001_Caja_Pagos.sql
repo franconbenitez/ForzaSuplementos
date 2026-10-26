@@ -3,6 +3,14 @@
 -- No contiene USE: la base destino debe seleccionarse expresamente con -d.
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
+-- Opciones requeridas para crear/mantener el indice filtrado.
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+SET ANSI_PADDING ON;
+SET ANSI_WARNINGS ON;
+SET ARITHABORT ON;
+SET CONCAT_NULL_YIELDS_NULL ON;
+SET NUMERIC_ROUNDABORT OFF;
 BEGIN TRANSACTION;
 
 -- Contrato verificado contra sys.columns el 26/10/2026. No recrea tablas existentes.

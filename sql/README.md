@@ -1,5 +1,7 @@
 # SQL de Caja: despliegue manual
 
+Para la preparación actual de **ForzaSuplementosDB_QA**, usar exclusivamente [qa/README.md](qa/README.md), sus copias protegidas y el orquestador QA. Los ejemplos genéricos de este documento son antecedentes; no son el comando de ejecución de la etapa QA actual.
+
 No se ejecutó ninguna migración. La única conexión usada por el agente fue de lectura de catálogos y definiciones de SP, sin consultar filas de personas.
 
 ## Esquema comprobado

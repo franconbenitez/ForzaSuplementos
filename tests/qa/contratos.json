@@ -1,0 +1,165 @@
+[
+  {
+    "procedure": "sp_Caja_ObtenerAbierta",
+    "parameters": [
+      {
+        "name": "@idUsuario",
+        "type": "Int",
+        "size": 0,
+        "scale": 0,
+        "output": false
+      }
+    ]
+  },
+  {
+    "procedure": "sp_Caja_Reporte",
+    "parameters": [
+      {
+        "name": "@idUsuario",
+        "type": "Int",
+        "size": 0,
+        "scale": 0,
+        "output": false
+      },
+      {
+        "name": "@idSesion",
+        "type": "Int",
+        "size": 0,
+        "scale": 0,
+        "output": false
+      }
+    ]
+  },
+  {
+    "procedure": "sp_Caja_Historial",
+    "parameters": [
+      {
+        "name": "@idUsuario",
+        "type": "Int",
+        "size": 0,
+        "scale": 0,
+        "output": false
+      },
+      {
+        "name": "@desde",
+        "type": "Date",
+        "size": 0,
+        "scale": 0,
+        "output": false
+      },
+      {
+        "name": "@hasta",
+        "type": "Date",
+        "size": 0,
+        "scale": 0,
+        "output": false
+      }
+    ]
+  },
+  {
+    "procedure": "sp_Caja_Abrir",
+    "parameters": [
+      {
+        "name": "@idUsuario",
+        "type": "Int",
+        "size": 0,
+        "scale": 0,
+        "output": false
+      },
+      {
+        "name": "@montoInicial",
+        "type": "Decimal",
+        "size": 10,
+        "scale": 2,
+        "output": false
+      },
+      {
+        "name": "@idSesion",
+        "type": "Int",
+        "size": 0,
+        "scale": 0,
+        "output": true
+      }
+    ]
+  },
+  {
+    "procedure": "sp_Caja_Cerrar",
+    "parameters": [
+      {
+        "name": "@idUsuario",
+        "type": "Int",
+        "size": 0,
+        "scale": 0,
+        "output": false
+      },
+      {
+        "name": "@idSesion",
+        "type": "Int",
+        "size": 0,
+        "scale": 0,
+        "output": false
+      },
+      {
+        "name": "@montoReal",
+        "type": "Decimal",
+        "size": 10,
+        "scale": 2,
+        "output": false
+      }
+    ]
+  },
+  {
+    "procedure": "sp_Ventas_RegistrarConCaja",
+    "parameters": [
+      {
+        "name": "@idCliente",
+        "type": "Int",
+        "size": 0,
+        "scale": 0,
+        "output": false
+      },
+      {
+        "name": "@idUsuario",
+        "type": "Int",
+        "size": 0,
+        "scale": 0,
+        "output": false
+      },
+      {
+        "name": "@idSesion",
+        "type": "Int",
+        "size": 0,
+        "scale": 0,
+        "output": false
+      },
+      {
+        "name": "@medioPago",
+        "type": "VarChar",
+        "size": 20,
+        "scale": 0,
+        "output": false
+      },
+      {
+        "name": "@detalles",
+        "type": "Xml",
+        "size": 0,
+        "scale": 0,
+        "output": false
+      },
+      {
+        "name": "@totalEsperado",
+        "type": "Decimal",
+        "size": 10,
+        "scale": 2,
+        "output": false
+      },
+      {
+        "name": "@nuevaVentaId",
+        "type": "Int",
+        "size": 0,
+        "scale": 0,
+        "output": true
+      }
+    ]
+  }
+]
