@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="ForzaSuplementos.Datos/ForzaSuplementos.Datos.vbproj" Id="76a37779-a2a7-496f-a90c-fe8863ad08fe" />
+  <Project Path="ForzaSuplementos.Entidades/ForzaSuplementos.Entidades.vbproj" Id="0200ae45-47e6-40c9-98ff-0461d6bc6eac" />
+  <Project Path="ForzaSuplementos.Negocio/ForzaSuplementos.Negocio.vbproj" Id="01d28be2-c0ac-436c-b9d3-2f9e40a1f03b" />
+  <Project Path="ForzaSuplementos.Presentacion/ForzaSuplementos.Presentacion.vbproj" Id="9b3c62a0-58dd-4ec3-a54f-ed9162e3a094" />
+</Solution>
