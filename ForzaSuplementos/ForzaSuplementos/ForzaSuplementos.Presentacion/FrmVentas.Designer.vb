@@ -14,6 +14,8 @@ Partial Class FrmVentas
     Friend WithEvents PanelTop As System.Windows.Forms.Panel
     Friend WithEvents LblTitulo As System.Windows.Forms.Label
     Friend WithEvents cboCliente As System.Windows.Forms.ComboBox
+    Friend WithEvents cboMedioPago As System.Windows.Forms.ComboBox
+    Friend WithEvents lblMedioPago As System.Windows.Forms.Label
     Friend WithEvents cboProducto As System.Windows.Forms.ComboBox
     Friend WithEvents txtCantidad As System.Windows.Forms.TextBox
     Friend WithEvents btnAgregar As System.Windows.Forms.Button
@@ -27,6 +29,8 @@ Partial Class FrmVentas
         Me.PanelTop = New System.Windows.Forms.Panel()
         Me.LblTitulo = New System.Windows.Forms.Label()
         Me.cboCliente = New System.Windows.Forms.ComboBox()
+        Me.cboMedioPago = New System.Windows.Forms.ComboBox()
+        Me.lblMedioPago = New System.Windows.Forms.Label()
         Me.cboProducto = New System.Windows.Forms.ComboBox()
         Me.txtCantidad = New System.Windows.Forms.TextBox()
         Me.btnAgregar = New System.Windows.Forms.Button()
@@ -65,6 +69,12 @@ Partial Class FrmVentas
 
         ' Controles
         Me.cboCliente.Location = New System.Drawing.Point(100, 82) : Me.cboCliente.Width = 600 : Me.cboCliente.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.lblMedioPago.Text = "Medio de pago:"
+        Me.lblMedioPago.Location = New System.Drawing.Point(30, 480)
+        Me.lblMedioPago.AutoSize = True
+        Me.cboMedioPago.Location = New System.Drawing.Point(130, 477)
+        Me.cboMedioPago.Width = 250
+        Me.cboMedioPago.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cboProducto.Location = New System.Drawing.Point(100, 127) : Me.cboProducto.Width = 280 : Me.cboProducto.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.txtCantidad.Location = New System.Drawing.Point(470, 127) : Me.txtCantidad.Width = 80 : Me.txtCantidad.Text = "1"
 
@@ -76,11 +86,11 @@ Partial Class FrmVentas
         Me.dgvCarrito.AllowUserToAddRows = False
 
         ' Botones Finales
-        Me.btnConfirmar.Location = New System.Drawing.Point(30, 480) : Me.btnConfirmar.Size = New System.Drawing.Size(150, 40) : Me.btnConfirmar.Text = "Confirmar Venta" : Me.btnConfirmar.BackColor = System.Drawing.Color.FromArgb(52, 168, 132) : Me.btnConfirmar.ForeColor = System.Drawing.Color.White : Me.btnConfirmar.FlatStyle = System.Windows.Forms.FlatStyle.Flat
-        Me.btnCancelar.Location = New System.Drawing.Point(200, 480) : Me.btnCancelar.Size = New System.Drawing.Size(150, 40) : Me.btnCancelar.Text = "Cancelar Venta" : Me.btnCancelar.BackColor = System.Drawing.Color.FromArgb(217, 83, 79) : Me.btnCancelar.ForeColor = System.Drawing.Color.White : Me.btnCancelar.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnConfirmar.Location = New System.Drawing.Point(30, 525) : Me.btnConfirmar.Size = New System.Drawing.Size(150, 40) : Me.btnConfirmar.Text = "Confirmar Venta" : Me.btnConfirmar.BackColor = System.Drawing.Color.FromArgb(52, 168, 132) : Me.btnConfirmar.ForeColor = System.Drawing.Color.White : Me.btnConfirmar.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnCancelar.Location = New System.Drawing.Point(200, 525) : Me.btnCancelar.Size = New System.Drawing.Size(150, 40) : Me.btnCancelar.Text = "Cancelar Venta" : Me.btnCancelar.BackColor = System.Drawing.Color.FromArgb(217, 83, 79) : Me.btnCancelar.ForeColor = System.Drawing.Color.White : Me.btnCancelar.FlatStyle = System.Windows.Forms.FlatStyle.Flat
 
         ' Formulario
-        Me.ClientSize = New System.Drawing.Size(910, 550)
+        Me.ClientSize = New System.Drawing.Size(910, 590)
         Me.BackColor = System.Drawing.Color.FromArgb(245, 247, 246)
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "Gestión de Ventas"
@@ -88,6 +98,7 @@ Partial Class FrmVentas
 
         Me.Controls.Add(Me.PanelTop)
         Me.Controls.Add(Me.lbl1) : Me.Controls.Add(Me.cboCliente)
+        Me.Controls.Add(Me.lblMedioPago) : Me.Controls.Add(Me.cboMedioPago)
         Me.Controls.Add(Me.lbl2) : Me.Controls.Add(Me.cboProducto)
         Me.Controls.Add(Me.lbl3) : Me.Controls.Add(Me.txtCantidad)
         Me.Controls.Add(Me.btnAgregar)

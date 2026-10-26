@@ -9,9 +9,17 @@ Public Class FrmVentas
 
     Private _carrito As New BindingList(Of DetalleVenta)()
     Public UsuarioActualId As Integer = 0 ' Este valor lo inyecta el menú principal
+    Public Property UsuarioActual As Usuario
 
     Private Sub FrmVentas_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        CargarCombos()
+        Try
+            CajaBLL.ValidarVendedor(UsuarioActual)
+            CargarCombos()
+            cboMedioPago.DataSource = New String() {"Seleccionar medio de pago", "Efectivo", "Transferencia", "Tarjeta"}
+        Catch ex As Exception
+            btnConfirmar.Enabled = False
+            MessageBox.Show(ex.Message, "Ventas", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        End Try
         dgvCarrito.DataSource = _carrito
         ConfigurarGrilla()
     End Sub
@@ -103,10 +111,12 @@ Public Class FrmVentas
             Dim nuevaVenta As New Venta() With {
                 .IdCliente = CInt(cboCliente.SelectedValue),
                 .IdUsuario = UsuarioActualId,
+                .MedioPago = CType(Math.Max(0, cboMedioPago.SelectedIndex), MedioPago),
                 .Detalles = _carrito.ToList()
             }
 
-            _ventaBLL.ProcesarVenta(nuevaVenta)
+            btnConfirmar.Enabled = False
+            _ventaBLL.ProcesarVenta(nuevaVenta, UsuarioActual)
 
             MessageBox.Show("¡Venta registrada con éxito! El stock ha sido descontado.", "Transacción Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information)
 
@@ -117,6 +127,8 @@ Public Class FrmVentas
 
         Catch ex As Exception
             MessageBox.Show(ex.Message, "Error en la Venta", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        Finally
+            btnConfirmar.Enabled = True
         End Try
     End Sub
 
@@ -125,6 +137,7 @@ Public Class FrmVentas
         cboProducto.SelectedIndex = -1
         txtCantidad.Text = "1"
         _carrito.Clear()
+        cboMedioPago.SelectedIndex = 0
         ActualizarTotal()
     End Sub
 

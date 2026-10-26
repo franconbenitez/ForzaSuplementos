@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BackupDAL.vb" />
+    <Compile Include="CajaDAL.vb" />
     <Compile Include="ClienteDAL.vb" />
     <Compile Include="Conexion.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />

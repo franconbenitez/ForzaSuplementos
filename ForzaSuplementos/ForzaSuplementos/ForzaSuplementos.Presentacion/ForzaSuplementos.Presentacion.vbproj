@@ -76,6 +76,12 @@
     <Compile Include="FrmBackup.Designer.vb">
       <DependentUpon>FrmBackup.vb</DependentUpon>
     </Compile>
+    <Compile Include="FrmCaja.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmCaja.Designer.vb">
+      <DependentUpon>FrmCaja.vb</DependentUpon>
+    </Compile>
     <Compile Include="FrmBackup.vb">
       <SubType>Form</SubType>
     </Compile>

@@ -19,7 +19,8 @@ Public Class FrmPrincipal
     End Sub
 
     Private Sub ConfigurarPermisos()
-        MenuCaja.Visible = False ' Pendiente de implementar el módulo Caja.
+        MenuCaja.Visible = String.Equals(_usuarioLogueado.NombrePerfil, "VENDEDOR", StringComparison.OrdinalIgnoreCase)
+        MenuVentas.Visible = MenuCaja.Visible
         Dim rol As String = _usuarioLogueado.NombrePerfil.ToUpper()
 
         ' REGLA DEL PROFESOR: El Administrador controla el sistema pero NO factura
@@ -44,9 +45,7 @@ Public Class FrmPrincipal
 
     ' --- EVENTOS CLIC DE LOS BOTONES DEL MENÚ ---
 
-    ' Código conservado: habilitar y conectar el evento cuando exista FrmCaja.
-#If False Then
-    Private Sub MenuCaja_Click(sender As Object, e As EventArgs) ' Handles MenuCaja.Click (Descomentar el Handles cuando crees el botón)
+    Private Sub MenuCaja_Click(sender As Object, e As EventArgs) Handles MenuCaja.Click
         For Each frm In Me.MdiChildren
             If TypeOf frm Is FrmCaja Then
                 frm.BringToFront()
@@ -55,11 +54,10 @@ Public Class FrmPrincipal
         Next
 
         Dim ventanaCaja As New FrmCaja()
-        ventanaCaja.UsuarioActualId = _usuarioLogueado.IdUsuario
+        ventanaCaja.UsuarioActual = _usuarioLogueado
         ventanaCaja.MdiParent = Me
         ventanaCaja.Show()
     End Sub
-#End If
 
     Private Sub MenuUsuarios_Click(sender As Object, e As EventArgs) Handles MenuUsuarios.Click
         For Each frm In Me.MdiChildren
@@ -109,6 +107,7 @@ Public Class FrmPrincipal
 
         Dim ventanaVentas As New FrmVentas()
         ventanaVentas.UsuarioActualId = _usuarioLogueado.IdUsuario
+        ventanaVentas.UsuarioActual = _usuarioLogueado
         ventanaVentas.MdiParent = Me
         ventanaVentas.Show()
     End Sub
