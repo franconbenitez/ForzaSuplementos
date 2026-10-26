@@ -145,4 +145,3 @@ Todos los resultados SQL están pendientes de autorización. Ejecutar con el run
 - Resultado esperado: 51001 para perfiles/inactivo; reporte ajeno vacío; venta ajena51006.
 - Consulta de verificación: `EXEC dbo.sp_Caja_Reporte @otroVendedor,@sesion1; EXEC dbo.sp_Caja_Historial @administrador,@desde,@hasta;`
 - Resultado real: NO EJECUTADA: pendiente de autorización SQL
-

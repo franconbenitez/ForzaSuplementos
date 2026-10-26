@@ -20,6 +20,7 @@ $options
 "@
 function Quote-Name([string]$name) { return '['+$name.Replace(']',']]')+']' }
 function Write-Utf8([string]$name,[string]$content) {
+    $content=[regex]::Replace($content,'(?m)[ \t]+(?=\r?$)','').TrimEnd()+"`r`n"
     [IO.File]::WriteAllText((Join-Path $PSScriptRoot $name),$content,(New-Object Text.UTF8Encoding($false)))
 }
 function Guarded-Batch([string]$sql,[switch]$Dynamic,[switch]$RequireMarker) {

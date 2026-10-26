@@ -327,7 +327,7 @@ SET NUMERIC_ROUNDABORT OFF;
 EXEC sys.sp_executesql N'
 -- 3. Stored Procedures del CRUD
 CREATE   PROCEDURE sp_Categorias_Listar
-AS 
+AS
 BEGIN
     SET NOCOUNT ON;
     SELECT idCategoria, nombreCategoria FROM Categorias ORDER BY nombreCategoria;
@@ -447,8 +447,8 @@ BEGIN
     VALUES (@idVenta, @idProducto, @cantidad, @precioUnitario, @subtotal);
 
     -- Descontar stock del producto automáticamente
-    UPDATE Productos 
-    SET stock = stock - @cantidad 
+    UPDATE Productos
+    SET stock = stock - @cantidad
     WHERE idProducto = @idProducto;
 END
 ';
@@ -486,9 +486,9 @@ SET ARITHABORT ON;
 SET CONCAT_NULL_YIELDS_NULL ON;
 SET NUMERIC_ROUNDABORT OFF;
 EXEC sys.sp_executesql N'CREATE OR ALTER PROCEDURE sp_Productos_CambiarEstado
-    @idProducto INT, 
+    @idProducto INT,
     @activo BIT
-AS 
+AS
 BEGIN
     SET NOCOUNT ON;
     UPDATE Productos SET activo = @activo WHERE idProducto = @idProducto;
@@ -505,18 +505,18 @@ SET ARITHABORT ON;
 SET CONCAT_NULL_YIELDS_NULL ON;
 SET NUMERIC_ROUNDABORT OFF;
 EXEC sys.sp_executesql N'CREATE OR ALTER PROCEDURE sp_Productos_Insertar
-    @idCategoria INT, 
-    @nombre VARCHAR(100), 
+    @idCategoria INT,
+    @nombre VARCHAR(100),
     @descripcion VARCHAR(255),
-    @precio DECIMAL(10,2), 
-    @stock INT, 
+    @precio DECIMAL(10,2),
+    @stock INT,
     @nuevoId INT OUTPUT
-AS 
+AS
 BEGIN
     SET NOCOUNT ON;
     INSERT INTO Productos (idCategoria, nombre, descripcion, precio, stock, activo)
     VALUES (@idCategoria, @nombre, @descripcion, @precio, @stock, 1);
-    
+
     SET @nuevoId = SCOPE_IDENTITY();
 END
 ';
@@ -532,7 +532,7 @@ SET CONCAT_NULL_YIELDS_NULL ON;
 SET NUMERIC_ROUNDABORT OFF;
 EXEC sys.sp_executesql N'CREATE OR ALTER PROCEDURE sp_Productos_ListarPorEstado
     @activo BIT
-AS 
+AS
 BEGIN
     SET NOCOUNT ON;
     SELECT p.idProducto, p.idCategoria, c.nombreCategoria, p.nombre, p.descripcion, p.precio, p.stock, p.activo
@@ -553,20 +553,20 @@ SET ARITHABORT ON;
 SET CONCAT_NULL_YIELDS_NULL ON;
 SET NUMERIC_ROUNDABORT OFF;
 EXEC sys.sp_executesql N'CREATE OR ALTER PROCEDURE sp_Productos_Modificar
-    @idProducto INT, 
-    @idCategoria INT, 
-    @nombre VARCHAR(100), 
+    @idProducto INT,
+    @idCategoria INT,
+    @nombre VARCHAR(100),
     @descripcion VARCHAR(255),
-    @precio DECIMAL(10,2), 
+    @precio DECIMAL(10,2),
     @stock INT
-AS 
+AS
 BEGIN
     SET NOCOUNT ON;
     UPDATE Productos
-    SET idCategoria = @idCategoria, 
-        nombre = @nombre, 
+    SET idCategoria = @idCategoria,
+        nombre = @nombre,
         descripcion = @descripcion,
-        precio = @precio, 
+        precio = @precio,
         stock = @stock
     WHERE idProducto = @idProducto;
 END
@@ -587,7 +587,7 @@ CREATE   PROCEDURE sp_Reporte_BajoStock
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT c.nombreCategoria AS [Categoría], p.nombre AS [Producto], 
+    SELECT c.nombreCategoria AS [Categoría], p.nombre AS [Producto],
            p.stock AS [Stock Actual], p.precio AS [Precio Unitario]
     FROM Productos p
     INNER JOIN Categorias c ON p.idCategoria = c.idCategoria
@@ -611,8 +611,8 @@ CREATE   PROCEDURE sp_Reporte_HistorialVentas
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT v.idVenta AS [Nro Factura], v.fecha AS [Fecha], 
-           c.nombre + '' '' + c.apellido AS [Cliente], 
+    SELECT v.idVenta AS [Nro Factura], v.fecha AS [Fecha],
+           c.nombre + '' '' + c.apellido AS [Cliente],
            u.nombre AS [Vendedor], v.total AS [Total ($)]
     FROM Ventas v
     INNER JOIN Clientes c ON v.idCliente = c.idCliente
@@ -686,8 +686,8 @@ EXEC sys.sp_executesql N'
 -- 3. Actualizar SP Insertar
 CREATE   PROCEDURE sp_Usuarios_Insertar
     @idPerfil INT, @nombre VARCHAR(50), @apellido VARCHAR(50), @usuario VARCHAR(50),
-    @contrasena VARCHAR(100), @email VARCHAR(100), @dni VARCHAR(20), 
-    @calle VARCHAR(100), @altura VARCHAR(20), @telefono VARCHAR(30), 
+    @contrasena VARCHAR(100), @email VARCHAR(100), @dni VARCHAR(20),
+    @calle VARCHAR(100), @altura VARCHAR(20), @telefono VARCHAR(30),
     @fechaNacimiento DATE, @sexo CHAR(1), @nuevoId INT OUTPUT
 AS
 BEGIN
@@ -723,9 +723,9 @@ CREATE   PROCEDURE sp_Usuarios_ListarPorEstado
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT 
-        u.idUsuario, u.idPerfil, p.nombrePerfil, u.nombre, u.apellido, 
-        u.usuario, u.contrasena, u.email, u.dni, u.calle, u.altura, 
+    SELECT
+        u.idUsuario, u.idPerfil, p.nombrePerfil, u.nombre, u.apellido,
+        u.usuario, u.contrasena, u.email, u.dni, u.calle, u.altura,
         u.telefono, u.fechaNacimiento, u.sexo, u.activo
     FROM Usuarios u
     INNER JOIN Perfiles p ON u.idPerfil = p.idPerfil
@@ -752,8 +752,8 @@ BEGIN
     SELECT u.idUsuario, u.idPerfil, p.nombrePerfil, u.nombre, u.apellido
     FROM Usuarios u
     INNER JOIN Perfiles p ON u.idPerfil = p.idPerfil
-    WHERE u.usuario COLLATE Latin1_General_CS_AS = @usuario 
-      AND u.contrasena COLLATE Latin1_General_CS_AS = @contrasena 
+    WHERE u.usuario COLLATE Latin1_General_CS_AS = @usuario
+      AND u.contrasena COLLATE Latin1_General_CS_AS = @contrasena
       AND u.activo = 1;
 END
 ';
@@ -771,8 +771,8 @@ EXEC sys.sp_executesql N'
 -- 4. Actualizar SP Modificar
 CREATE   PROCEDURE sp_Usuarios_Modificar
     @idUsuario INT, @idPerfil INT, @nombre VARCHAR(50), @apellido VARCHAR(50), @usuario VARCHAR(50),
-    @contrasena VARCHAR(100), @email VARCHAR(100), @dni VARCHAR(20), 
-    @calle VARCHAR(100), @altura VARCHAR(20), @telefono VARCHAR(30), 
+    @contrasena VARCHAR(100), @email VARCHAR(100), @dni VARCHAR(20),
+    @calle VARCHAR(100), @altura VARCHAR(20), @telefono VARCHAR(30),
     @fechaNacimiento DATE, @sexo CHAR(1)
 AS
 BEGIN
@@ -784,7 +784,7 @@ BEGIN
             BEGIN RAISERROR(''El DNI ya pertenece a otro.'', 16, 1); RETURN; END
 
         UPDATE Usuarios
-        SET idPerfil = @idPerfil, nombre = @nombre, apellido = @apellido, usuario = @usuario, contrasena = @contrasena, 
+        SET idPerfil = @idPerfil, nombre = @nombre, apellido = @apellido, usuario = @usuario, contrasena = @contrasena,
             email = @email, dni = @dni, calle = @calle, altura = @altura, telefono = @telefono, fechaNacimiento = @fechaNacimiento, sexo = @sexo
         WHERE idUsuario = @idUsuario;
     END TRY
@@ -813,7 +813,7 @@ BEGIN
     SET NOCOUNT ON;
     INSERT INTO Ventas (idCliente, idUsuario, fecha, total)
     VALUES (@idCliente, @idUsuario, GETDATE(), @total);
-    
+
     SET @nuevaVentaId = SCOPE_IDENTITY();
 END
 ';
