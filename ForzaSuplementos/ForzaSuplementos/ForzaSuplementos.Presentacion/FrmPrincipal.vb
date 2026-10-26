@@ -19,6 +19,7 @@ Public Class FrmPrincipal
     End Sub
 
     Private Sub ConfigurarPermisos()
+        MenuCaja.Visible = False ' Pendiente de implementar el módulo Caja.
         Dim rol As String = _usuarioLogueado.NombrePerfil.ToUpper()
 
         ' REGLA DEL PROFESOR: El Administrador controla el sistema pero NO factura
@@ -43,7 +44,8 @@ Public Class FrmPrincipal
 
     ' --- EVENTOS CLIC DE LOS BOTONES DEL MENÚ ---
 
-    ' IMPORTANTE: Agregá un botón llamado "MenuCaja" en la barra superior de tu formulario visual para usar esto
+    ' Código conservado: habilitar y conectar el evento cuando exista FrmCaja.
+#If False Then
     Private Sub MenuCaja_Click(sender As Object, e As EventArgs) ' Handles MenuCaja.Click (Descomentar el Handles cuando crees el botón)
         For Each frm In Me.MdiChildren
             If TypeOf frm Is FrmCaja Then
@@ -57,6 +59,7 @@ Public Class FrmPrincipal
         ventanaCaja.MdiParent = Me
         ventanaCaja.Show()
     End Sub
+#End If
 
     Private Sub MenuUsuarios_Click(sender As Object, e As EventArgs) Handles MenuUsuarios.Click
         For Each frm In Me.MdiChildren
