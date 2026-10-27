@@ -22,7 +22,7 @@ $mvid=Assert-QaExecutable $exe
 $head=(& git -C $cfg.Root rev-parse --short=7 HEAD)
 if($LASTEXITCODE -ne 0){throw 'No se pudo identificar la version Git local.'}
 $dirty=@(& git -C $cfg.Root status --porcelain).Count -gt 0
-$hash=(Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash
+$hash=Get-QaFileHash $exe
 $version=$head+$(if($dirty){'+local'}else{''})+' / EXE '+$hash.Substring(0,8)
 $record=[ordered]@{GitHead=$head;CambiosLocales=$dirty;Configuration=$buildFolder;Exe=$exe;SHA256=$hash;MVID=$mvid;Base='ForzaSuplementosDB_QA';Utc=([DateTime]::UtcNow.ToString('o'));PID=$null}
 $private=Join-Path $cfg.Root 'private'

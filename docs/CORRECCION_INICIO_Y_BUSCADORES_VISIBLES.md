@@ -36,7 +36,7 @@ El actor de QA se obtiene en lectura y el host le asigna un nombre de prueba; es
 
 ## Resultados finales
 
-Compilación completa Debug / Any CPU aprobada. Pruebas: 205 permisos + 86 navegación + 59 interfaz + 20 Caja/Ventas + 49 buscadores + 4 identidad de binario = **423 offline**. Integración: 8 selección QA de lectura + 17 formularios/modales reales = **25 QA de lectura**. Total: **448 comprobaciones aprobadas**. Las ejecuciones iniciales fallidas del nuevo caso modal llevaron a la corrección de CurrentCellChanged; la regresión final se repitió.
+Compilación completa Debug / Any CPU aprobada. Pruebas: 205 permisos + 86 navegación + 59 interfaz + 20 Caja/Ventas + 49 buscadores + 5 identidad de binario = **424 offline**. Integración: 8 selección QA de lectura + 17 formularios/modales reales = **25 QA de lectura**. Total: **449 comprobaciones aprobadas**. Las ejecuciones iniciales fallidas del nuevo caso modal llevaron a la corrección de CurrentCellChanged; la regresión final se repitió.
 
 El control de escritorio no pudo inicializarse: falló el runtime con “failed to write kernel assets”. No se afirma haber usado mouse/teclado para una sesión manual. La evidencia generada es un **render DrawToBitmap de formularios reales cargados con QA**, no una captura nativa del escritorio. Se revisaron los renders de Principal/Ventas y ambos buscadores. Los campos personales se ocultan solo al renderizar; no se modifican datos SQL ni modelos. QA puede contener registros personales ingresados por el desarrollador: no se consideran automáticamente fixtures anónimos.
 
@@ -60,3 +60,7 @@ powershell -NoProfile -ExecutionPolicy RemoteSigned -File .\tests\qa\Probar-Busc
 ```
 
 Los demás ensayos están en BUSCADORES_VENTAS.md. El nuevo verificador no modifica SQL. No hay migraciones nuevas ni pendientes para esta corrección. Pendiente: validación manual del usuario desde el acceso y, separadamente, diseñador/DPI si corresponde. No se autorizó ni ejecutó push.
+
+## Verificación adicional del CMD real
+
+Al ejecutar el CMD completo se detectó que Get-FileHash no estaba disponible en ese proceso de PowerShell, aunque sí en otros hosts de prueba. El inicio se detuvo correctamente, sin abrir un binario viejo. Se sustituyó el cálculo por SHA256 de .NET, independiente de la disponibilidad de ese cmdlet, y se agregó una prueba de igualdad del hash. Se vuelve a verificar el inicio completo y se compara el PID/ruta/hash registrados con el proceso creado.

@@ -16,4 +16,7 @@ Write-Output 'OK: ensamblado de otra capa rechazado'
 $cmd=[IO.File]::ReadAllText((Join-Path $root 'INICIAR_FORZA_QA.cmd'))
 if($cmd -notmatch 'Iniciar-App-QA.ps1.*-Configuration Debug -Compilar'){throw 'El acceso CMD no obliga a compilar antes de iniciar'}
 Write-Output 'OK: CMD exige recompilacion antes del inicio'
-Write-Output 'TOTAL IDENTIDAD: 4 comprobaciones aprobadas. Sin SQL.'
+$hash=Get-QaFileHash $exe
+if($hash -cne (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash){throw 'Hash .NET no coincide con SHA256 esperado'}
+Write-Output 'OK: hash .NET coincide con SHA256 del archivo'
+Write-Output 'TOTAL IDENTIDAD: 5 comprobaciones aprobadas. Sin SQL.' 

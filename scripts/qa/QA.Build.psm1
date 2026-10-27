@@ -14,4 +14,9 @@ function Assert-QaExecutable([string]$Path){
     }
     return $sales.Module.ModuleVersionId.ToString()
 }
-Export-ModuleMember -Function Assert-QaExecutable
+function Get-QaFileHash([string]$Path){
+    $sha=[Security.Cryptography.SHA256]::Create()
+    $stream=[IO.File]::OpenRead($Path)
+    try{return ([BitConverter]::ToString($sha.ComputeHash($stream))).Replace('-','')}finally{$stream.Dispose();$sha.Dispose()}
+}
+Export-ModuleMember -Function Assert-QaExecutable,Get-QaFileHash
