@@ -84,6 +84,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="ProductoDAL.vb" />
+    <Compile Include="DashboardDAL.vb" />
     <Compile Include="ReporteDAL.vb" />
     <Compile Include="UsuarioDAL.vb" />
     <Compile Include="VentaDAL.vb" />

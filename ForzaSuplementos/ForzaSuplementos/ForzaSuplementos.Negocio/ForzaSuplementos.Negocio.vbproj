@@ -85,6 +85,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="ProductoBLL.vb" />
+    <Compile Include="DashboardBLL.vb" />
     <Compile Include="ReporteBLL.vb" />
     <Compile Include="UsuarioBLL.vb" />
     <Compile Include="VentaBLL.vb" />

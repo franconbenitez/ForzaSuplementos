@@ -169,3 +169,7 @@ No se asigna una licencia de distribución adicional en esta preparación.
 ## Buscadores de Ventas y QA principal
 
 Ventas selecciona clientes y productos mediante búsqueda y grillas oscuras, con Enter, doble clic o Seleccionar. No modifica el carrito al buscar. En el equipo de desarrollo usar el acceso directo **FORZA SUPLEMENTOS - QA (GITHUB)**, dirigido al CMD del repositorio principal; qa.config permanece privada e ignorada. Ver [implementación, pruebas y pasos de QA](docs/BUSCADORES_VENTAS.md).
+
+## Dashboards y esquema QA
+
+[Inventario real](docs/INVENTARIO_BASE_DATOS.md) y [diagrama ER](docs/DIAGRAMA_ER.md): 11 tablas (10 de aplicación y qa.Fixtures), 11 FK y 28 SP antes de aplicar los reportes nuevos. [Dashboards por perfil](docs/DASHBOARDS_REPORTES.md): evolución y resumen básico ya disponibles con datos reales; unidades/rankings completos y backups requieren la migración QA 004 preparada, no aplicada. [Resultados y límites](docs/RESULTADOS_REPORTES_QA.md). No ejecutar migraciones ni fixtures sin autorización.

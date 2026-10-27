@@ -86,6 +86,7 @@
     </Compile>
     <Compile Include="Perfil.vb" />
     <Compile Include="Producto.vb" />
+    <Compile Include="Dashboard.vb" />
     <Compile Include="Usuario.vb" />
     <Compile Include="Venta.vb" />
   </ItemGroup>
