@@ -71,3 +71,13 @@ Compilar con scripts/compilar.ps1, validar el destino con `powershell -NoProfile
 Antes de trabajar: `git status` y `git pull --ff-only`. Si hay cambios locales, conservarlos en un commit o resolverlos antes de actualizar. Para un cambio nuevo: `git switch -c codex/descripcion`, editar, compilar y ejecutar pruebas offline. Revisar `git diff` y agregar solamente archivos previstos, nunca config/qa.config. Confirmar y, cuando los envíos estén autorizados, publicar la rama y revisar/integrar los cambios. En la otra PC, actualizar la rama antes de comenzar. Ante divergencias, resolverlas con revisión; no forzar el historial.
 
 Siguiente paso: revisión interactiva contra QA y autorización separada para la primera publicación privada. La auditoría por patrones reduce riesgos pero no garantiza ausencia absoluta de secretos futuros; repetirla antes de cada publicación.
+
+## Comprobación final de la sincronización
+
+La copia saneada compiló en su propia salida Debug / Any CPU. Se ejecutaron allí también las 59 comprobaciones UI y las 20 de regresión, todas aprobadas. Validar-Preparacion-SinSql verificó los nueve scripts SQL, seis contratos DAL y tres rechazos de conexión QA, sin escrituras SQL. La comparación normalizando saltos de línea confirmó equivalencia de 71 archivos de código, proyectos, solución, recursos y configuración de aplicación respecto del proyecto funcional actualizado.
+
+La auditoría después de incorporar las mejoras recorrió 10 commits y 166 blobs: cero hallazgos históricos, actuales o de metadatos, cero rutas prohibidas y cero blobs binarios. Este cierre documental añade un commit más y se vuelve a auditar. Solo existe refs/heads/master; se comprobó que el último de los ocho commits saneados originales sigue siendo ancestro. No hay remoto. No se copió configuración privada ni historial original. El detalle reproducible permanece ignorado en private/auditoria-actualizada.json de la copia saneada.
+
+Se verificó el destino del acceso directo del Escritorio y se ejecutó el CMD real: inició el ejecutable actualizado de bin/Debug con las variables QA del proceso hijo, después de las consultas de comprobación. No se inició sesión ni se confirmó una venta. La ventana se deja abierta para la revisión del usuario; cerrarla por su interfaz antes de la próxima recompilación. No se realizaron interacciones visuales manuales, por lo que esa validación continúa pendiente.
+
+GitHub CLI no está disponible en este entorno; su instalación, autenticación y verificación de la cuenta siguen pendientes para la publicación autorizada posterior. Los comandos anteriores se entregan como instrucciones y no se ejecutaron.
