@@ -8,6 +8,12 @@ Namespace ForzaPruebasUI
         Inherits FrmPrincipal
         Public Creaciones As Integer
         Public FallarCreacion As Boolean
+        Public Sub AbrirDirecto(tipo As Type)
+            AbrirModulo(tipo)
+        End Sub
+        Public Function CrearReal(tipo As Type) As Form
+            Return MyBase.CrearModulo(tipo)
+        End Function
         Public Sub New(perfil As String)
             MyBase.New(New Usuario With {.IdUsuario = 1, .NombrePerfil = perfil, .Nombre = "Prueba"})
             WindowState = FormWindowState.Normal

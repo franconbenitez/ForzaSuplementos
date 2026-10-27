@@ -126,7 +126,7 @@ try{
             Assert-Nav $form.IsDisposed "$name Si cierra cambios locales sin SQL"
         }finally{$form.Dispose()}
     }
-    $expected=@{ADMINISTRADOR=@('Usuarios','Productos','Clientes','Backup','Reportes');GERENTE=@('Usuarios','Productos','Reportes');VENDEDOR=@('Clientes','Ventas','Caja','Reportes')}
+    $expected=@{ADMINISTRADOR=@('Usuarios','Backup','Reportes');GERENTE=@('Productos','Reportes');VENDEDOR=@('Clientes','Ventas','Caja','Reportes')}
     foreach($role in @('ADMINISTRADOR','GERENTE','VENDEDOR')){
         $form=New-Object ForzaPruebasUI.PrincipalNavegacion($role)
         try{

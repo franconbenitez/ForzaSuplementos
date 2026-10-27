@@ -3,6 +3,7 @@ Imports ForzaSuplementos.Entidades
 Imports ForzaSuplementos.Negocio
 
 Public Class FrmProductos
+    Public Property UsuarioActual As ForzaSuplementos.Entidades.Usuario
     Private ReadOnly _protector As ProtectorCambios
 
     Public Sub New()
@@ -15,6 +16,7 @@ Public Class FrmProductos
     Private _idProductoSeleccionado As Integer = 0
 
     Private Sub FrmProductos_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        If Not AccesoFormulario.Validar(Me, UsuarioActual, Permiso.Productos) Then Return
         CargarCategorias()
         CargarGrillaActivos()
         CargarGrillaInactivos()
@@ -23,7 +25,7 @@ Public Class FrmProductos
 
     Private Sub CargarCategorias()
         Try
-            Dim lista = _bll.ObtenerCategorias()
+            Dim lista = _bll.ObtenerCategorias(UsuarioActual)
             cboCategoria.DataSource = lista
             cboCategoria.DisplayMember = "NombreCategoria"
             cboCategoria.ValueMember = "IdCategoria"
@@ -36,7 +38,7 @@ Public Class FrmProductos
     Private Sub CargarGrillaActivos()
         Try
             dgvActivos.DataSource = Nothing
-            dgvActivos.DataSource = _bll.ObtenerProductos(True)
+            dgvActivos.DataSource = _bll.ObtenerProductos(True, UsuarioActual)
             ConfigurarColumnasGrilla(dgvActivos)
         Catch ex As Exception
             MessageBox.Show("Error al listar productos activos: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
@@ -46,7 +48,7 @@ Public Class FrmProductos
     Private Sub CargarGrillaInactivos()
         Try
             dgvInactivos.DataSource = Nothing
-            dgvInactivos.DataSource = _bll.ObtenerProductos(False)
+            dgvInactivos.DataSource = _bll.ObtenerProductos(False, UsuarioActual)
             ConfigurarColumnasGrilla(dgvInactivos)
         Catch ex As Exception
             MessageBox.Show("Error al listar productos inactivos: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
@@ -78,7 +80,7 @@ Public Class FrmProductos
                 .IdCategoria = If(cboCategoria.SelectedValue IsNot Nothing, CInt(cboCategoria.SelectedValue), 0)
             }
 
-            _bll.GuardarProducto(p)
+            _bll.GuardarProducto(p, UsuarioActual)
 
             Dim accion = If(_idProductoSeleccionado = 0, "registrado", "modificado")
             MessageBox.Show($"Producto {accion} con éxito en Forza.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information)
@@ -102,7 +104,7 @@ Public Class FrmProductos
 
         If MessageBox.Show("¿Dar de baja lógica al producto?", "Confirmar Baja", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.Yes Then
             Try
-                _bll.DarDeBaja(_idProductoSeleccionado)
+                _bll.DarDeBaja(_idProductoSeleccionado, UsuarioActual)
                 MessageBox.Show("Producto dado de baja.", "Baja Lógica", MessageBoxButtons.OK, MessageBoxIcon.Information)
                 LimpiarCampos()
                 CargarGrillaActivos()
@@ -121,7 +123,7 @@ Public Class FrmProductos
 
         Dim idInactivo As Integer = CInt(dgvInactivos.CurrentRow.Cells("IdProducto").Value)
         Try
-            _bll.Reactivar(idInactivo)
+            _bll.Reactivar(idInactivo, UsuarioActual)
             MessageBox.Show("Producto reactivado.", "Reactivación", MessageBoxButtons.OK, MessageBoxIcon.Information)
             CargarGrillaActivos()
             CargarGrillaInactivos()

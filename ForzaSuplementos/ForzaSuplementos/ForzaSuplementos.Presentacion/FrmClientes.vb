@@ -2,6 +2,7 @@
 Imports ForzaSuplementos.Negocio
 
 Public Class FrmClientes
+    Public Property UsuarioActual As ForzaSuplementos.Entidades.Usuario
     Private ReadOnly _protector As ProtectorCambios
 
     Public Sub New()
@@ -14,14 +15,15 @@ Public Class FrmClientes
     Private _idClienteSeleccionado As Integer = 0
 
     Private Sub FrmClientes_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        If Not AccesoFormulario.Validar(Me, UsuarioActual, Permiso.Clientes) Then Return
         CargarGrillas()
         Limpiar()
     End Sub
 
     Private Sub CargarGrillas()
         Try
-            dgvActivos.DataSource = _bll.ObtenerClientes(True)
-            dgvInactivos.DataSource = _bll.ObtenerClientes(False)
+            dgvActivos.DataSource = _bll.ObtenerClientes(True, UsuarioActual)
+            dgvInactivos.DataSource = _bll.ObtenerClientes(False, UsuarioActual)
             OcultarId(dgvActivos)
             OcultarId(dgvInactivos)
         Catch ex As Exception
@@ -46,7 +48,7 @@ Public Class FrmClientes
                 .Email = txtEmail.Text.Trim()
             }
 
-            _bll.Guardar(c)
+            _bll.Guardar(c, UsuarioActual)
             MessageBox.Show("Cliente guardado correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information)
             CargarGrillas()
             Limpiar()
@@ -78,7 +80,7 @@ Public Class FrmClientes
         End If
 
         If MessageBox.Show("¿Dar de baja al cliente?", "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.Yes Then
-            _bll.CambiarEstado(_idClienteSeleccionado, False)
+            _bll.CambiarEstado(_idClienteSeleccionado, False, UsuarioActual)
             CargarGrillas()
             Limpiar()
         End If
@@ -87,7 +89,7 @@ Public Class FrmClientes
     Private Sub btnReactivar_Click(sender As Object, e As EventArgs) Handles btnReactivar.Click
         If dgvInactivos.CurrentRow IsNot Nothing Then
             Dim id = CInt(dgvInactivos.CurrentRow.Cells("IdCliente").Value)
-            _bll.CambiarEstado(id, True)
+            _bll.CambiarEstado(id, True, UsuarioActual)
             CargarGrillas()
         End If
     End Sub

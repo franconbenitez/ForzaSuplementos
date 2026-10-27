@@ -2,9 +2,14 @@
 Imports ForzaSuplementos.Negocio
 
 Public Class FrmBackup
+    Public Property UsuarioActual As ForzaSuplementos.Entidades.Usuario
     Public Sub New()
         InitializeComponent()
         TemaForza.Aplicar(Me)
+    End Sub
+
+    Private Sub FrmBackup_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        If Not AccesoFormulario.Validar(Me, UsuarioActual, Permiso.Backups) Then Return
     End Sub
 
     Private ReadOnly _bll As New BackupBLL()
@@ -28,7 +33,7 @@ Public Class FrmBackup
             End If
 
             Me.Cursor = Cursors.WaitCursor
-            _bll.Generar(txtRuta.Text)
+            _bll.Generar(txtRuta.Text, UsuarioActual)
             Me.Cursor = Cursors.Default
 
             MessageBox.Show("¡Copia de seguridad generada con éxito!", "Backup Completado", MessageBoxButtons.OK, MessageBoxIcon.Information)

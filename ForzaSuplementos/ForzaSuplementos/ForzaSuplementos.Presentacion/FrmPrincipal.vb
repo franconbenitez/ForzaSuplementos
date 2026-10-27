@@ -1,11 +1,13 @@
+Imports ForzaSuplementos.Negocio
 Imports ForzaSuplementos.Entidades
 Imports System.Drawing
 Imports System.Windows.Forms
 
 Public Class FrmPrincipal
-    Private _usuarioLogueado As Usuario
+    Private ReadOnly _usuarioLogueado As Usuario
 
     Public Sub New(usuario As Usuario)
+        Permisos.Exigir(usuario, Permiso.Reportes)
         InitializeComponent()
         TemaForza.Aplicar(Me)
         If Environment.GetEnvironmentVariable("FORZA_ENTORNO") = "QA" Then Me.Text &= " [QA — ForzaSuplementosDB_QA]"
@@ -19,34 +21,31 @@ Public Class FrmPrincipal
     End Sub
 
     Private Sub ConfigurarPermisos()
-        MenuCaja.Visible = String.Equals(_usuarioLogueado.NombrePerfil, "VENDEDOR", StringComparison.OrdinalIgnoreCase)
-        MenuVentas.Visible = MenuCaja.Visible
-        Dim rol As String = _usuarioLogueado.NombrePerfil.ToUpper()
-
-        ' REGLA DEL PROFESOR: El Administrador controla el sistema pero NO factura
-        If rol = "ADMINISTRADOR" Then
-            MenuVentas.Visible = False
-            MenuCaja.Visible = False
-
-        ElseIf rol = "GERENTE" Then
-            ' El Gerente NO vende, NO abre caja, NO toca clientes y NO hace backups
-            MenuVentas.Visible = False
-            MenuClientes.Visible = False
-            MenuBackup.Visible = False
-            MenuCaja.Visible = False
-
-        ElseIf rol = "VENDEDOR" Then
-            ' El Vendedor NO toca usuarios, NO toca productos y NO hace backups
-            MenuUsuarios.Visible = False
-            MenuProductos.Visible = False
-            MenuBackup.Visible = False
-        End If
+        MenuUsuarios.Visible = Permisos.Puede(_usuarioLogueado, Permiso.Usuarios)
+        MenuProductos.Visible = Permisos.Puede(_usuarioLogueado, Permiso.Productos)
+        MenuClientes.Visible = Permisos.Puede(_usuarioLogueado, Permiso.Clientes)
+        MenuVentas.Visible = Permisos.Puede(_usuarioLogueado, Permiso.Ventas)
+        MenuCaja.Visible = Permisos.Puede(_usuarioLogueado, Permiso.Caja)
+        MenuBackup.Visible = Permisos.Puede(_usuarioLogueado, Permiso.Backups)
+        MenuReportes.Visible = Permisos.Puede(_usuarioLogueado, Permiso.Reportes)
     End Sub
+
+    Private Shared Function PermisoDelModulo(tipo As Type) As Permiso
+        If tipo Is GetType(FrmUsuarios) Then Return Permiso.Usuarios
+        If tipo Is GetType(FrmProductos) Then Return Permiso.Productos
+        If tipo Is GetType(FrmClientes) Then Return Permiso.Clientes
+        If tipo Is GetType(FrmVentas) Then Return Permiso.Ventas
+        If tipo Is GetType(FrmCaja) Then Return Permiso.Caja
+        If tipo Is GetType(FrmBackup) Then Return Permiso.Backups
+        If tipo Is GetType(FrmReportes) Then Return Permiso.Reportes
+        Throw New ArgumentException("Módulo desconocido.", NameOf(tipo))
+    End Function
 
     Private _navegando As Boolean
 
     ' Crear únicamente después de que el hijo anterior acepte cerrar.
     Protected Sub AbrirModulo(tipo As Type)
+        If Not Permisos.Puede(_usuarioLogueado, PermisoDelModulo(tipo)) Then Return
         If _navegando Then Return
         _navegando = True
         Try
@@ -80,13 +79,14 @@ Public Class FrmPrincipal
     End Function
 
     Protected Overridable Function CrearModulo(tipo As Type) As Form
+        Permisos.Exigir(_usuarioLogueado, PermisoDelModulo(tipo))
         If tipo Is GetType(FrmCaja) Then Return New FrmCaja With {.UsuarioActual = _usuarioLogueado}
         If tipo Is GetType(FrmVentas) Then Return New FrmVentas With {.UsuarioActual = _usuarioLogueado, .UsuarioActualId = _usuarioLogueado.IdUsuario}
-        If tipo Is GetType(FrmReportes) Then Return New FrmReportes With {.UsuarioActualId = _usuarioLogueado.IdUsuario, .RolActual = _usuarioLogueado.NombrePerfil}
-        If tipo Is GetType(FrmUsuarios) Then Return New FrmUsuarios()
-        If tipo Is GetType(FrmProductos) Then Return New FrmProductos()
-        If tipo Is GetType(FrmClientes) Then Return New FrmClientes()
-        If tipo Is GetType(FrmBackup) Then Return New FrmBackup()
+        If tipo Is GetType(FrmReportes) Then Return New FrmReportes With {.UsuarioActual = _usuarioLogueado, .UsuarioActualId = _usuarioLogueado.IdUsuario, .RolActual = _usuarioLogueado.NombrePerfil}
+        If tipo Is GetType(FrmUsuarios) Then Return New FrmUsuarios With {.UsuarioActual = _usuarioLogueado}
+        If tipo Is GetType(FrmProductos) Then Return New FrmProductos With {.UsuarioActual = _usuarioLogueado}
+        If tipo Is GetType(FrmClientes) Then Return New FrmClientes With {.UsuarioActual = _usuarioLogueado}
+        If tipo Is GetType(FrmBackup) Then Return New FrmBackup With {.UsuarioActual = _usuarioLogueado}
         Throw New ArgumentException("Módulo desconocido.", NameOf(tipo))
     End Function
 

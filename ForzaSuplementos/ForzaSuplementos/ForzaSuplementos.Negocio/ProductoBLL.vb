@@ -5,15 +5,23 @@ Imports ForzaSuplementos.Entidades
 Public Class ProductoBLL
     Private ReadOnly _productoDAL As New ProductoDAL()
 
-    Public Function ObtenerCategorias() As List(Of Categoria)
+    Public Function ObtenerCategorias(actor As Usuario) As List(Of Categoria)
+        Permisos.Exigir(actor, Permiso.Productos)
         Return _productoDAL.ListarCategorias()
     End Function
 
-    Public Function ObtenerProductos(activo As Boolean) As List(Of Producto)
+    Public Function ObtenerProductos(activo As Boolean, actor As Usuario) As List(Of Producto)
+        If Permisos.Puede(actor, Permiso.Productos) Then
+            ' El gerente consulta activos e inactivos para su ABM.
+        Else
+            Permisos.Exigir(actor, Permiso.CatalogoVenta)
+            If Not activo Then Throw New ApplicationException("El catálogo de ventas solo permite productos activos.")
+        End If
         Return _productoDAL.ListarProductosPorEstado(activo)
     End Function
 
-    Public Sub GuardarProducto(p As Producto)
+    Public Sub GuardarProducto(p As Producto, actor As Usuario)
+        Permisos.Exigir(actor, Permiso.Productos)
         ValidarDatosProducto(p)
         If p.IdProducto = 0 Then
             _productoDAL.Insertar(p)
@@ -22,12 +30,14 @@ Public Class ProductoBLL
         End If
     End Sub
 
-    Public Sub DarDeBaja(idProducto As Integer)
+    Public Sub DarDeBaja(idProducto As Integer, actor As Usuario)
+        Permisos.Exigir(actor, Permiso.Productos)
         If idProducto <= 0 Then Throw New ApplicationException("Seleccioná un producto válido.")
         _productoDAL.CambiarEstado(idProducto, False)
     End Sub
 
-    Public Sub Reactivar(idProducto As Integer)
+    Public Sub Reactivar(idProducto As Integer, actor As Usuario)
+        Permisos.Exigir(actor, Permiso.Productos)
         If idProducto <= 0 Then Throw New ApplicationException("Seleccioná un producto válido.")
         _productoDAL.CambiarEstado(idProducto, True)
     End Sub

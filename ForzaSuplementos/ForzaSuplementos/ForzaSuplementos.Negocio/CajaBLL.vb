@@ -6,10 +6,7 @@ Public Class CajaBLL
     Private ReadOnly _dal As New CajaDAL()
 
     Public Shared Sub ValidarVendedor(usuario As Usuario)
-        If usuario Is Nothing OrElse usuario.IdUsuario <= 0 Then Throw New ApplicationException("No se identificó al usuario de la sesión.")
-        If Not String.Equals(If(usuario.NombrePerfil, "").Trim(), "VENDEDOR", StringComparison.OrdinalIgnoreCase) Then
-            Throw New ApplicationException("Solo el vendedor puede operar Caja y registrar ventas.")
-        End If
+        Permisos.Exigir(usuario, Permiso.Caja)
         ' El SP vuelve a verificar perfil y activo en la base, sin confiar en la interfaz.
     End Sub
 

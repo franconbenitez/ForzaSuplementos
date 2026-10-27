@@ -15,6 +15,7 @@ Public Class FrmCaja
     End Sub
 
     Private Sub FrmCaja_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        If Not AccesoFormulario.Validar(Me, UsuarioActual, Permiso.Caja) Then Return
         dtpDesde.Value = Date.Today.AddMonths(-1)
         dtpHasta.Value = Date.Today
         Ejecutar(Sub()

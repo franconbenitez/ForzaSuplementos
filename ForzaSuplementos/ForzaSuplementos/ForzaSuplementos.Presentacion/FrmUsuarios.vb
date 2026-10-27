@@ -3,6 +3,7 @@ Imports ForzaSuplementos.Entidades
 Imports ForzaSuplementos.Negocio
 
 Public Class FrmUsuarios
+    Public Property UsuarioActual As ForzaSuplementos.Entidades.Usuario
     Private ReadOnly _protector As ProtectorCambios
 
     Public Sub New()
@@ -15,6 +16,7 @@ Public Class FrmUsuarios
     Private _idUsuarioSeleccionado As Integer = 0
 
     Private Sub FrmUsuarios_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        If Not AccesoFormulario.Validar(Me, UsuarioActual, Permiso.Usuarios) Then Return
         CargarPerfiles()
         CargarGrillaActivos()
         CargarGrillaInactivos()
@@ -23,7 +25,7 @@ Public Class FrmUsuarios
 
     Private Sub CargarPerfiles()
         Try
-            Dim perfiles = _bll.ObtenerPerfiles()
+            Dim perfiles = _bll.ObtenerPerfiles(UsuarioActual)
             cboPerfil.DataSource = perfiles
             cboPerfil.DisplayMember = "NombrePerfil"
             cboPerfil.ValueMember = "IdPerfil"
@@ -36,7 +38,7 @@ Public Class FrmUsuarios
     Private Sub CargarGrillaActivos()
         Try
             dgvActivos.DataSource = Nothing
-            dgvActivos.DataSource = _bll.ObtenerUsuarios(True)
+            dgvActivos.DataSource = _bll.ObtenerUsuarios(True, UsuarioActual)
             ConfigurarColumnasGrilla(dgvActivos)
         Catch ex As Exception
             MessageBox.Show("Error al listar usuarios activos: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
@@ -46,7 +48,7 @@ Public Class FrmUsuarios
     Private Sub CargarGrillaInactivos()
         Try
             dgvInactivos.DataSource = Nothing
-            dgvInactivos.DataSource = _bll.ObtenerUsuarios(False)
+            dgvInactivos.DataSource = _bll.ObtenerUsuarios(False, UsuarioActual)
             ConfigurarColumnasGrilla(dgvInactivos)
         Catch ex As Exception
             MessageBox.Show("Error al listar usuarios inactivos: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
@@ -80,7 +82,7 @@ Public Class FrmUsuarios
                 .IdPerfil = If(cboPerfil.SelectedValue IsNot Nothing, CInt(cboPerfil.SelectedValue), 0)
             }
 
-            _bll.GuardarUsuario(u)
+            _bll.GuardarUsuario(u, UsuarioActual)
 
             Dim accion = If(_idUsuarioSeleccionado = 0, "registrado", "modificado")
             MessageBox.Show($"Usuario {accion} con éxito en Forza.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information)
@@ -110,7 +112,7 @@ Public Class FrmUsuarios
 
         If MessageBox.Show("¿Dar de baja lógica al usuario?", "Confirmar Baja", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.Yes Then
             Try
-                _bll.DarDeBaja(_idUsuarioSeleccionado)
+                _bll.DarDeBaja(_idUsuarioSeleccionado, UsuarioActual)
                 MessageBox.Show("Usuario dado de baja exitosamente.", "Baja Lógica", MessageBoxButtons.OK, MessageBoxIcon.Information)
                 LimpiarCampos()
                 CargarGrillaActivos()
@@ -129,7 +131,7 @@ Public Class FrmUsuarios
 
         Dim idInactivo As Integer = CInt(dgvInactivos.CurrentRow.Cells("IdUsuario").Value)
         Try
-            _bll.Reactivar(idInactivo)
+            _bll.Reactivar(idInactivo, UsuarioActual)
             MessageBox.Show("Usuario reactivado.", "Reactivación", MessageBoxButtons.OK, MessageBoxIcon.Information)
             CargarGrillaActivos()
             CargarGrillaInactivos()

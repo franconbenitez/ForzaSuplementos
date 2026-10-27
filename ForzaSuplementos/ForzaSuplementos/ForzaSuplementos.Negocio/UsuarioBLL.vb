@@ -5,15 +5,18 @@ Imports ForzaSuplementos.Entidades
 Public Class UsuarioBLL
     Private ReadOnly _usuarioDAL As New UsuarioDAL()
 
-    Public Function ObtenerPerfiles() As List(Of Perfil)
+    Public Function ObtenerPerfiles(actor As Usuario) As List(Of Perfil)
+        Permisos.Exigir(actor, Permiso.Usuarios)
         Return _usuarioDAL.ListarPerfiles()
     End Function
 
-    Public Function ObtenerUsuarios(activo As Boolean) As List(Of Usuario)
+    Public Function ObtenerUsuarios(activo As Boolean, actor As Usuario) As List(Of Usuario)
+        Permisos.Exigir(actor, Permiso.Usuarios)
         Return _usuarioDAL.ListarUsuariosPorEstado(activo)
     End Function
 
-    Public Sub GuardarUsuario(u As Usuario)
+    Public Sub GuardarUsuario(u As Usuario, actor As Usuario)
+        Permisos.Exigir(actor, Permiso.Usuarios)
         ValidarDatosUsuario(u)
         If u.IdUsuario = 0 Then
             _usuarioDAL.Insertar(u)
@@ -22,12 +25,14 @@ Public Class UsuarioBLL
         End If
     End Sub
 
-    Public Sub DarDeBaja(idUsuario As Integer)
+    Public Sub DarDeBaja(idUsuario As Integer, actor As Usuario)
+        Permisos.Exigir(actor, Permiso.Usuarios)
         If idUsuario <= 0 Then Throw New ApplicationException("Seleccioná un usuario válido.")
         _usuarioDAL.CambiarEstado(idUsuario, False)
     End Sub
 
-    Public Sub Reactivar(idUsuario As Integer)
+    Public Sub Reactivar(idUsuario As Integer, actor As Usuario)
+        Permisos.Exigir(actor, Permiso.Usuarios)
         If idUsuario <= 0 Then Throw New ApplicationException("Seleccioná un usuario válido.")
         _usuarioDAL.CambiarEstado(idUsuario, True)
     End Sub

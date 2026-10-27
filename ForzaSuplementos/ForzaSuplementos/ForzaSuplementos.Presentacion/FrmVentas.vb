@@ -33,6 +33,7 @@ Public Class FrmVentas
     End Sub
 
     Private Sub FrmVentas_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        If Not AccesoFormulario.Validar(Me, UsuarioActual, Permiso.Ventas) Then Return
         Try
             CajaBLL.ValidarVendedor(UsuarioActual)
             CargarCombos()
@@ -46,12 +47,12 @@ Public Class FrmVentas
     End Sub
 
     Private Sub CargarCombos()
-        cboCliente.DataSource = _clienteBLL.ObtenerClientes(True)
+        cboCliente.DataSource = _clienteBLL.ObtenerClientes(True, UsuarioActual)
         cboCliente.DisplayMember = "Nombre"
         cboCliente.ValueMember = "IdCliente"
         cboCliente.SelectedIndex = -1
 
-        cboProducto.DataSource = _productoBLL.ObtenerProductos(True)
+        cboProducto.DataSource = _productoBLL.ObtenerProductos(True, UsuarioActual)
         cboProducto.DisplayMember = "Nombre"
         cboProducto.ValueMember = "IdProducto"
         cboProducto.SelectedIndex = -1
@@ -144,7 +145,7 @@ Public Class FrmVentas
 
             LimpiarVenta()
             ' Recargar combo de productos para tener el stock actualizado en tiempo real
-            cboProducto.DataSource = _productoBLL.ObtenerProductos(True)
+            cboProducto.DataSource = _productoBLL.ObtenerProductos(True, UsuarioActual)
             cboProducto.SelectedIndex = -1
 
         Catch ex As Exception
