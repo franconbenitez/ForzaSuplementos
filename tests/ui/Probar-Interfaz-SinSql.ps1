@@ -87,11 +87,10 @@ try {
         $confirm=Control-Of $ventas 'btnConfirmar'
         Assert-UI ($empty.Text -eq 'Vaciar carrito' -and !$empty.Enabled) 'Vaciar carrito deshabilitado al iniciar vacio'
         $product=New-Object ForzaSuplementos.Entidades.Producto
-        $product.IdProducto=1;$product.Nombre='Producto de muestra';$product.Stock=10;$product.Precio=100D
+        $product.IdProducto=1;$product.Nombre='Producto de muestra';$product.Stock=10;$product.Precio=100D;$product.Activo=$true
         $catalog=New-Object 'System.Collections.Generic.List[ForzaSuplementos.Entidades.Producto]'
         $catalog.Add($product)
-        $combo=Control-Of $ventas 'cboProducto'
-        $combo.DisplayMember='Nombre';$combo.ValueMember='IdProducto';$combo.DataSource=$catalog
+        $null=(Method-Of $ventas 'SeleccionarProducto').Invoke($ventas,@($product.PSObject.BaseObject))
         (Control-Of $ventas 'txtCantidad').Text='2'
         (Control-Of $ventas 'btnAgregar').PerformClick()
         $d=$cart[0]

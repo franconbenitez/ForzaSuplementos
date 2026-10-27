@@ -1,6 +1,6 @@
 @echo off
 setlocal
-title FORZA SUPLEMENTOS - QA
+title FORZA SUPLEMENTOS - QA (GITHUB)
 pushd "%~dp0"
 if errorlevel 1 goto error
 powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File "%~dp0scripts\qa\Iniciar-App-QA.ps1" -Configuration Debug

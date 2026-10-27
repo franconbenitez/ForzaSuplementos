@@ -162,6 +162,10 @@ La validación documentada aprobó 18 ensayos SQL, una prueba adicional de las D
 
 ## Preparación de GitHub
 
-Esta copia tiene ocho commits reconstruidos sin importar referencias del repositorio original. La publicación prevista es **privada** y permanece pendiente de autorización. Ver [saneamiento y publicación](docs/SANEAMIENTO_GITHUB.md). El repositorio original y su respaldo local permanecen intactos.
+El repositorio principal es [franconbenitez/ForzaSuplementos](https://github.com/franconbenitez/ForzaSuplementos), **privado**, rama `master`. Conserva los ocho commits saneados iniciales y las mejoras posteriores, sin importar referencias del historial original. Desarrollo_Codex permanece como respaldo. Los nuevos envíos requieren autorización. Ver [saneamiento](docs/SANEAMIENTO_GITHUB.md) y [trabajo en dos equipos](docs/PUBLICACION_PRIVADA_Y_USO_DIARIO.md).
 
 No se asigna una licencia de distribución adicional en esta preparación.
+
+## Buscadores de Ventas y QA principal
+
+Ventas selecciona clientes y productos mediante búsqueda y grillas oscuras, con Enter, doble clic o Seleccionar. No modifica el carrito al buscar. En el equipo de desarrollo usar el acceso directo **FORZA SUPLEMENTOS - QA (GITHUB)**, dirigido al CMD del repositorio principal; qa.config permanece privada e ignorada. Ver [implementación, pruebas y pasos de QA](docs/BUSCADORES_VENTAS.md).

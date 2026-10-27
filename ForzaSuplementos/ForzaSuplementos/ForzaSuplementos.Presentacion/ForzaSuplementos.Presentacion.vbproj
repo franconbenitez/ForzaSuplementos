@@ -80,6 +80,8 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="TemaForza.vb" />
+    <Compile Include="FrmBuscador.vb"><SubType>Form</SubType></Compile>
+    <Compile Include="FrmBuscador.Designer.vb"><DependentUpon>FrmBuscador.vb</DependentUpon></Compile>
     <Compile Include="AccesoFormulario.vb" />
     <Compile Include="ProtectorCambios.vb" />
     <Compile Include="FrmCaja.Designer.vb">

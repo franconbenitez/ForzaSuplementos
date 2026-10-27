@@ -1,4 +1,5 @@
 ﻿Imports System.ComponentModel
+Imports System.Threading.Tasks
 Imports ForzaSuplementos.Entidades
 Imports ForzaSuplementos.Negocio
 
@@ -6,11 +7,15 @@ Public Class FrmVentas
     Private ReadOnly _clienteBLL As New ClienteBLL()
     Private ReadOnly _productoBLL As New ProductoBLL()
     Private ReadOnly _ventaBLL As New VentaBLL()
-
     Private _carrito As New BindingList(Of DetalleVenta)()
-    Public UsuarioActualId As Integer = 0 ' Este valor lo inyecta el menú principal
+    Private _clientes As New List(Of Cliente)()
+    Private _productos As New List(Of Producto)()
+    Private _clienteSeleccionado As Cliente
+    Private _productoSeleccionado As Producto
+    Private _buscadorAbierto As Boolean
+    Private _catalogoDisponible As Boolean
+    Public UsuarioActualId As Integer = 0
     Public Property UsuarioActual As Usuario
-
     Private ReadOnly _protector As ProtectorCambios
 
     Public Sub New()
@@ -32,30 +37,94 @@ Public Class FrmVentas
         ActualizarTotal()
     End Sub
 
-    Private Sub FrmVentas_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+    Private Async Sub FrmVentas_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         If Not AccesoFormulario.Validar(Me, UsuarioActual, Permiso.Ventas) Then Return
-        Try
-            CajaBLL.ValidarVendedor(UsuarioActual)
-            CargarCombos()
-            cboMedioPago.DataSource = New String() {"Seleccionar medio de pago", "Efectivo", "Transferencia", "Tarjeta"}
-        Catch ex As Exception
-            btnConfirmar.Enabled = False
-            MessageBox.Show(ex.Message, "Ventas", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-        End Try
         dgvCarrito.DataSource = _carrito
         ConfigurarGrilla()
+        cboMedioPago.DataSource = New String() {"Seleccionar medio de pago", "Efectivo", "Transferencia", "Tarjeta"}
+        Try
+            CajaBLL.ValidarVendedor(UsuarioActual)
+            Await CargarCatalogosAsync()
+        Catch ex As Exception
+            If Not IsDisposed Then MessageBox.Show(ex.Message, "Ventas", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        End Try
     End Sub
 
-    Private Sub CargarCombos()
-        cboCliente.DataSource = _clienteBLL.ObtenerClientes(True, UsuarioActual)
-        cboCliente.DisplayMember = "Nombre"
-        cboCliente.ValueMember = "IdCliente"
-        cboCliente.SelectedIndex = -1
+    Private Async Function CargarCatalogosAsync() As Task
+        _catalogoDisponible = False
+        btnBuscarCliente.Enabled = False
+        btnBuscarProducto.Enabled = False
+        btnAgregar.Enabled = False
+        btnConfirmar.Enabled = False
+        Try
+            Dim actor = UsuarioActual
+            Dim datos = Await Task.Run(Function() Tuple.Create(_clienteBLL.ObtenerClientes(True, actor), _productoBLL.ObtenerProductos(True, actor)))
+            If IsDisposed Then Return
+            EstablecerCatalogos(datos.Item1, datos.Item2)
+        Finally
+            If Not IsDisposed Then
+                btnBuscarCliente.Enabled = _catalogoDisponible
+                btnBuscarProducto.Enabled = _catalogoDisponible
+                btnAgregar.Enabled = _catalogoDisponible
+                btnConfirmar.Enabled = _catalogoDisponible
+            End If
+        End Try
+    End Function
 
-        cboProducto.DataSource = _productoBLL.ObtenerProductos(True, UsuarioActual)
-        cboProducto.DisplayMember = "Nombre"
-        cboProducto.ValueMember = "IdProducto"
-        cboProducto.SelectedIndex = -1
+    Protected Sub EstablecerCatalogos(clientes As IEnumerable(Of Cliente), productos As IEnumerable(Of Producto))
+        _clientes = If(clientes, Enumerable.Empty(Of Cliente)()).ToList()
+        _productos = If(productos, Enumerable.Empty(Of Producto)()).ToList()
+        _catalogoDisponible = True
+    End Sub
+
+    Protected Overridable Function BuscarCliente() As Cliente
+        Using selector As New FrmBuscador(_clientes)
+            If selector.ShowDialog(Me) = DialogResult.OK Then Return selector.ClienteSeleccionado
+        End Using
+        Return Nothing
+    End Function
+
+    Protected Overridable Function BuscarProducto() As Producto
+        Using selector As New FrmBuscador(_productos)
+            If selector.ShowDialog(Me) = DialogResult.OK Then Return selector.ProductoSeleccionado
+        End Using
+        Return Nothing
+    End Function
+
+    Private Sub btnBuscarCliente_Click(sender As Object, e As EventArgs) Handles btnBuscarCliente.Click
+        If _buscadorAbierto Then Return
+        _buscadorAbierto = True
+        Try
+            SeleccionarCliente(BuscarCliente())
+        Finally
+            _buscadorAbierto = False
+        End Try
+    End Sub
+
+    Private Sub btnBuscarProducto_Click(sender As Object, e As EventArgs) Handles btnBuscarProducto.Click
+        If _buscadorAbierto Then Return
+        _buscadorAbierto = True
+        Try
+            SeleccionarProducto(BuscarProducto())
+        Finally
+            _buscadorAbierto = False
+        End Try
+    End Sub
+
+    Protected Sub SeleccionarCliente(cliente As Cliente)
+        If cliente Is Nothing Then Return
+        If Not cliente.Activo OrElse cliente.IdCliente <= 0 Then Throw New ApplicationException("Seleccioná un cliente activo válido.")
+        _clienteSeleccionado = cliente
+        txtClienteSeleccionado.Text = $"#{cliente.IdCliente} · {cliente.Apellido}, {cliente.Nombre} · DNI {cliente.Dni}"
+    End Sub
+
+    Protected Sub SeleccionarProducto(producto As Producto)
+        If producto Is Nothing Then Return
+        If Not producto.Activo OrElse producto.IdProducto <= 0 OrElse producto.Stock <= 0 Then Throw New ApplicationException("Seleccioná un producto activo con stock disponible.")
+        _productoSeleccionado = producto
+        txtProductoSeleccionado.Text = $"#{producto.IdProducto} · {producto.Nombre}"
+        lblPrecioSeleccionado.Text = $"Precio unitario: $ {producto.Precio:N2}   |   Stock disponible: {producto.Stock}"
+        txtCantidad.Select()
     End Sub
 
     Private Sub ConfigurarGrilla()
@@ -66,51 +135,37 @@ Public Class FrmVentas
     End Sub
 
     Private Sub btnAgregar_Click(sender As Object, e As EventArgs) Handles btnAgregar.Click
-        If cboProducto.SelectedItem Is Nothing Then
-            MessageBox.Show("Seleccioná un producto del catálogo.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-            Return
-        End If
-
         Dim cantidad As Integer
-        If Not Integer.TryParse(txtCantidad.Text, cantidad) OrElse cantidad <= 0 Then
+        If Not Integer.TryParse(txtCantidad.Text, cantidad) Then
             MessageBox.Show("Ingresá una cantidad numérica mayor a 0.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Return
         End If
+        Try
+            AgregarProducto(cantidad)
+        Catch ex As ApplicationException
+            MessageBox.Show(ex.Message, "Atención", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        End Try
+    End Sub
 
-        Dim prodSel = CType(cboProducto.SelectedItem, Producto)
-
-        ' Validar stock inicial
-        If cantidad > prodSel.Stock Then
-            MessageBox.Show($"Stock insuficiente. Solo quedan {prodSel.Stock} unidades.", "Sin Stock", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-            Return
-        End If
-
-        ' Buscar si el producto ya está en el carrito para sumar la cantidad
+    Protected Sub AgregarProducto(cantidad As Integer)
+        Dim prodSel = _productoSeleccionado
+        If prodSel Is Nothing OrElse Not prodSel.Activo OrElse prodSel.IdProducto <= 0 Then Throw New ApplicationException("Seleccioná un producto activo del catálogo.")
+        If cantidad <= 0 Then Throw New ApplicationException("Ingresá una cantidad numérica mayor a 0.")
+        If cantidad > prodSel.Stock Then Throw New ApplicationException($"Stock insuficiente. Solo quedan {prodSel.Stock} unidades.")
         Dim itemExistente = _carrito.FirstOrDefault(Function(d) d.IdProducto = prodSel.IdProducto)
-
         If itemExistente IsNot Nothing Then
-            If itemExistente.Cantidad + cantidad > prodSel.Stock Then
-                MessageBox.Show("La cantidad acumulada en el carrito supera el stock físico disponible.", "Stock Límite", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-                Return
-            End If
+            If CLng(itemExistente.Cantidad) + cantidad > prodSel.Stock Then Throw New ApplicationException("La cantidad acumulada en el carrito supera el stock físico disponible.")
             itemExistente.Cantidad += cantidad
             itemExistente.CalcularSubtotal()
         Else
-            Dim nuevoDetalle As New DetalleVenta() With {
-                .IdProducto = prodSel.IdProducto,
-                .NombreProducto = prodSel.Nombre,
-                .Cantidad = cantidad,
-                .PrecioUnitario = prodSel.Precio
-            }
+            Dim nuevoDetalle As New DetalleVenta With {.IdProducto = prodSel.IdProducto, .NombreProducto = prodSel.Nombre, .Cantidad = cantidad, .PrecioUnitario = prodSel.Precio}
             nuevoDetalle.CalcularSubtotal()
             _carrito.Add(nuevoDetalle)
         End If
-
         _carrito.ResetBindings()
         ActualizarTotal()
-
         txtCantidad.Text = "1"
-        cboProducto.SelectedIndex = -1
+        LimpiarProductoSeleccionado()
     End Sub
 
     Private Sub ActualizarTotal()
@@ -119,45 +174,38 @@ Public Class FrmVentas
         btnCancelar.Enabled = _carrito.Count > 0
     End Sub
 
-    Private Sub btnConfirmar_Click(sender As Object, e As EventArgs) Handles btnConfirmar.Click
-        If cboCliente.SelectedItem Is Nothing Then
-            MessageBox.Show("Tenés que seleccionar un cliente para facturar.", "Falta Cliente", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-            Return
-        End If
+    Protected Function CrearVentaPendiente() As Venta
+        If _clienteSeleccionado Is Nothing OrElse Not _clienteSeleccionado.Activo OrElse _clienteSeleccionado.IdCliente <= 0 Then Throw New ApplicationException("Tenés que seleccionar un cliente activo para facturar.")
+        If _carrito.Count = 0 Then Throw New ApplicationException("El carrito de compras está vacío.")
+        Return New Venta With {.IdCliente = _clienteSeleccionado.IdCliente, .IdUsuario = UsuarioActualId,
+            .MedioPago = CType(Math.Max(0, cboMedioPago.SelectedIndex), MedioPago), .Detalles = _carrito.ToList()}
+    End Function
 
-        If _carrito.Count = 0 Then
-            MessageBox.Show("El carrito de compras está vacío.", "Carrito Vacío", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-            Return
-        End If
-
+    Private Async Sub btnConfirmar_Click(sender As Object, e As EventArgs) Handles btnConfirmar.Click
         Try
-            Dim nuevaVenta As New Venta() With {
-                .IdCliente = CInt(cboCliente.SelectedValue),
-                .IdUsuario = UsuarioActualId,
-                .MedioPago = CType(Math.Max(0, cboMedioPago.SelectedIndex), MedioPago),
-                .Detalles = _carrito.ToList()
-            }
-
+            Dim nuevaVenta = CrearVentaPendiente()
             btnConfirmar.Enabled = False
             _ventaBLL.ProcesarVenta(nuevaVenta, UsuarioActual)
-
             MessageBox.Show("¡Venta registrada con éxito! El stock ha sido descontado.", "Transacción Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information)
-
             LimpiarVenta()
-            ' Recargar combo de productos para tener el stock actualizado en tiempo real
-            cboProducto.DataSource = _productoBLL.ObtenerProductos(True, UsuarioActual)
-            cboProducto.SelectedIndex = -1
-
+            Await CargarCatalogosAsync()
         Catch ex As Exception
-            MessageBox.Show(ex.Message, "Error en la Venta", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            If Not IsDisposed Then MessageBox.Show(ex.Message, "Error en la Venta", MessageBoxButtons.OK, MessageBoxIcon.Error)
         Finally
-            btnConfirmar.Enabled = True
+            If Not IsDisposed Then btnConfirmar.Enabled = _catalogoDisponible
         End Try
     End Sub
 
+    Private Sub LimpiarProductoSeleccionado()
+        _productoSeleccionado = Nothing
+        txtProductoSeleccionado.Text = "Sin producto seleccionado"
+        lblPrecioSeleccionado.Text = "Precio unitario: —   |   Stock disponible: —"
+    End Sub
+
     Private Sub LimpiarVenta()
-        cboCliente.SelectedIndex = -1
-        cboProducto.SelectedIndex = -1
+        _clienteSeleccionado = Nothing
+        txtClienteSeleccionado.Text = "Sin cliente seleccionado"
+        LimpiarProductoSeleccionado()
         txtCantidad.Text = "1"
         _carrito.Clear()
         If cboMedioPago.Items.Count > 0 Then cboMedioPago.SelectedIndex = 0

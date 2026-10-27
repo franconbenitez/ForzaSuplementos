@@ -67,6 +67,7 @@
     <Compile Include="BackupBLL.vb" />
     <Compile Include="CajaBLL.vb" />
     <Compile Include="Permisos.vb" />
+    <Compile Include="BuscadorCatalogo.vb" />
     <Compile Include="ClienteBLL.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
