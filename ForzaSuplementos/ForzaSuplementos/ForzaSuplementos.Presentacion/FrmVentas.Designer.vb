@@ -77,16 +77,26 @@ Partial Class FrmVentas
         Me.lblTotal.ForeColor = System.Drawing.Color.FromArgb(52, 168, 132)
 
         ' Controles
+        Me.txtClienteSeleccionado.Name = "txtClienteSeleccionado"
         Me.txtClienteSeleccionado.Location = New System.Drawing.Point(100, 82) : Me.txtClienteSeleccionado.Width = 600 : Me.txtClienteSeleccionado.ReadOnly = True : Me.txtClienteSeleccionado.Text = "Sin cliente seleccionado"
-        Me.btnBuscarCliente.Location = New System.Drawing.Point(710, 79) : Me.btnBuscarCliente.Size = New System.Drawing.Size(170, 30) : Me.btnBuscarCliente.Text = "Buscar cliente..."
+        Me.btnBuscarCliente.Name = "btnBuscarCliente"
+        Me.btnBuscarCliente.Visible = True
+        Me.btnBuscarCliente.Anchor = System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left
+        Me.btnBuscarCliente.Dock = System.Windows.Forms.DockStyle.None
+        Me.btnBuscarCliente.Location = New System.Drawing.Point(710, 79) : Me.btnBuscarCliente.Size = New System.Drawing.Size(170, 30) : Me.btnBuscarCliente.Text = "Buscar cliente"
         Me.lblMedioPago.Text = "Medio de pago:"
         Me.lblMedioPago.Location = New System.Drawing.Point(30, 480)
         Me.lblMedioPago.AutoSize = True
         Me.cboMedioPago.Location = New System.Drawing.Point(130, 477)
         Me.cboMedioPago.Width = 250
         Me.cboMedioPago.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.txtProductoSeleccionado.Name = "txtProductoSeleccionado"
         Me.txtProductoSeleccionado.Location = New System.Drawing.Point(100, 127) : Me.txtProductoSeleccionado.Width = 280 : Me.txtProductoSeleccionado.ReadOnly = True : Me.txtProductoSeleccionado.Text = "Sin producto seleccionado"
-        Me.btnBuscarProducto.Location = New System.Drawing.Point(390, 124) : Me.btnBuscarProducto.Size = New System.Drawing.Size(145, 30) : Me.btnBuscarProducto.Text = "Buscar producto..."
+        Me.btnBuscarProducto.Name = "btnBuscarProducto"
+        Me.btnBuscarProducto.Visible = True
+        Me.btnBuscarProducto.Anchor = System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left
+        Me.btnBuscarProducto.Dock = System.Windows.Forms.DockStyle.None
+        Me.btnBuscarProducto.Location = New System.Drawing.Point(390, 124) : Me.btnBuscarProducto.Size = New System.Drawing.Size(145, 30) : Me.btnBuscarProducto.Text = "Buscar producto"
         Me.lblPrecioSeleccionado.Location = New System.Drawing.Point(100, 157) : Me.lblPrecioSeleccionado.Size = New System.Drawing.Size(780, 22) : Me.lblPrecioSeleccionado.Text = "Precio unitario: —   |   Stock disponible: —"
         Me.txtCantidad.Location = New System.Drawing.Point(620, 127) : Me.txtCantidad.Width = 60 : Me.txtCantidad.Text = "1"
 
@@ -105,7 +115,7 @@ Partial Class FrmVentas
         Me.ClientSize = New System.Drawing.Size(910, 590)
         Me.BackColor = System.Drawing.Color.FromArgb(245, 247, 246)
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Gestión de Ventas"
+        Me.Text = "Gestión de Ventas - Buscadores"
         Me.Font = New System.Drawing.Font("Segoe UI", 9.0!)
 
         Me.Controls.Add(Me.PanelTop)

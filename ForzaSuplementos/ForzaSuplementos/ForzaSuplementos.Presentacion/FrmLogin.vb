@@ -9,6 +9,10 @@ Public Class FrmLogin
     Public Sub New()
         InitializeComponent()
         TemaForza.Aplicar(Me)
+        Dim versionQA = Environment.GetEnvironmentVariable("FORZA_QA_BUILD_ID")
+        If Environment.GetEnvironmentVariable("FORZA_ENTORNO") = "QA" AndAlso Not String.IsNullOrWhiteSpace(versionQA) Then
+            Me.Text = "QA PRINCIPAL | " & versionQA
+        End If
     End Sub
 
     Private Sub btnIngresar_Click(sender As Object, e As EventArgs) Handles btnIngresar.Click

@@ -89,6 +89,18 @@ try{
     }
     $selector=New-Object ForzaSuplementos.Presentacion.FrmBuscador -ArgumentList (,$clients)
     try{Show-Test $selector;(Field $selector 'txtBuscar').Text='pendiente';$selector.Close();[Windows.Forms.Application]::DoEvents();Assert-Search $selector.IsDisposed 'Cerrar con filtro pendiente libera formulario y temporizador'}finally{$selector.Dispose()}
+    $rowChange=New-Object 'System.Collections.Generic.List[ForzaSuplementos.Entidades.Producto]'
+    $rowChange.Add($p0);$rowChange.Add($p1)
+    $selector=New-Object ForzaSuplementos.Presentacion.FrmBuscador -ArgumentList (,$rowChange)
+    try{
+        Show-Test $selector;Wait-Search $selector
+        $grid=Field $selector 'dgvResultados'
+        $grid.CurrentCell=$grid.Rows[0].Cells[0]
+        $grid.CurrentCell=$grid.Rows[1].Cells[0]
+        Assert-Search ((Field $selector 'btnSeleccionar').Enabled) 'Cambiar de fila agotada a fila con stock habilita Seleccionar sin repetir clic'
+        (Field $selector 'btnSeleccionar').PerformClick()
+        Assert-Search ($selector.ProductoSeleccionado.IdProducto -eq 703) 'Seleccion utiliza la nueva fila actual y no el estado anterior'
+    }finally{$selector.Dispose()}
     $large=New-Object 'System.Collections.Generic.List[ForzaSuplementos.Entidades.Producto]'
     foreach($id in 10000..14999){$entry=New-Object ForzaSuplementos.Entidades.Producto;$entry.IdProducto=$id;$entry.Nombre="Producto ficticio $id";$entry.NombreCategoria='Categoria ficticia';$entry.Activo=$true;$entry.Stock=1;$entry.Precio=1;$large.Add($entry)}
     $selector=New-Object ForzaSuplementos.Presentacion.FrmBuscador -ArgumentList (,$large)

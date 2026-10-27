@@ -72,3 +72,7 @@ En Visual Studio abrir la solución del principal, Debug / Any CPU; revisar FrmV
 Nuevos: Negocio/BuscadorCatalogo.vb; Presentacion/FrmBuscador.vb y Designer; tests/ui/BuscadoresSinSql.vb y Probar-Buscadores-SinSql.ps1; tests/qa/Probar-Seleccion-Lectura.ps1; este documento. Modificados: los dos vbproj, FrmVentas y su Designer, regresión de interfaz, CMD y README. Cambios privados locales: qa.config y acceso directo del Escritorio, excluidos del commit.
 
 No hay migraciones pendientes para estos buscadores. Los límites de autorización SQL previos siguen documentados en PERMISOS_Y_VALIDACION.md y no se amplía aquí su alcance. La siguiente tarea es revisión manual del buscador y después reportes según prioridad del usuario. El commit local requiere autorización antes del push.
+
+## Corrección posterior del inicio y selección
+
+Ver [inicio verificado y prueba modal real](CORRECCION_INICIO_Y_BUSCADORES_VISIBLES.md). El acceso QA (GITHUB) ahora recompila antes de iniciar, identifica la versión y rechaza binarios sin buscadores. Se corrigió la actualización de Seleccionar al cambiar de fila y se añadieron pruebas de visibilidad y diálogos reales.

@@ -10,6 +10,10 @@ Public Class FrmPrincipal
         Permisos.Exigir(usuario, Permiso.Reportes)
         InitializeComponent()
         TemaForza.Aplicar(Me)
+        Dim versionQA = Environment.GetEnvironmentVariable("FORZA_QA_BUILD_ID")
+        If Environment.GetEnvironmentVariable("FORZA_ENTORNO") = "QA" AndAlso Not String.IsNullOrWhiteSpace(versionQA) Then
+            Me.Text &= " [QA PRINCIPAL | " & versionQA & "]"
+        End If
         If Environment.GetEnvironmentVariable("FORZA_ENTORNO") = "QA" Then Me.Text &= " [QA — ForzaSuplementosDB_QA]"
         _usuarioLogueado = usuario
     End Sub

@@ -117,7 +117,7 @@ Public Class FrmBuscador
         End Try
     End Sub
 
-    Private Sub ActualizarSeleccion() Handles dgvResultados.SelectionChanged
+    Private Sub ActualizarSeleccion() Handles dgvResultados.SelectionChanged, dgvResultados.CurrentCellChanged, dgvResultados.DataBindingComplete
         Dim item = If(dgvResultados.CurrentRow Is Nothing, Nothing, dgvResultados.CurrentRow.DataBoundItem)
         Dim cliente = TryCast(item, Cliente)
         Dim producto = TryCast(item, Producto)
