@@ -120,3 +120,19 @@ Comprobar manualmente: visibilidad de Caja/Ventas por perfil, botones según est
 ## Límites de la preparación
 
 Las pruebas SQL de los 18 casos y la integración VB ya se ejecutaron. La doble apertura se probó secuencialmente y la concurrencia de última unidad con dos conexiones; siguen fuera del alcance ejecutado la doble apertura simultánea y la carrera simultánea cierre/venta. La interacción visual requiere el ensayo manual indicado. La autenticación original con contraseña recuperable y ausencia de idempotencia de ventas siguen pendientes de otra tarea. Si una escritura pierde su respuesta, consultar el historial antes de repetirla. El aislamiento protege del destino accidental, no de un administrador que edite guardas o ejecute comandos distintos.
+
+## Dashboards: migración 004 preparada, no aplicada
+
+`004_Reportes_Dashboards_QA.sql` crea/actualiza exclusivamente `sp_Reportes_VentasDashboard` y `sp_Reportes_BackupsDashboard`. No modifica tablas, filas, Caja ni stock. Cada lote exige base QA, servidor esperado suministrado por configuración local y marca de aislamiento. No usa USE ni rutas físicas.
+
+**Solo después de autorización expresa**, desde la raíz del principal:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy RemoteSigned -File .\scripts\qa\Aplicar-Reportes-QA.ps1 -AutorizarMigracion
+```
+
+El aplicador verifica el destino en lectura, conserva las definiciones previas de esos dos SP en private (ignorado) y aplica todos los lotes en una transacción. No se ejecutó en esta entrega. Sin el parámetro se detiene antes de conectar. Si ya existía alguno, revisar su copia previa para revertir una actualización.
+
+Para una primera instalación en la que ambos SP eran nuevos, hay un script opcional de retiro en rollback/004_Reportes_Dashboards_QA.rollback.sql, igualmente protegido por base/servidor/marca y una variable adicional de autorización. No usarlo para eliminar definiciones anteriores que deban restaurarse. No se ejecutó ningún retiro.
+
+Las pruebas ficticias se prepararon en tests/qa/Probar-Dashboards-Preparados.ps1; requieren que 004 ya esté aplicada y **otra autorización de escrituras QA**. Crean filas nuevas en una transacción y siempre hacen rollback; no generan backups físicos ni alteran registros previos. Sin -AutorizarFixtures no conectan ni escriben. Ver docs/DASHBOARDS_REPORTES.md para fórmulas, limitaciones y validación pendiente.
