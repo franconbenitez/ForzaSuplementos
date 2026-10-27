@@ -63,7 +63,10 @@ Partial Class FrmVentas
         Me.lbl2.Text = "Producto:" : Me.lbl2.Location = New System.Drawing.Point(30, 130) : Me.lbl2.AutoSize = True
         Me.lbl3.Text = "Cantidad:" : Me.lbl3.Location = New System.Drawing.Point(400, 130) : Me.lbl3.AutoSize = True
 
-        Me.lblTotal.Text = "TOTAL: $ 0.00" : Me.lblTotal.Location = New System.Drawing.Point(630, 485) : Me.lblTotal.AutoSize = True
+        Me.lblTotal.Text = "TOTAL: $ 0.00" : Me.lblTotal.Location = New System.Drawing.Point(450, 480) : Me.lblTotal.AutoSize = False
+        Me.lblTotal.Size = New System.Drawing.Size(430, 35)
+        Me.lblTotal.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        Me.lblTotal.Anchor = System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right
         Me.lblTotal.Font = New System.Drawing.Font("Segoe UI", 16.0!, System.Drawing.FontStyle.Bold)
         Me.lblTotal.ForeColor = System.Drawing.Color.FromArgb(52, 168, 132)
 
@@ -87,7 +90,7 @@ Partial Class FrmVentas
 
         ' Botones Finales
         Me.btnConfirmar.Location = New System.Drawing.Point(30, 525) : Me.btnConfirmar.Size = New System.Drawing.Size(150, 40) : Me.btnConfirmar.Text = "Confirmar Venta" : Me.btnConfirmar.BackColor = System.Drawing.Color.FromArgb(52, 168, 132) : Me.btnConfirmar.ForeColor = System.Drawing.Color.White : Me.btnConfirmar.FlatStyle = System.Windows.Forms.FlatStyle.Flat
-        Me.btnCancelar.Location = New System.Drawing.Point(200, 525) : Me.btnCancelar.Size = New System.Drawing.Size(150, 40) : Me.btnCancelar.Text = "Cancelar Venta" : Me.btnCancelar.BackColor = System.Drawing.Color.FromArgb(217, 83, 79) : Me.btnCancelar.ForeColor = System.Drawing.Color.White : Me.btnCancelar.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnCancelar.Location = New System.Drawing.Point(200, 525) : Me.btnCancelar.Size = New System.Drawing.Size(150, 40) : Me.btnCancelar.Text = "Vaciar carrito" : Me.btnCancelar.Enabled = False : Me.btnCancelar.BackColor = System.Drawing.Color.FromArgb(217, 83, 79) : Me.btnCancelar.ForeColor = System.Drawing.Color.White : Me.btnCancelar.FlatStyle = System.Windows.Forms.FlatStyle.Flat
 
         ' Formulario
         Me.ClientSize = New System.Drawing.Size(910, 590)

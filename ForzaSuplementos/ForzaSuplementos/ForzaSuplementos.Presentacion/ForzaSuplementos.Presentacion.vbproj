@@ -79,6 +79,7 @@
     <Compile Include="FrmCaja.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="TemaForza.vb" />
     <Compile Include="FrmCaja.Designer.vb">
       <DependentUpon>FrmCaja.vb</DependentUpon>
     </Compile>

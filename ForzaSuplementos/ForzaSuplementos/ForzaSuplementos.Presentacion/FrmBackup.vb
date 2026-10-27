@@ -2,6 +2,11 @@
 Imports ForzaSuplementos.Negocio
 
 Public Class FrmBackup
+    Public Sub New()
+        InitializeComponent()
+        TemaForza.Aplicar(Me)
+    End Sub
+
     Private ReadOnly _bll As New BackupBLL()
 
     Private Sub btnExaminar_Click(sender As Object, e As EventArgs) Handles btnExaminar.Click

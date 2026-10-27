@@ -2,6 +2,11 @@
 Imports ForzaSuplementos.Negocio
 
 Public Class FrmClientes
+    Public Sub New()
+        InitializeComponent()
+        TemaForza.Aplicar(Me)
+    End Sub
+
     Private ReadOnly _bll As New ClienteBLL()
     Private _idClienteSeleccionado As Integer = 0
 

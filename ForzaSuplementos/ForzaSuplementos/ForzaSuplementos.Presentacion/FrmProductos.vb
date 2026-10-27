@@ -3,6 +3,11 @@ Imports ForzaSuplementos.Entidades
 Imports ForzaSuplementos.Negocio
 
 Public Class FrmProductos
+    Public Sub New()
+        InitializeComponent()
+        TemaForza.Aplicar(Me)
+    End Sub
+
     Private ReadOnly _bll As New ProductoBLL()
     Private _idProductoSeleccionado As Integer = 0
 

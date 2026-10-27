@@ -1,4 +1,4 @@
-﻿Imports ForzaSuplementos.Entidades
+Imports ForzaSuplementos.Entidades
 Imports System.Drawing
 Imports System.Windows.Forms
 
@@ -7,14 +7,13 @@ Public Class FrmPrincipal
 
     Public Sub New(usuario As Usuario)
         InitializeComponent()
+        TemaForza.Aplicar(Me)
         If Environment.GetEnvironmentVariable("FORZA_ENTORNO") = "QA" Then Me.Text &= " [QA — ForzaSuplementosDB_QA]"
         _usuarioLogueado = usuario
     End Sub
 
     Private Sub FrmPrincipal_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         LblEstadoUsuario.Text = $"Sesión activa: {_usuarioLogueado.Nombre} {_usuarioLogueado.Apellido} | Perfil: {_usuarioLogueado.NombrePerfil}"
-
-        MenuPrincipal.Renderer = New RenderizadorOscuro()
 
         ConfigurarPermisos()
     End Sub
@@ -155,80 +154,4 @@ Public Class FrmPrincipal
         If Application.OpenForms.Count = 0 Then Application.Exit()
     End Sub
 
-    ' =========================================================================
-    ' MAGIA VISUAL: TABLA DE COLORES ESTRICTA PARA FORZA SUPLEMENTOS
-    ' =========================================================================
-    Private Class RenderizadorOscuro
-        Inherits ToolStripProfessionalRenderer
-
-        Public Sub New()
-            MyBase.New(New TablaColoresForza())
-            Me.RoundedEdges = False
-        End Sub
-
-        Protected Overrides Sub OnRenderItemText(e As ToolStripItemTextRenderEventArgs)
-            e.TextColor = Color.White
-            MyBase.OnRenderItemText(e)
-        End Sub
-    End Class
-
-    Private Class TablaColoresForza
-        Inherits ProfessionalColorTable
-
-        Public Overrides ReadOnly Property MenuItemSelectedGradientBegin As Color
-            Get
-                Return Color.FromArgb(52, 168, 132)
-            End Get
-        End Property
-        Public Overrides ReadOnly Property MenuItemSelectedGradientEnd As Color
-            Get
-                Return Color.FromArgb(52, 168, 132)
-            End Get
-        End Property
-        Public Overrides ReadOnly Property MenuItemSelected As Color
-            Get
-                Return Color.FromArgb(52, 168, 132)
-            End Get
-        End Property
-        Public Overrides ReadOnly Property MenuItemBorder As Color
-            Get
-                Return Color.FromArgb(52, 168, 132)
-            End Get
-        End Property
-        Public Overrides ReadOnly Property MenuItemPressedGradientBegin As Color
-            Get
-                Return Color.FromArgb(33, 37, 41)
-            End Get
-        End Property
-        Public Overrides ReadOnly Property MenuItemPressedGradientMiddle As Color
-            Get
-                Return Color.FromArgb(33, 37, 41)
-            End Get
-        End Property
-        Public Overrides ReadOnly Property MenuItemPressedGradientEnd As Color
-            Get
-                Return Color.FromArgb(33, 37, 41)
-            End Get
-        End Property
-        Public Overrides ReadOnly Property ToolStripDropDownBackground As Color
-            Get
-                Return Color.FromArgb(33, 37, 41)
-            End Get
-        End Property
-        Public Overrides ReadOnly Property ImageMarginGradientBegin As Color
-            Get
-                Return Color.FromArgb(33, 37, 41)
-            End Get
-        End Property
-        Public Overrides ReadOnly Property ImageMarginGradientMiddle As Color
-            Get
-                Return Color.FromArgb(33, 37, 41)
-            End Get
-        End Property
-        Public Overrides ReadOnly Property ImageMarginGradientEnd As Color
-            Get
-                Return Color.FromArgb(33, 37, 41)
-            End Get
-        End Property
-    End Class
 End Class

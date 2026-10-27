@@ -1,4 +1,4 @@
-param([ValidateSet('Debug','Release')][string]$Configuration='Debug',[switch]$SoloVerificar)
+param([ValidateSet('Debug','Release')][string]$Configuration='Debug',[switch]$SoloVerificar,[switch]$RevisionVisual)
 $ErrorActionPreference='Stop'
 Import-Module (Join-Path $PSScriptRoot 'QA.Common.psm1') -Force
 $cfg=Get-QaConfig
@@ -8,7 +8,8 @@ try {
     if([int]$result.Rows[0].ready -ne 1){throw 'QA aun no tiene las migraciones completas.'}
 } finally {$cn.Dispose()}
 if($SoloVerificar){Write-Output 'Configuracion QA verificada en lectura; no se inicio la aplicacion.';return}
-$exe=Join-Path $cfg.Root "ForzaSuplementos\ForzaSuplementos\ForzaSuplementos.Presentacion\bin\$Configuration\ForzaSuplementos.Presentacion.exe"
+$buildFolder=if($RevisionVisual){'UIRevision'}else{$Configuration}
+$exe=Join-Path $cfg.Root "ForzaSuplementos\ForzaSuplementos\ForzaSuplementos.Presentacion\bin\$buildFolder\ForzaSuplementos.Presentacion.exe"
 if(!(Test-Path $exe)){throw 'Compilar la solucion antes de iniciar QA.'}
 $start=New-Object Diagnostics.ProcessStartInfo
 $start.FileName=$exe;$start.WorkingDirectory=Split-Path $exe -Parent

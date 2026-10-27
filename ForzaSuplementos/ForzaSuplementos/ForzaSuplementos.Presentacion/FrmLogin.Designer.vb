@@ -68,6 +68,7 @@ Partial Class FrmLogin
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
         Me.MaximizeBox = False
         Me.Text = "Iniciar Sesión"
+        Me.AcceptButton = Me.btnIngresar
         Me.Font = New System.Drawing.Font("Segoe UI", 9.0!)
 
         Me.Controls.Add(Me.PanelTop)

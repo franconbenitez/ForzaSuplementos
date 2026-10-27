@@ -1,6 +1,11 @@
 ﻿Imports ForzaSuplementos.Negocio
 
 Public Class FrmReportes
+    Public Sub New()
+        InitializeComponent()
+        TemaForza.Aplicar(Me)
+    End Sub
+
     Private ReadOnly _bll As New ReporteBLL()
 
     Public UsuarioActualId As Integer

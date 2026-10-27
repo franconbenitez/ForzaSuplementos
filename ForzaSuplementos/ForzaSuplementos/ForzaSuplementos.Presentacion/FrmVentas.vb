@@ -11,6 +11,17 @@ Public Class FrmVentas
     Public UsuarioActualId As Integer = 0 ' Este valor lo inyecta el menú principal
     Public Property UsuarioActual As Usuario
 
+    Public Sub New()
+        InitializeComponent()
+        TemaForza.Aplicar(Me)
+        AddHandler _carrito.ListChanged, AddressOf CarritoCambiado
+        ActualizarTotal()
+    End Sub
+
+    Private Sub CarritoCambiado(sender As Object, e As ListChangedEventArgs)
+        ActualizarTotal()
+    End Sub
+
     Private Sub FrmVentas_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Try
             CajaBLL.ValidarVendedor(UsuarioActual)
@@ -94,6 +105,7 @@ Public Class FrmVentas
     Private Sub ActualizarTotal()
         Dim total As Decimal = _carrito.Sum(Function(d) d.Subtotal)
         lblTotal.Text = $"TOTAL: $ {total:N2}"
+        btnCancelar.Enabled = _carrito.Count > 0
     End Sub
 
     Private Sub btnConfirmar_Click(sender As Object, e As EventArgs) Handles btnConfirmar.Click
@@ -137,7 +149,7 @@ Public Class FrmVentas
         cboProducto.SelectedIndex = -1
         txtCantidad.Text = "1"
         _carrito.Clear()
-        cboMedioPago.SelectedIndex = 0
+        If cboMedioPago.Items.Count > 0 Then cboMedioPago.SelectedIndex = 0
         ActualizarTotal()
     End Sub
 

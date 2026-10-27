@@ -9,6 +9,11 @@ Public Class FrmCaja
     Private _estadoConocido As Boolean
     Public Property UsuarioActual As Usuario
 
+    Public Sub New()
+        InitializeComponent()
+        TemaForza.Aplicar(Me)
+    End Sub
+
     Private Sub FrmCaja_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         dtpDesde.Value = Date.Today.AddMonths(-1)
         dtpHasta.Value = Date.Today
