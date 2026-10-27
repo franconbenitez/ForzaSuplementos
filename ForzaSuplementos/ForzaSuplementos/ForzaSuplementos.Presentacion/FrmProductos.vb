@@ -3,9 +3,12 @@ Imports ForzaSuplementos.Entidades
 Imports ForzaSuplementos.Negocio
 
 Public Class FrmProductos
+    Private ReadOnly _protector As ProtectorCambios
+
     Public Sub New()
         InitializeComponent()
         TemaForza.Aplicar(Me)
+        _protector = ProtectorCambios.ParaEdicion(Me, txtNombre, txtDescripcion, txtPrecio, txtStock, cboCategoria)
     End Sub
 
     Private ReadOnly _bll As New ProductoBLL()
@@ -137,6 +140,7 @@ Public Class FrmProductos
             txtStock.Text = fila.Cells("Stock").Value.ToString()
             cboCategoria.SelectedValue = CInt(fila.Cells("IdCategoria").Value)
             btnGuardar.Text = "Modificar"
+            _protector.EstablecerBase()
         End If
     End Sub
 
@@ -148,6 +152,7 @@ Public Class FrmProductos
         txtStock.Clear()
         cboCategoria.SelectedIndex = -1
         btnGuardar.Text = "Guardar"
+        _protector.EstablecerBase()
     End Sub
 
     Private Sub btnCancelar_Click(sender As Object, e As EventArgs) Handles btnCancelar.Click

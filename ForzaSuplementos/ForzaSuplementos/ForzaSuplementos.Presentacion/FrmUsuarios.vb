@@ -3,9 +3,12 @@ Imports ForzaSuplementos.Entidades
 Imports ForzaSuplementos.Negocio
 
 Public Class FrmUsuarios
+    Private ReadOnly _protector As ProtectorCambios
+
     Public Sub New()
         InitializeComponent()
         TemaForza.Aplicar(Me)
+        _protector = ProtectorCambios.ParaEdicion(Me, txtNombre, txtApellido, txtUsuario, txtContrasena, txtEmail, txtDni, txtCalle, txtAltura, txtTelefono, dtpFechaNac, rbHombre, rbMujer, cboPerfil)
     End Sub
 
     Private ReadOnly _bll As New UsuarioBLL()
@@ -156,6 +159,7 @@ Public Class FrmUsuarios
 
             cboPerfil.SelectedValue = CInt(fila.Cells("IdPerfil").Value)
             btnGuardar.Text = "Modificar"
+            _protector.EstablecerBase()
         End If
     End Sub
 
@@ -167,6 +171,7 @@ Public Class FrmUsuarios
         rbHombre.Checked = True
         cboPerfil.SelectedIndex = -1
         btnGuardar.Text = "Guardar"
+        _protector.EstablecerBase()
     End Sub
 
     ' =========================================================

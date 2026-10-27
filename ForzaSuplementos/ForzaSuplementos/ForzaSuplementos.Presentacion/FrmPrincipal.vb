@@ -43,104 +43,83 @@ Public Class FrmPrincipal
         End If
     End Sub
 
-    ' --- EVENTOS CLIC DE LOS BOTONES DEL MENÚ ---
+    Private _navegando As Boolean
+
+    ' Crear únicamente después de que el hijo anterior acepte cerrar.
+    Protected Sub AbrirModulo(tipo As Type)
+        If _navegando Then Return
+        _navegando = True
+        Try
+            For Each hijo As Form In MdiChildren
+                If tipo.IsInstanceOfType(hijo) Then
+                    If hijo.WindowState = FormWindowState.Minimized Then hijo.WindowState = FormWindowState.Normal
+                    hijo.Activate()
+                    Return
+                End If
+            Next
+            If Not CerrarModulos() Then Return
+            Dim nuevo As Form = CrearModulo(tipo)
+            Try
+                nuevo.MdiParent = Me
+                nuevo.Show()
+            Catch
+                nuevo.Dispose()
+                Throw
+            End Try
+        Finally
+            _navegando = False
+        End Try
+    End Sub
+
+    Private Function CerrarModulos() As Boolean
+        For Each hijo As Form In MdiChildren
+            hijo.Close()
+            If Not hijo.IsDisposed Then Return False
+        Next
+        Return True
+    End Function
+
+    Protected Overridable Function CrearModulo(tipo As Type) As Form
+        If tipo Is GetType(FrmCaja) Then Return New FrmCaja With {.UsuarioActual = _usuarioLogueado}
+        If tipo Is GetType(FrmVentas) Then Return New FrmVentas With {.UsuarioActual = _usuarioLogueado, .UsuarioActualId = _usuarioLogueado.IdUsuario}
+        If tipo Is GetType(FrmReportes) Then Return New FrmReportes With {.UsuarioActualId = _usuarioLogueado.IdUsuario, .RolActual = _usuarioLogueado.NombrePerfil}
+        If tipo Is GetType(FrmUsuarios) Then Return New FrmUsuarios()
+        If tipo Is GetType(FrmProductos) Then Return New FrmProductos()
+        If tipo Is GetType(FrmClientes) Then Return New FrmClientes()
+        If tipo Is GetType(FrmBackup) Then Return New FrmBackup()
+        Throw New ArgumentException("Módulo desconocido.", NameOf(tipo))
+    End Function
 
     Private Sub MenuCaja_Click(sender As Object, e As EventArgs) Handles MenuCaja.Click
-        For Each frm In Me.MdiChildren
-            If TypeOf frm Is FrmCaja Then
-                frm.BringToFront()
-                Return
-            End If
-        Next
-
-        Dim ventanaCaja As New FrmCaja()
-        ventanaCaja.UsuarioActual = _usuarioLogueado
-        ventanaCaja.MdiParent = Me
-        ventanaCaja.Show()
+        If MenuCaja.Available Then AbrirModulo(GetType(FrmCaja))
     End Sub
 
     Private Sub MenuUsuarios_Click(sender As Object, e As EventArgs) Handles MenuUsuarios.Click
-        For Each frm In Me.MdiChildren
-            If TypeOf frm Is FrmUsuarios Then
-                frm.BringToFront()
-                Return
-            End If
-        Next
-
-        Dim ventanaUsuarios As New FrmUsuarios()
-        ventanaUsuarios.MdiParent = Me
-        ventanaUsuarios.Show()
+        If MenuUsuarios.Available Then AbrirModulo(GetType(FrmUsuarios))
     End Sub
 
     Private Sub MenuProductos_Click(sender As Object, e As EventArgs) Handles MenuProductos.Click
-        For Each frm In Me.MdiChildren
-            If TypeOf frm Is FrmProductos Then
-                frm.BringToFront()
-                Return
-            End If
-        Next
-
-        Dim ventanaProductos As New FrmProductos()
-        ventanaProductos.MdiParent = Me
-        ventanaProductos.Show()
+        If MenuProductos.Available Then AbrirModulo(GetType(FrmProductos))
     End Sub
 
     Private Sub MenuClientes_Click(sender As Object, e As EventArgs) Handles MenuClientes.Click
-        For Each frm In Me.MdiChildren
-            If TypeOf frm Is FrmClientes Then
-                frm.BringToFront()
-                Return
-            End If
-        Next
-        Dim v As New FrmClientes()
-        v.MdiParent = Me
-        v.Show()
+        If MenuClientes.Available Then AbrirModulo(GetType(FrmClientes))
     End Sub
 
     Private Sub MenuVentas_Click(sender As Object, e As EventArgs) Handles MenuVentas.Click
-        For Each frm In Me.MdiChildren
-            If TypeOf frm Is FrmVentas Then
-                frm.BringToFront()
-                Return
-            End If
-        Next
-
-        Dim ventanaVentas As New FrmVentas()
-        ventanaVentas.UsuarioActualId = _usuarioLogueado.IdUsuario
-        ventanaVentas.UsuarioActual = _usuarioLogueado
-        ventanaVentas.MdiParent = Me
-        ventanaVentas.Show()
+        If MenuVentas.Available Then AbrirModulo(GetType(FrmVentas))
     End Sub
 
     Private Sub MenuReportes_Click(sender As Object, e As EventArgs) Handles MenuReportes.Click
-        For Each frm In Me.MdiChildren
-            If TypeOf frm Is FrmReportes Then
-                frm.BringToFront()
-                Return
-            End If
-        Next
-
-        Dim ventanaReportes As New FrmReportes()
-        ventanaReportes.UsuarioActualId = _usuarioLogueado.IdUsuario
-        ventanaReportes.RolActual = _usuarioLogueado.NombrePerfil
-        ventanaReportes.MdiParent = Me
-        ventanaReportes.Show()
+        If MenuReportes.Available Then AbrirModulo(GetType(FrmReportes))
     End Sub
 
     Private Sub MenuBackup_Click(sender As Object, e As EventArgs) Handles MenuBackup.Click
-        For Each frm In Me.MdiChildren
-            If TypeOf frm Is FrmBackup Then
-                frm.BringToFront()
-                Return
-            End If
-        Next
-
-        Dim ventanaBackup As New FrmBackup()
-        ventanaBackup.MdiParent = Me
-        ventanaBackup.Show()
+        If MenuBackup.Available Then AbrirModulo(GetType(FrmBackup))
     End Sub
 
     Private Sub MenuCerrarSesion_Click(sender As Object, e As EventArgs) Handles MenuCerrarSesion.Click
+        If Not CerrarModulos() Then Return
         Dim login As New FrmLogin()
         login.Show()
         Me.Close()

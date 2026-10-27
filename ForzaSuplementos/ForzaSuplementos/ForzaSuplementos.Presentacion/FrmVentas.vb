@@ -11,11 +11,21 @@ Public Class FrmVentas
     Public UsuarioActualId As Integer = 0 ' Este valor lo inyecta el menú principal
     Public Property UsuarioActual As Usuario
 
+    Private ReadOnly _protector As ProtectorCambios
+
     Public Sub New()
         InitializeComponent()
         TemaForza.Aplicar(Me)
         AddHandler _carrito.ListChanged, AddressOf CarritoCambiado
         ActualizarTotal()
+        _protector = New ProtectorCambios(Me, Function() _carrito.Count > 0,
+            "Tenés productos en el carrito. Si salís, se perderá la venta sin confirmar. ¿Querés continuar?",
+            AddressOf DescartarCarritoAlCerrar)
+    End Sub
+
+    Private Sub DescartarCarritoAlCerrar()
+        RemoveHandler _carrito.ListChanged, AddressOf CarritoCambiado
+        _carrito.Clear()
     End Sub
 
     Private Sub CarritoCambiado(sender As Object, e As ListChangedEventArgs)

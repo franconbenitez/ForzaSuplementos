@@ -4,6 +4,33 @@ Imports ForzaSuplementos.Entidades
 Imports ForzaSuplementos.Presentacion
 
 Namespace ForzaPruebasUI
+    Public Class PrincipalNavegacion
+        Inherits FrmPrincipal
+        Public Creaciones As Integer
+        Public FallarCreacion As Boolean
+        Public Sub New(perfil As String)
+            MyBase.New(New Usuario With {.IdUsuario = 1, .NombrePerfil = perfil, .Nombre = "Prueba"})
+            WindowState = FormWindowState.Normal
+        End Sub
+        Protected Overrides Sub OnLoad(e As EventArgs)
+            GetType(FrmPrincipal).GetMethod("ConfigurarPermisos", Reflection.BindingFlags.Instance Or Reflection.BindingFlags.NonPublic).Invoke(Me, Nothing)
+        End Sub
+        Protected Overrides Sub OnFormClosed(e As FormClosedEventArgs)
+        End Sub
+        Protected Overrides Function CrearModulo(tipo As Type) As Form
+            Creaciones += 1
+            If FallarCreacion Then Throw New InvalidOperationException("Fallo simulado de apertura")
+            If tipo Is GetType(FrmVentas) Then Return New VentasVista()
+            If tipo Is GetType(FrmCaja) Then Return New CajaVista()
+            If tipo Is GetType(FrmClientes) Then Return New ClientesVista()
+            If tipo Is GetType(FrmProductos) Then Return New ProductosVista()
+            If tipo Is GetType(FrmUsuarios) Then Return New UsuariosVista()
+            If tipo Is GetType(FrmBackup) Then Return New BackupVista()
+            If tipo Is GetType(FrmReportes) Then Return New ReportesVista()
+            Throw New ArgumentException("Modulo no esperado")
+        End Function
+    End Class
+
     ' Solo para pruebas: no ejecutar los Load de negocio ni autenticar contra SQL.
     Public Class LoginVista
         Inherits FrmLogin

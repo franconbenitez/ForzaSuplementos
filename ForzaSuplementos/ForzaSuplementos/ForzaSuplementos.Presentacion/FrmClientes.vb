@@ -2,9 +2,12 @@
 Imports ForzaSuplementos.Negocio
 
 Public Class FrmClientes
+    Private ReadOnly _protector As ProtectorCambios
+
     Public Sub New()
         InitializeComponent()
         TemaForza.Aplicar(Me)
+        _protector = ProtectorCambios.ParaEdicion(Me, txtDni, txtNombre, txtApellido, txtTelefono, txtEmail)
     End Sub
 
     Private ReadOnly _bll As New ClienteBLL()
@@ -64,6 +67,7 @@ Public Class FrmClientes
             txtTelefono.Text = fila.Cells("Telefono").Value.ToString()
             txtEmail.Text = fila.Cells("Email").Value.ToString()
             btnGuardar.Text = "Modificar"
+            _protector.EstablecerBase()
         End If
     End Sub
 
@@ -96,6 +100,7 @@ Public Class FrmClientes
         txtTelefono.Clear()
         txtEmail.Clear()
         btnGuardar.Text = "Guardar"
+        _protector.EstablecerBase()
     End Sub
 
     Private Sub btnCancelar_Click(sender As Object, e As EventArgs) Handles btnCancelar.Click
