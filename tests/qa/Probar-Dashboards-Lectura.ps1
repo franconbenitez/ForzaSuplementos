@@ -39,6 +39,15 @@ try{
             $details=(Invoke-QaQuery $cn 'SELECT COALESCE(SUM(CONVERT(bigint,d.cantidad)),0) unidades FROM dbo.Ventas v JOIN dbo.DetalleVentas d ON d.idVenta=v.idVenta WHERE v.fecha>=@desde AND v.fecha<@fin AND (@vendedor IS NULL OR v.idUsuario=@vendedor);' $params).Rows[0]
             Assert-Q ($model.Completo -and $model.Unidades -eq [long]$details.unidades) "$($case[0]) contrato completo y unidades coinciden con SQL"
         }
+        if($ready.ventas){
+            foreach($dimension in @('Productos','Categorias')){
+                $key=if($dimension -eq 'Productos'){'d.idProducto'}else{'p.idCategoria'}
+                $control=Invoke-QaQuery $cn "SELECT TOP(10) $key clave,SUM(d.subtotal) importe,SUM(CONVERT(bigint,d.cantidad)) cantidad FROM dbo.Ventas v JOIN dbo.DetalleVentas d ON d.idVenta=v.idVenta JOIN dbo.Productos p ON p.idProducto=d.idProducto WHERE v.fecha>=@desde AND v.fecha<@fin AND (@vendedor IS NULL OR v.idUsuario=@vendedor) GROUP BY $key ORDER BY cantidad DESC,clave;" $params
+                $series=$model.$dimension;$ok=$series.Count -eq $control.Rows.Count
+                foreach($r in $control.Rows){$point=@($series|Where-Object {$_.Clave -eq [int]$r.clave});if($point.Count -ne 1 -or $point[0].Importe -ne [decimal]$r.importe -or $point[0].Cantidad -ne [long]$r.cantidad){$ok=$false}}
+                Assert-Q $ok "$($case[0]) ranking $dimension coincide con SQL independiente"
+            }
+        }
         if(!$ready.ventas){Assert-Q (!$model.Completo -and $null -eq $model.Unidades) 'SP completo ausente no inventa unidades ni rankings'}
     }
     $sellerActor=Actor 'VENDEDOR' ([int]$ids.vendedor)
