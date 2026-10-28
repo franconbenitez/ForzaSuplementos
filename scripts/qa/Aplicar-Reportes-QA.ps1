@@ -10,7 +10,7 @@ try{
     if(@($before.Rows | Where-Object {$_['definicion'] -is [DBNull]}).Count){throw 'No se puede respaldar una definicion existente: no se aplica.'}
     $snapshot=@($before.Rows | ForEach-Object {[pscustomobject]@{Nombre=[string]$_.name;Definicion=[string]$_.definicion}})
     $dir=Join-Path $cfg.Root 'private';$null=[IO.Directory]::CreateDirectory($dir)
-    $snapshot | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $dir ('antes-reportes-004-'+[datetime]::UtcNow.ToString('yyyyMMdd-HHmmss-fffffff')+'.json')) -Encoding UTF8
+    ConvertTo-Json -InputObject $snapshot -Depth 4 | Set-Content (Join-Path $dir ('antes-reportes-004-'+[datetime]::UtcNow.ToString('yyyyMMdd-HHmmss-fffffff')+'.json')) -Encoding UTF8
     $source=[IO.File]::ReadAllText((Join-Path $cfg.Root 'sql/qa/004_Reportes_Dashboards_QA.sql'))
     $source=$source.Replace('$(QaExpectedServer)',$cfg.ExpectedServer) -replace '(?m)^:on error exit\s*',''
     $batches=[regex]::Split($source,'(?im)^\s*GO\s*\r?$') | Where-Object {![string]::IsNullOrWhiteSpace($_)}

@@ -35,6 +35,10 @@ try{
             foreach($row in $control.Rows){$point=@($series | Where-Object {$_.Etiqueta -ceq [string]$row.etiqueta});if($point.Count -ne 1 -or $point[0].Importe -ne [decimal]$row.total -or $point[0].Cantidad -ne [long]$row.operaciones){$ok=$false}}
             Assert-Q $ok "$($case[0]) evolucion $kind coincide con GROUP BY de control"
         }
+        if($ready.ventas){
+            $details=(Invoke-QaQuery $cn 'SELECT COALESCE(SUM(CONVERT(bigint,d.cantidad)),0) unidades FROM dbo.Ventas v JOIN dbo.DetalleVentas d ON d.idVenta=v.idVenta WHERE v.fecha>=@desde AND v.fecha<@fin AND (@vendedor IS NULL OR v.idUsuario=@vendedor);' $params).Rows[0]
+            Assert-Q ($model.Completo -and $model.Unidades -eq [long]$details.unidades) "$($case[0]) contrato completo y unidades coinciden con SQL"
+        }
         if(!$ready.ventas){Assert-Q (!$model.Completo -and $null -eq $model.Unidades) 'SP completo ausente no inventa unidades ni rankings'}
     }
     $sellerActor=Actor 'VENDEDOR' ([int]$ids.vendedor)
@@ -53,6 +57,12 @@ try{
                 $chart=Member $form 'grafico'
                 Assert-Q ($actual.Operaciones -eq 0 -or ($chart.Visible -and $chart.Series[0].Points.Count -eq $actual.Diaria.Count)) "$($case[0]) grafico real refleja puntos calculados de QA"
                 Assert-Q ((Member $form 'nudVendedor').Visible -eq ($case[0] -eq 'GERENTE')) "$($case[0]) interfaz conserva alcance y filtros permitidos"
+            }elseif($ready.backups){
+                (Member $form 'dtpDesde').Value=$from;(Member $form 'dtpHasta').Value=$to;(Member $form 'btnActualizar').PerformClick();Wait-Report $form
+                $audit=$service.Backups($form.UsuarioActual,$from,$to)
+                $count=(Invoke-QaQuery $cn 'SELECT COUNT(*) cantidad FROM dbo.AuditoriaBackups WHERE fecha>=@desde AND fecha<@fin;' @{'@desde'=$from;'@fin'=$end}).Rows[0].cantidad
+                Assert-Q ($audit.Cantidad -eq [int]$count -and $audit.Historial.Count -eq [int]$count) 'Administrador historial y conteo coinciden con SQL independiente'
+                Assert-Q ($null -eq $audit.Exitosos -and $null -eq $audit.Fallidos -and !(Member $form 'nudVendedor').Visible) 'Administrador no inventa estados ni ofrece filtro comercial'
             }elseif(!$ready.backups){Assert-Q (!(Member $form 'grafico').Visible -and (Member $form 'lblEstado').Text -match 'pendiente') 'Administrador muestra pendiente de migracion, no backups ficticios'}
             $bitmap=New-Object Drawing.Bitmap($form.Width,$form.Height);try{$form.DrawToBitmap($bitmap,(New-Object Drawing.Rectangle(0,0,$form.Width,$form.Height)));$bitmap.Save((Join-Path $dir ($case[0]+'.png')))}finally{$bitmap.Dispose()}
         }finally{$form.Dispose()}

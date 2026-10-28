@@ -6,6 +6,11 @@ $root=Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 Import-Module (Join-Path $root 'scripts/qa/QA.Common.psm1') -Force
 $cfg=Get-QaConfig;$cn=Open-QaConnection;$tx=$null
 $script:checks=0
+function Snapshot {
+    $r=Invoke-QaQuery $cn 'SELECT s.name Esquema,t.name Tabla,SUM(p.rows) Filas FROM sys.tables t JOIN sys.schemas s ON s.schema_id=t.schema_id JOIN sys.partitions p ON p.object_id=t.object_id AND p.index_id IN(0,1) GROUP BY s.name,t.name ORDER BY s.name,t.name;'
+    return (($r.Rows | ForEach-Object { '{0}.{1}={2}' -f $_.Esquema,$_.Tabla,$_.Filas }) -join ';')
+}
+
 function Assert-R([bool]$ok,[string]$name){if(!$ok){throw $name};$script:checks++;Write-Output "OK: $name"}
 function Read-SP($name,[int]$actor,$vendedor=$null,$producto=$null){
     $cmd=$cn.CreateCommand();$cmd.Transaction=$tx;$cmd.CommandType='StoredProcedure';$cmd.CommandText=$name
@@ -23,6 +28,7 @@ try{
     $ready=(Invoke-QaQuery $cn "SELECT CASE WHEN OBJECT_ID('dbo.sp_Reportes_VentasDashboard','P') IS NOT NULL AND OBJECT_ID('dbo.sp_Reportes_BackupsDashboard','P') IS NOT NULL THEN 1 ELSE 0 END ready;").Rows[0].ready
     if(!$ready){throw 'BLOQUEADO: aplicar primero la migracion 004 autorizada. No se insertaron fixtures.'}
     $ids=(Invoke-QaQuery $cn 'SELECT TOP(1) vendedor,otroVendedor,administrador,gerente,inactivo FROM qa.Fixtures;').Rows[0]
+    $baseline=Snapshot
     $tx=$cn.BeginTransaction()
     $cmd=$cn.CreateCommand();$cmd.Transaction=$tx;$cmd.CommandText=[IO.File]::ReadAllText((Join-Path $PSScriptRoot 'fixtures/Reportes_Fixtures_QA.sql'))
     $null=$cmd.Parameters.AddWithValue('@QaExpectedServer',$cfg.ExpectedServer);$null=$cmd.Parameters.AddWithValue('@AutorizarFixtures',1)
@@ -46,6 +52,10 @@ try{
     Assert-R (!$audit.Tables[1].Columns.Contains('Estado') -and [string]$audit.Tables[1].Rows[0].Archivo -notmatch '[/\\]') 'No inventa estado ni expone ruta completa'
     $tx.Rollback();$tx.Dispose();$tx=$null
     Assert-R ((Read-SP 'dbo.sp_Reportes_VentasDashboard' ([int]$ids.gerente)).Tables[0].Rows[0].Operaciones -eq 0) 'Rollback elimina exclusivamente los fixtures del periodo'
+    if((Snapshot) -cne $baseline){throw 'DETENER: conteos distintos despues del rollback.'}
+    $state=Invoke-QaQuery $cn 'SELECT @@TRANCOUNT Transacciones;'
+    if($state.Rows[0].Transacciones -ne 0){throw 'DETENER: transaccion de prueba abierta.'}
+    Write-Output 'ROLLBACK VERIFICADO: todas las tablas conservan sus conteos (incluida Caja); sin transaccion del runner.'
     foreach($case in @(@('dbo.sp_Reportes_VentasDashboard',[int]$ids.vendedor,[int]$ids.otroVendedor,51404),@('dbo.sp_Reportes_VentasDashboard',[int]$ids.administrador,$null,51403),@('dbo.sp_Reportes_BackupsDashboard',[int]$ids.gerente,$null,51405),@('dbo.sp_Reportes_VentasDashboard',[int]$ids.inactivo,$null,51403))){
         $rejected=$false;try{Read-SP $case[0] $case[1] $case[2]|Out-Null}catch{$e=$_.Exception;while($e.InnerException){$e=$e.InnerException};if($e -isnot [Data.SqlClient.SqlException] -or $e.Number -ne $case[3]){throw};$rejected=$true}
         Assert-R $rejected 'Servidor rechaza perfil/activo/alcance no autorizado'

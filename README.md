@@ -50,7 +50,7 @@ El SQL de negocio permanece fuera de los formularios. La comprobación del entor
 - **Gerente:** productos y reportes globales. No vende ni opera caja.
 - **Vendedor:** ventas, clientes, caja y consulta de resultados propios.
 
-Los filtros avanzados de reportes y el refuerzo global de autorización de módulos anteriores siguen pendientes. Caja y Ventas verifican el perfil tanto en negocio como en SQL.
+Los filtros avanzados de reportes están habilitados en QA mediante 004; el refuerzo global de autorización de módulos anteriores conserva los límites documentados. Caja y Ventas verifican el perfil tanto en negocio como en SQL.
 
 ## Estructura del repositorio
 
@@ -172,4 +172,4 @@ Ventas selecciona clientes y productos mediante búsqueda y grillas oscuras, con
 
 ## Dashboards y esquema QA
 
-[Inventario real](docs/INVENTARIO_BASE_DATOS.md) y [diagrama ER](docs/DIAGRAMA_ER.md): 11 tablas (10 de aplicación y qa.Fixtures), 11 FK y 28 SP antes de aplicar los reportes nuevos. [Dashboards por perfil](docs/DASHBOARDS_REPORTES.md): evolución y resumen básico ya disponibles con datos reales; unidades/rankings completos y backups requieren la migración QA 004 preparada, no aplicada. [Resultados y límites](docs/RESULTADOS_REPORTES_QA.md). No ejecutar migraciones ni fixtures sin autorización.
+[Inventario real](docs/INVENTARIO_BASE_DATOS.md) y [diagrama ER](docs/DIAGRAMA_ER.md): 11 tablas (10 de aplicación y qa.Fixtures), 11 FK y 30 SP después de aplicar 004 en QA. [Dashboards por perfil](docs/DASHBOARDS_REPORTES.md): evolución, unidades, rankings y auditoría habilitados y validados en QA mediante 004; cada instalación independiente requiere autorización para su migración. [Resultados y límites](docs/RESULTADOS_REPORTES_QA.md). No ejecutar migraciones ni fixtures sin autorización.

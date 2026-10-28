@@ -2,7 +2,7 @@
 
 Fecha: 2026-10-27. Extracción exclusivamente de sys.* mediante conexión QA validada. No se ejecutó DDL/DML ni se exportaron filas, credenciales, rutas de backups o identificadores de equipo.
 
-**11 tablas**: 10 tablas de aplicación en dbo y 1 tabla auxiliar qa.Fixtures. **11 claves foráneas, 16 índices, 4 restricciones CHECK y 28 procedimientos.** La tabla de fixtures no forma parte del modelo comercial.
+**11 tablas**: 10 tablas de aplicación en dbo y 1 tabla auxiliar qa.Fixtures. **11 claves foráneas, 16 índices, 4 restricciones CHECK y 30 procedimientos.** La tabla de fixtures no forma parte del modelo comercial.
 
 ## dbo.AuditoriaBackups
 
@@ -200,6 +200,8 @@ Fecha: 2026-10-27. Extracción exclusivamente de sys.* mediante conexión QA val
 - `sp_Reporte_BajoStock`: sin parámetros.
 - `sp_Reporte_HistorialVentas`: sin parámetros.
 - `sp_Reporte_MisVentas`: `@idUsuario int`.
+- `sp_Reportes_BackupsDashboard`: `@idActor int`; `@desde date`; `@hasta date`.
+- `sp_Reportes_VentasDashboard`: `@idActor int`; `@desde date`; `@hasta date`; `@idVendedor int`; `@idProducto int`.
 - `sp_Usuarios_CambiarEstado`: `@idUsuario int`; `@activo bit`.
 - `sp_Usuarios_Insertar`: `@idPerfil int`; `@nombre varchar(50)`; `@apellido varchar(50)`; `@usuario varchar(50)`; `@contrasena varchar(100)`; `@email varchar(100)`; `@dni varchar(20)`; `@calle varchar(100)`; `@altura varchar(20)`; `@telefono varchar(30)`; `@fechaNacimiento date`; `@sexo char(1)`; `@nuevoId int OUTPUT`.
 - `sp_Usuarios_ListarPorEstado`: `@activo bit`.
