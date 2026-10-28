@@ -1,4 +1,4 @@
-Option Strict On
+﻿Option Strict On
 Imports System.Data
 Imports System.Threading.Tasks
 Imports ForzaSuplementos.Entidades
@@ -34,6 +34,7 @@ Public Class FrmCatalogoComercial
         End If
         Controls.Add(_grid) : Controls.Add(_estado) : Controls.Add(barra) : Controls.Add(_editor)
         TemaForza.Aplicar(Me)
+        _editor.Enabled = False
         _protector = ProtectorCambios.ParaEdicion(Me, _nombre, _razon, _cuit, _activo)
         AddHandler buscar.Click, Async Sub(sender, e) Await Cargar()
         AddHandler nuevo.Click, Sub()
