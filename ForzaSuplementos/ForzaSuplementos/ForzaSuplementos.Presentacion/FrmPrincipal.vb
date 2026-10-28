@@ -1,4 +1,4 @@
-Imports ForzaSuplementos.Negocio
+﻿Imports ForzaSuplementos.Negocio
 Imports ForzaSuplementos.Entidades
 Imports System.Drawing
 Imports System.Windows.Forms
@@ -23,6 +23,12 @@ Public Class FrmPrincipal
                                      End Using
                                  End Sub
         MenuPrincipal.Items.Add(cambiar)
+        For Each entrada In New KeyValuePair(Of String, Type)() {New KeyValuePair(Of String, Type)("Proveedores", GetType(FrmProveedores)), New KeyValuePair(Of String, Type)("Marcas", GetType(FrmMarcas))}
+            Dim modulo = entrada.Value
+            Dim item As New ToolStripMenuItem(entrada.Key) With {.Visible = Permisos.Puede(usuario, Permiso.Productos)}
+            AddHandler item.Click, Sub() AbrirModulo(modulo)
+            MenuGestion.DropDownItems.Add(item)
+        Next
     End Sub
 
     Private Sub FrmPrincipal_Load(sender As Object, e As EventArgs) Handles MyBase.Load
@@ -43,7 +49,7 @@ Public Class FrmPrincipal
 
     Private Shared Function PermisoDelModulo(tipo As Type) As Permiso
         If tipo Is GetType(FrmUsuarios) Then Return Permiso.Usuarios
-        If tipo Is GetType(FrmProductos) Then Return Permiso.Productos
+        If tipo Is GetType(FrmProductos) OrElse tipo Is GetType(FrmProveedores) OrElse tipo Is GetType(FrmMarcas) Then Return Permiso.Productos
         If tipo Is GetType(FrmClientes) Then Return Permiso.Clientes
         If tipo Is GetType(FrmVentas) Then Return Permiso.Ventas
         If tipo Is GetType(FrmCaja) Then Return Permiso.Caja
@@ -95,6 +101,8 @@ Public Class FrmPrincipal
         If tipo Is GetType(FrmVentas) Then Return New FrmVentas With {.UsuarioActual = _usuarioLogueado, .UsuarioActualId = _usuarioLogueado.IdUsuario}
         If tipo Is GetType(FrmReportes) Then Return New FrmReportes With {.UsuarioActual = _usuarioLogueado, .UsuarioActualId = _usuarioLogueado.IdUsuario, .RolActual = _usuarioLogueado.NombrePerfil}
         If tipo Is GetType(FrmUsuarios) Then Return New FrmUsuarios With {.UsuarioActual = _usuarioLogueado}
+        If tipo Is GetType(FrmProveedores) Then Return New FrmProveedores With {.UsuarioActual = _usuarioLogueado}
+        If tipo Is GetType(FrmMarcas) Then Return New FrmMarcas With {.UsuarioActual = _usuarioLogueado}
         If tipo Is GetType(FrmProductos) Then Return New FrmProductos With {.UsuarioActual = _usuarioLogueado}
         If tipo Is GetType(FrmClientes) Then Return New FrmClientes With {.UsuarioActual = _usuarioLogueado}
         If tipo Is GetType(FrmBackup) Then Return New FrmBackup With {.UsuarioActual = _usuarioLogueado}

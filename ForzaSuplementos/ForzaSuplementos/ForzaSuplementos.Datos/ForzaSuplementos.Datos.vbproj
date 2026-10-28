@@ -64,6 +64,7 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComercialDAL.vb" />
     <Compile Include="SeguridadDAL.vb" />
     <Compile Include="BackupDAL.vb" />
     <Compile Include="CajaDAL.vb" />

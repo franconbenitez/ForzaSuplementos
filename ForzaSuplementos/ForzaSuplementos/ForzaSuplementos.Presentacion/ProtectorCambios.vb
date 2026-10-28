@@ -1,4 +1,4 @@
-Option Strict On
+﻿Option Strict On
 Imports System.Linq
 Imports System.Windows.Forms
 
@@ -41,6 +41,7 @@ Public NotInheritable Class ProtectorCambios
         Return _campos.Select(Function(c)
                                   If TypeOf c Is ComboBox Then Return DirectCast(c, ComboBox).SelectedIndex.ToString() & ":" & c.Text
                                   If TypeOf c Is DateTimePicker Then Return DirectCast(c, DateTimePicker).Value.Date.Ticks.ToString()
+                                  If TypeOf c Is CheckBox Then Return DirectCast(c, CheckBox).Checked.ToString()
                                   If TypeOf c Is RadioButton Then Return DirectCast(c, RadioButton).Checked.ToString()
                                   Return c.Text
                               End Function).ToArray()
