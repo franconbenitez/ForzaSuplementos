@@ -9,6 +9,17 @@ Public Class FrmUsuarios
     Public Sub New()
         InitializeComponent()
         TemaForza.Aplicar(Me)
+        txtContrasena.UseSystemPasswordChar = True
+        Dim menu As New ContextMenuStrip()
+        Dim reset As New ToolStripMenuItem("Restablecer contraseña del usuario seleccionado")
+        AddHandler reset.Click, Sub()
+                                    If dgvActivos.CurrentRow Is Nothing Then Return
+                                    Using dialogo As New FrmClave(UsuarioActual, CInt(dgvActivos.CurrentRow.Cells("IdUsuario").Value))
+                                        dialogo.ShowDialog(Me)
+                                    End Using
+                                End Sub
+        menu.Items.Add(reset) : dgvActivos.ContextMenuStrip = menu
+        AddHandler Me.Disposed, Sub() menu.Dispose()
         _protector = ProtectorCambios.ParaEdicion(Me, txtNombre, txtApellido, txtUsuario, txtContrasena, txtEmail, txtDni, txtCalle, txtAltura, txtTelefono, dtpFechaNac, rbHombre, rbMujer, cboPerfil)
     End Sub
 
@@ -147,7 +158,8 @@ Public Class FrmUsuarios
             txtNombre.Text = fila.Cells("Nombre").Value.ToString()
             txtApellido.Text = fila.Cells("Apellido").Value.ToString()
             txtUsuario.Text = fila.Cells("NombreUsuario").Value.ToString()
-            txtContrasena.Text = fila.Cells("Contrasena").Value.ToString()
+            txtContrasena.Clear()
+            txtContrasena.AccessibleDescription = "Dejar vacío para conservar la contraseña."
             txtDni.Text = fila.Cells("Dni").Value.ToString()
             txtEmail.Text = fila.Cells("Email").Value.ToString()
             txtCalle.Text = fila.Cells("Calle").Value.ToString()

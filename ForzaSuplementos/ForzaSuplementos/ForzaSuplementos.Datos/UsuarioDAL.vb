@@ -35,7 +35,7 @@ Public Class UsuarioDAL
                             .Nombre = dr("nombre").ToString(),
                             .Apellido = dr("apellido").ToString(),
                             .NombreUsuario = dr("usuario").ToString(),
-                            .Contrasena = dr("contrasena").ToString(),
+                            .Contrasena = String.Empty,
                             .Email = dr("email").ToString(),
                             .Dni = dr("dni").ToString(),
                             .Calle = dr("calle").ToString(),
@@ -53,6 +53,7 @@ Public Class UsuarioDAL
     End Function
 
     Public Function Insertar(u As Usuario) As Integer
+        If New SeguridadDAL().Activa() Then Throw New ApplicationException("El alta debe utilizar el contrato seguro de 005.")
         Using cn As SqlConnection = Conexion.ObtenerConexion()
             Using cmd As New SqlCommand("sp_Usuarios_Insertar", cn)
                 cmd.CommandType = CommandType.StoredProcedure
@@ -80,6 +81,21 @@ Public Class UsuarioDAL
     End Function
 
     Public Sub Modificar(u As Usuario)
+        If New SeguridadDAL().Activa() Then Throw New ApplicationException("Usá la edición segura habilitada por el despliegue 005; no se sobrescribirá la credencial.")
+        Dim clave = u.Contrasena
+        If String.IsNullOrEmpty(clave) Then
+            Using lectura = Conexion.ObtenerConexion(), consulta As New SqlCommand("sp_Usuarios_ListarPorEstado", lectura)
+                consulta.CommandType = CommandType.StoredProcedure
+                consulta.Parameters.Add("@activo", SqlDbType.Bit).Value = True
+                lectura.Open()
+                Using r = consulta.ExecuteReader()
+                    While r.Read()
+                        If CInt(r("idUsuario")) = u.IdUsuario Then clave = CStr(r("contrasena")) : Exit While
+                    End While
+                End Using
+            End Using
+            If String.IsNullOrEmpty(clave) Then Throw New ApplicationException("No se pudo conservar la clave existente.")
+        End If
         Using cn As SqlConnection = Conexion.ObtenerConexion()
             Using cmd As New SqlCommand("sp_Usuarios_Modificar", cn)
                 cmd.CommandType = CommandType.StoredProcedure
@@ -88,7 +104,7 @@ Public Class UsuarioDAL
                 cmd.Parameters.AddWithValue("@nombre", u.Nombre)
                 cmd.Parameters.AddWithValue("@apellido", u.Apellido)
                 cmd.Parameters.AddWithValue("@usuario", u.NombreUsuario)
-                cmd.Parameters.AddWithValue("@contrasena", u.Contrasena)
+                cmd.Parameters.AddWithValue("@contrasena", clave)
                 cmd.Parameters.AddWithValue("@email", u.Email)
                 cmd.Parameters.AddWithValue("@dni", u.Dni)
                 cmd.Parameters.AddWithValue("@calle", u.Calle)

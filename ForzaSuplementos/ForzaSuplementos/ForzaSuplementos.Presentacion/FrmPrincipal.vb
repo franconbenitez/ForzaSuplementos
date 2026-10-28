@@ -16,6 +16,13 @@ Public Class FrmPrincipal
         End If
         If Environment.GetEnvironmentVariable("FORZA_ENTORNO") = "QA" Then Me.Text &= " [QA — ForzaSuplementosDB_QA]"
         _usuarioLogueado = usuario
+        Dim cambiar As New ToolStripMenuItem("Mi contraseña")
+        AddHandler cambiar.Click, Sub()
+                                     Using dialogo As New FrmClave(_usuarioLogueado)
+                                         dialogo.ShowDialog(Me)
+                                     End Using
+                                 End Sub
+        MenuPrincipal.Items.Add(cambiar)
     End Sub
 
     Private Sub FrmPrincipal_Load(sender As Object, e As EventArgs) Handles MyBase.Load

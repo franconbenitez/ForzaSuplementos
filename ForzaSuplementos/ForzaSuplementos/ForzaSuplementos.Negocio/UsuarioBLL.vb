@@ -1,4 +1,4 @@
-﻿Imports System.Text.RegularExpressions
+Imports System.Text.RegularExpressions
 Imports ForzaSuplementos.Datos
 Imports ForzaSuplementos.Entidades
 
@@ -18,6 +18,14 @@ Public Class UsuarioBLL
     Public Sub GuardarUsuario(u As Usuario, actor As Usuario)
         Permisos.Exigir(actor, Permiso.Usuarios)
         ValidarDatosUsuario(u)
+        Dim seguridad As New SeguridadBLL()
+        If seguridad.Activa() Then
+            Dim formato As String = Nothing
+            If u.IdUsuario = 0 OrElse Not String.IsNullOrEmpty(u.Contrasena) Then formato = ClaveSegura.Crear(u.Contrasena)
+            Dim dalSeguro As New SeguridadDAL()
+            dalSeguro.Guardar(u, actor, formato)
+            Return
+        End If
         If u.IdUsuario = 0 Then
             _usuarioDAL.Insertar(u)
         Else
@@ -48,7 +56,7 @@ Public Class UsuarioBLL
         If u.IdPerfil <= 0 Then Throw New ApplicationException("Tenés que seleccionar un Perfil/Rol.")
 
         ' 2. Contraseña: Mínimo 6 caracteres
-        If String.IsNullOrWhiteSpace(u.Contrasena) OrElse u.Contrasena.Length < 6 Then
+        If (u.IdUsuario = 0 OrElse Not String.IsNullOrEmpty(u.Contrasena)) AndAlso (String.IsNullOrWhiteSpace(u.Contrasena) OrElse u.Contrasena.Length < 6) Then
             Throw New ApplicationException("La contraseña debe tener al menos 6 caracteres para ser segura.")
         End If
 
@@ -73,11 +81,13 @@ Public Class UsuarioBLL
             Throw New ApplicationException("Debe ingresar usuario y contraseña.")
         End If
 
-        Dim userLogueado = _usuarioDAL.Login(usuario, contrasena)
+        Dim seguridad As New SeguridadBLL()
+        Dim userLogueado = If(seguridad.Activa(), seguridad.Login(usuario, contrasena), _usuarioDAL.Login(usuario, contrasena))
         If userLogueado Is Nothing Then
             Throw New ApplicationException("Usuario o contraseña incorrectos, o el usuario está inactivo.")
         End If
 
+        userLogueado.NombreUsuario = usuario
         Return userLogueado
     End Function
 End Class
