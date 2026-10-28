@@ -5,16 +5,19 @@ IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('
 IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'ForzaQaEnvironment' AND CONVERT(nvarchar(128),value)=N'Forza-QA-Aislada-v1') THROW 51201,'Falta marca QA.',1;
 
 IF OBJECT_ID('dbo.Proveedores','U') IS NULL THROW 51700,'Requiere 006.',1;
+SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON; SET ARITHABORT ON; SET CONCAT_NULL_YIELDS_NULL ON; SET NUMERIC_ROUNDABORT OFF;
+SET XACT_ABORT ON;
+IF @@TRANCOUNT<>0 THROW 51950,'Ejecutar migracion sin transaccion externa.',1;
 BEGIN TRANSACTION;
 IF OBJECT_ID('dbo.Compras','U') IS NULL CREATE TABLE dbo.Compras(idCompra int IDENTITY CONSTRAINT PK_Compras PRIMARY KEY,idProveedor int NOT NULL CONSTRAINT FK_Compras_Proveedor REFERENCES dbo.Proveedores(idProveedor),idUsuario int NOT NULL CONSTRAINT FK_Compras_Usuario REFERENCES dbo.Usuarios(idUsuario),fecha datetime2 NOT NULL CONSTRAINT DF_Compras_Fecha DEFAULT(SYSDATETIME()),total decimal(18,2) NOT NULL CONSTRAINT CK_Compras_Total CHECK(total>0),operacion uniqueidentifier NOT NULL CONSTRAINT UQ_Compras_Operacion UNIQUE,huella varbinary(32) NOT NULL);
 IF OBJECT_ID('dbo.DetalleCompras','U') IS NULL CREATE TABLE dbo.DetalleCompras(idDetalleCompra int IDENTITY CONSTRAINT PK_DetalleCompras PRIMARY KEY,idCompra int NOT NULL CONSTRAINT FK_DetalleCompras_Compra REFERENCES dbo.Compras(idCompra),idProducto int NOT NULL CONSTRAINT FK_DetalleCompras_Producto REFERENCES dbo.Productos(idProducto),cantidad int NOT NULL CONSTRAINT CK_DetalleCompras_Cantidad CHECK(cantidad>0),costoUnitario decimal(18,2) NOT NULL CONSTRAINT CK_DetalleCompras_Costo CHECK(costoUnitario>0),subtotal decimal(18,2) NOT NULL CONSTRAINT CK_DetalleCompras_Subtotal CHECK(subtotal=cantidad*costoUnitario),CONSTRAINT UQ_DetalleCompras_Producto UNIQUE(idCompra,idProducto));
 IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID('dbo.Compras') AND name='IX_Compras_FechaProveedor') CREATE INDEX IX_Compras_FechaProveedor ON dbo.Compras(fecha,idProveedor) INCLUDE(total,idUsuario);
-COMMIT;
+-- La transaccion continua hasta desplegar todos los contratos.
 GO
 IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('ServerName'))<>N'$(QaExpectedServer)'
  THROW 51200,'Destino rechazado: solo QA verificada.',1;
 IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'ForzaQaEnvironment' AND CONVERT(nvarchar(128),value)=N'Forza-QA-Aislada-v1') THROW 51201,'Falta marca QA.',1;
-SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON;
+SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON; SET ARITHABORT ON; SET CONCAT_NULL_YIELDS_NULL ON; SET NUMERIC_ROUNDABORT OFF;
 EXEC sys.sp_executesql N'CREATE OR ALTER PROCEDURE dbo.sp_Compras_Registrar @idActor int,@idProveedor int,@operacion uniqueidentifier,@detalles xml
 AS
 BEGIN
@@ -53,7 +56,7 @@ GO
 IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('ServerName'))<>N'$(QaExpectedServer)'
  THROW 51200,'Destino rechazado: solo QA verificada.',1;
 IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'ForzaQaEnvironment' AND CONVERT(nvarchar(128),value)=N'Forza-QA-Aislada-v1') THROW 51201,'Falta marca QA.',1;
-SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON;
+SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON; SET ARITHABORT ON; SET CONCAT_NULL_YIELDS_NULL ON; SET NUMERIC_ROUNDABORT OFF;
 EXEC sys.sp_executesql N'CREATE OR ALTER PROCEDURE dbo.sp_Compras_Historial @idActor int,@desde date,@hasta date,@idProveedor int=NULL
 AS
 BEGIN
@@ -68,7 +71,7 @@ GO
 IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('ServerName'))<>N'$(QaExpectedServer)'
  THROW 51200,'Destino rechazado: solo QA verificada.',1;
 IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'ForzaQaEnvironment' AND CONVERT(nvarchar(128),value)=N'Forza-QA-Aislada-v1') THROW 51201,'Falta marca QA.',1;
-SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON;
+SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON; SET ARITHABORT ON; SET CONCAT_NULL_YIELDS_NULL ON; SET NUMERIC_ROUNDABORT OFF;
 EXEC sys.sp_executesql N'CREATE OR ALTER PROCEDURE dbo.sp_Compras_Detalle @idActor int,@idCompra int
 AS
 BEGIN
@@ -76,4 +79,10 @@ BEGIN
 IF NOT EXISTS(SELECT 1 FROM dbo.Usuarios u JOIN dbo.Perfiles p ON p.idPerfil=u.idPerfil WHERE u.idUsuario=@idActor AND u.activo=1 AND p.activo=1 AND UPPER(p.nombrePerfil)=''GERENTE'') THROW 51603,''Solo gerente activo.'',1;
 SELECT d.idProducto IdProducto,p.nombre Nombre,d.cantidad Cantidad,d.costoUnitario CostoUnitario,d.subtotal Subtotal FROM dbo.DetalleCompras d JOIN dbo.Productos p ON p.idProducto=d.idProducto WHERE idCompra=@idCompra ORDER BY d.idDetalleCompra;
 END;';
+GO
+IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('ServerName'))<>N'$(QaExpectedServer)'
+ THROW 51200,'Destino rechazado: solo QA verificada.',1;
+IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'ForzaQaEnvironment' AND CONVERT(nvarchar(128),value)=N'Forza-QA-Aislada-v1') THROW 51201,'Falta marca QA.',1;
+IF @@TRANCOUNT<>1 THROW 51951,'Transaccion de migracion inesperada: detener.',1;
+COMMIT TRANSACTION;
 GO

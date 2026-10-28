@@ -6,6 +6,8 @@ IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'For
 
 IF OBJECT_ID('dbo.Compras','U') IS NULL THROW 51800,'Requiere 007.',1;
 SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON; SET ARITHABORT ON; SET CONCAT_NULL_YIELDS_NULL ON; SET NUMERIC_ROUNDABORT OFF;
+SET XACT_ABORT ON;
+IF @@TRANCOUNT<>0 THROW 51950,'Ejecutar migracion sin transaccion externa.',1;
 BEGIN TRANSACTION;
 IF COL_LENGTH('dbo.Productos','stockMinimo') IS NULL ALTER TABLE dbo.Productos ADD stockMinimo int NOT NULL CONSTRAINT DF_Productos_StockMinimo DEFAULT(0) CONSTRAINT CK_Productos_StockMinimo CHECK(stockMinimo>=0);
 IF OBJECT_ID('dbo.MovimientosStock','U') IS NULL CREATE TABLE dbo.MovimientosStock(idMovimiento int IDENTITY CONSTRAINT PK_MovimientosStock PRIMARY KEY,idProducto int NOT NULL CONSTRAINT FK_Movimientos_Producto REFERENCES dbo.Productos(idProducto),idUsuario int NOT NULL CONSTRAINT FK_Movimientos_Usuario REFERENCES dbo.Usuarios(idUsuario),fecha datetime2 NOT NULL CONSTRAINT DF_Movimientos_Fecha DEFAULT(SYSDATETIME()),tipo varchar(10) NOT NULL,cantidad int NOT NULL,anterior int NOT NULL,posterior int NOT NULL,motivo nvarchar(250) NOT NULL,idCompra int NULL CONSTRAINT FK_Movimientos_Compra REFERENCES dbo.Compras(idCompra),idVenta int NULL CONSTRAINT FK_Movimientos_Venta REFERENCES dbo.Ventas(idVenta),operacion uniqueidentifier NULL,CONSTRAINT CK_Movimientos_Stock CHECK(anterior>=0 AND posterior>=0 AND CONVERT(bigint,posterior)=CONVERT(bigint,anterior)+cantidad AND cantidad<>0),CONSTRAINT CK_Movimientos_Motivo CHECK(LEN(LTRIM(RTRIM(motivo)))>0),CONSTRAINT CK_Movimientos_Tipo CHECK((tipo='Compra' AND cantidad>0 AND idCompra IS NOT NULL AND idVenta IS NULL AND operacion IS NULL) OR (tipo='Venta' AND cantidad<0 AND idVenta IS NOT NULL AND idCompra IS NULL AND operacion IS NULL) OR (tipo='Ajuste' AND idCompra IS NULL AND idVenta IS NULL AND operacion IS NOT NULL)));
@@ -13,7 +15,7 @@ IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID('dbo.Movimient
 IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID('dbo.MovimientosStock') AND name='UX_Movimientos_Compra') CREATE UNIQUE INDEX UX_Movimientos_Compra ON dbo.MovimientosStock(idCompra,idProducto) WHERE idCompra IS NOT NULL;
 IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID('dbo.MovimientosStock') AND name='UX_Movimientos_Venta') CREATE UNIQUE INDEX UX_Movimientos_Venta ON dbo.MovimientosStock(idVenta,idProducto) WHERE idVenta IS NOT NULL;
 IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID('dbo.MovimientosStock') AND name='IX_Movimientos_FechaProducto') CREATE INDEX IX_Movimientos_FechaProducto ON dbo.MovimientosStock(fecha,idProducto);
-COMMIT;
+-- La transaccion continua hasta desplegar todos los contratos.
 GO
 IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('ServerName'))<>N'$(QaExpectedServer)'
  THROW 51200,'Destino rechazado: solo QA verificada.',1;
@@ -221,4 +223,10 @@ INSERT dbo.Productos(idCategoria,nombre,descripcion,precio,stock,activo) VALUES(
 SET @nuevoId=CONVERT(int,SCOPE_IDENTITY());
 
 END;';
+GO
+IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('ServerName'))<>N'$(QaExpectedServer)'
+ THROW 51200,'Destino rechazado: solo QA verificada.',1;
+IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'ForzaQaEnvironment' AND CONVERT(nvarchar(128),value)=N'Forza-QA-Aislada-v1') THROW 51201,'Falta marca QA.',1;
+IF @@TRANCOUNT<>1 THROW 51951,'Transaccion de migracion inesperada: detener.',1;
+COMMIT TRANSACTION;
 GO

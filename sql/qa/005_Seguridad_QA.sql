@@ -4,18 +4,21 @@ IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('
  THROW 51200,'Destino rechazado: solo QA verificada.',1;
 IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'ForzaQaEnvironment' AND CONVERT(nvarchar(128),value)=N'Forza-QA-Aislada-v1')
  THROW 51201,'Falta marca QA.',1;
+SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON; SET ARITHABORT ON; SET CONCAT_NULL_YIELDS_NULL ON; SET NUMERIC_ROUNDABORT OFF;
+SET XACT_ABORT ON;
+IF @@TRANCOUNT<>0 THROW 51950,'Ejecutar migracion sin transaccion externa.',1;
 BEGIN TRANSACTION;
 IF COL_LENGTH('dbo.Perfiles','activo') IS NULL ALTER TABLE dbo.Perfiles ADD activo bit NOT NULL CONSTRAINT DF_Perfiles_Activo DEFAULT(1);
 IF OBJECT_ID('dbo.SeguridadEstado','U') IS NULL CREATE TABLE dbo.SeguridadEstado(id int NOT NULL CONSTRAINT PK_SeguridadEstado PRIMARY KEY,activa bit NOT NULL,CONSTRAINT CK_SeguridadEstado_Id CHECK(id=1));
 IF NOT EXISTS(SELECT 1 FROM dbo.SeguridadEstado WHERE id=1) INSERT dbo.SeguridadEstado VALUES(1,0);
 IF OBJECT_ID('dbo.CredencialesUsuario','U') IS NULL CREATE TABLE dbo.CredencialesUsuario(idUsuario int NOT NULL CONSTRAINT PK_CredencialesUsuario PRIMARY KEY CONSTRAINT FK_Credenciales_Usuario REFERENCES dbo.Usuarios(idUsuario),formato varchar(256) NOT NULL,fechaCambio datetime2 NOT NULL CONSTRAINT DF_Credenciales_Fecha DEFAULT(SYSUTCDATETIME()),CONSTRAINT CK_Credenciales_Formato CHECK(formato LIKE 'PBKDF2-SHA256$1$600000$%'));
-COMMIT;
+-- La transaccion continua hasta desplegar todos los contratos.
 GO
 IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('ServerName'))<>N'$(QaExpectedServer)'
  THROW 51200,'Destino rechazado: solo QA verificada.',1;
 IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'ForzaQaEnvironment' AND CONVERT(nvarchar(128),value)=N'Forza-QA-Aislada-v1')
  THROW 51201,'Falta marca QA.',1;
-SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON;
+SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON; SET ARITHABORT ON; SET CONCAT_NULL_YIELDS_NULL ON; SET NUMERIC_ROUNDABORT OFF;
 EXEC sys.sp_executesql N'CREATE OR ALTER PROCEDURE dbo.sp_Seguridad_Estado 
 AS
 BEGIN
@@ -27,7 +30,7 @@ IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('
  THROW 51200,'Destino rechazado: solo QA verificada.',1;
 IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'ForzaQaEnvironment' AND CONVERT(nvarchar(128),value)=N'Forza-QA-Aislada-v1')
  THROW 51201,'Falta marca QA.',1;
-SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON;
+SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON; SET ARITHABORT ON; SET CONCAT_NULL_YIELDS_NULL ON; SET NUMERIC_ROUNDABORT OFF;
 EXEC sys.sp_executesql N'CREATE OR ALTER PROCEDURE dbo.sp_Seguridad_Credencial @usuario varchar(50)
 AS
 BEGIN
@@ -43,7 +46,7 @@ IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('
  THROW 51200,'Destino rechazado: solo QA verificada.',1;
 IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'ForzaQaEnvironment' AND CONVERT(nvarchar(128),value)=N'Forza-QA-Aislada-v1')
  THROW 51201,'Falta marca QA.',1;
-SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON;
+SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON; SET ARITHABORT ON; SET CONCAT_NULL_YIELDS_NULL ON; SET NUMERIC_ROUNDABORT OFF;
 EXEC sys.sp_executesql N'CREATE OR ALTER PROCEDURE dbo.sp_Seguridad_Cambiar @idActor int,@idDestino int,@nuevo varchar(256),@anterior varchar(256)=NULL
 AS
 BEGIN
@@ -70,7 +73,7 @@ IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('
  THROW 51200,'Destino rechazado: solo QA verificada.',1;
 IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'ForzaQaEnvironment' AND CONVERT(nvarchar(128),value)=N'Forza-QA-Aislada-v1')
  THROW 51201,'Falta marca QA.',1;
-SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON;
+SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON; SET ARITHABORT ON; SET CONCAT_NULL_YIELDS_NULL ON; SET NUMERIC_ROUNDABORT OFF;
 EXEC sys.sp_executesql N'CREATE OR ALTER PROCEDURE dbo.sp_Seguridad_UsuarioGuardar @idActor int,@idUsuario int,@idPerfil int,@nombre varchar(50),@apellido varchar(50),@usuario varchar(50),@email varchar(100),@dni varchar(20),@calle varchar(100),@altura varchar(20),@telefono varchar(30),@fechaNacimiento date,@sexo char(1),@formato varchar(256)=NULL
 AS
 BEGIN
@@ -105,7 +108,7 @@ IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('
  THROW 51200,'Destino rechazado: solo QA verificada.',1;
 IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'ForzaQaEnvironment' AND CONVERT(nvarchar(128),value)=N'Forza-QA-Aislada-v1')
  THROW 51201,'Falta marca QA.',1;
-SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON;
+SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON; SET ARITHABORT ON; SET CONCAT_NULL_YIELDS_NULL ON; SET NUMERIC_ROUNDABORT OFF;
 EXEC sys.sp_executesql N'CREATE OR ALTER PROCEDURE dbo.sp_Seguridad_Provisionar @idUsuario int,@formato varchar(256)
 AS
 BEGIN
@@ -126,7 +129,7 @@ IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('
  THROW 51200,'Destino rechazado: solo QA verificada.',1;
 IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'ForzaQaEnvironment' AND CONVERT(nvarchar(128),value)=N'Forza-QA-Aislada-v1')
  THROW 51201,'Falta marca QA.',1;
-SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON;
+SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON; SET ARITHABORT ON; SET CONCAT_NULL_YIELDS_NULL ON; SET NUMERIC_ROUNDABORT OFF;
 EXEC sys.sp_executesql N'CREATE OR ALTER PROCEDURE dbo.sp_Seguridad_Activar @confirmacion varchar(50)
 AS
 BEGIN
@@ -149,7 +152,7 @@ IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('
  THROW 51200,'Destino rechazado: solo QA verificada.',1;
 IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'ForzaQaEnvironment' AND CONVERT(nvarchar(128),value)=N'Forza-QA-Aislada-v1')
  THROW 51201,'Falta marca QA.',1;
-SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON;
+SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON; SET ARITHABORT ON; SET CONCAT_NULL_YIELDS_NULL ON; SET NUMERIC_ROUNDABORT OFF;
 EXEC sys.sp_executesql N'CREATE OR ALTER PROCEDURE dbo.sp_Usuarios_Login @usuario varchar(50),@contrasena varchar(100)
 AS
 BEGIN
@@ -160,4 +163,29 @@ SELECT u.idUsuario,u.idPerfil,p.nombrePerfil,u.nombre,u.apellido FROM dbo.Usuari
 WHERE u.usuario=@usuario AND u.contrasena=@contrasena AND u.activo=1 AND p.activo=1;
 
 END;';
+GO
+IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('ServerName'))<>N'$(QaExpectedServer)'
+ THROW 51200,'Destino rechazado: solo QA verificada.',1;
+IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'ForzaQaEnvironment' AND CONVERT(nvarchar(128),value)=N'Forza-QA-Aislada-v1') THROW 51201,'Falta marca QA.',1;
+SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON;
+EXEC sys.sp_executesql N'CREATE OR ALTER PROCEDURE dbo.sp_Seguridad_RecuperarAdministrador @idUsuario int,@formato varchar(256),@confirmacion varchar(50)
+AS
+BEGIN
+ SET NOCOUNT ON; SET XACT_ABORT ON;
+
+IF ISNULL(IS_MEMBER(''db_owner''),0)<>1 AND ISNULL(IS_SRVROLEMEMBER(''sysadmin''),0)<>1 THROW 51507,''Solo operador SQL autorizado.'',1;
+IF @confirmacion<>''RECUPERAR_SOLO_ADMINISTRADOR'' THROW 51508,''Falta confirmacion.'',1;
+IF NOT EXISTS(SELECT 1 FROM dbo.SeguridadEstado WHERE activa=1) THROW 51501,''Usar provision antes del corte.'',1;
+IF NOT EXISTS(SELECT 1 FROM dbo.Usuarios u JOIN dbo.Perfiles p ON p.idPerfil=u.idPerfil WHERE u.idUsuario=@idUsuario AND u.activo=1 AND p.activo=1 AND UPPER(p.nombrePerfil)=''ADMINISTRADOR'') THROW 51503,''No es administrador activo.'',1;
+IF @formato NOT LIKE ''PBKDF2-SHA256$1$600000$%'' THROW 51502,''Formato no admitido.'',1;
+UPDATE dbo.CredencialesUsuario SET formato=@formato,fechaCambio=SYSUTCDATETIME() WHERE idUsuario=@idUsuario;
+IF @@ROWCOUNT=0 THROW 51505,''Falta credencial de administrador.'',1;
+
+END;';
+GO
+IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('ServerName'))<>N'$(QaExpectedServer)'
+ THROW 51200,'Destino rechazado: solo QA verificada.',1;
+IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'ForzaQaEnvironment' AND CONVERT(nvarchar(128),value)=N'Forza-QA-Aislada-v1') THROW 51201,'Falta marca QA.',1;
+IF @@TRANCOUNT<>1 THROW 51951,'Transaccion de migracion inesperada: detener.',1;
+COMMIT TRANSACTION;
 GO

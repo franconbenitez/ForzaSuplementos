@@ -173,3 +173,8 @@ Ventas selecciona clientes y productos mediante búsqueda y grillas oscuras, con
 ## Dashboards y esquema QA
 
 [Inventario real](docs/INVENTARIO_BASE_DATOS.md) y [diagrama ER](docs/DIAGRAMA_ER.md): 11 tablas (10 de aplicación y qa.Fixtures), 11 FK y 30 SP después de aplicar 004 en QA. [Dashboards por perfil](docs/DASHBOARDS_REPORTES.md): evolución, unidades, rankings y auditoría habilitados y validados en QA mediante 004; cada instalación independiente requiere autorización para su migración. [Resultados y límites](docs/RESULTADOS_REPORTES_QA.md). No ejecutar migraciones ni fixtures sin autorización.
+
+
+## Avance intensivo (28/10/2026)
+
+[Entrega y límites](docs/ENTREGA_AVANCE_INTENSIVO.md), [checklist del usuario](docs/GUIA_PRUEBAS_USUARIO.md), [modelo proyectado no desplegado](docs/DIAGRAMA_ER_PROYECTADO.md) y [transición de contraseñas](docs/SEGURIDAD_CONTRASENAS.md). Dashboards completos habilitados en QA. Seguridad, proveedores/marcas, compras e inventario desarrollados, con operaciones pendientes de autorización y despliegue de 005–008. No ejecutar estas migraciones como parte del inicio de la aplicación.

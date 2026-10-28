@@ -1,4 +1,4 @@
-Imports System.Text.RegularExpressions
+﻿Imports System.Text.RegularExpressions
 Imports ForzaSuplementos.Datos
 Imports ForzaSuplementos.Entidades
 
@@ -46,6 +46,8 @@ Public Class UsuarioBLL
     End Sub
 
     Private Sub ValidarDatosUsuario(u As Usuario)
+        If u Is Nothing Then Throw New ApplicationException("Usuario inválido.")
+        If If(u.Nombre, "").Length > 50 OrElse If(u.Apellido, "").Length > 50 OrElse If(u.NombreUsuario, "").Length > 50 OrElse If(u.Email, "").Length > 100 OrElse If(u.Calle, "").Length > 100 OrElse If(u.Altura, "").Length > 20 OrElse If(u.Telefono, "").Length > 30 Then Throw New ApplicationException("Algún campo supera el tamaño permitido.")
         ' 1. Nada vacío
         If String.IsNullOrWhiteSpace(u.Nombre) Then Throw New ApplicationException("El Nombre no puede estar vacío.")
         If String.IsNullOrWhiteSpace(u.Apellido) Then Throw New ApplicationException("El Apellido no puede estar vacío.")
@@ -81,6 +83,7 @@ Public Class UsuarioBLL
             Throw New ApplicationException("Debe ingresar usuario y contraseña.")
         End If
 
+        If usuario.Length > 50 OrElse contrasena.Length > 256 Then Throw New ApplicationException("Usuario o contraseña incorrectos.")
         Dim seguridad As New SeguridadBLL()
         Dim userLogueado = If(seguridad.Activa(), seguridad.Login(usuario, contrasena), _usuarioDAL.Login(usuario, contrasena))
         If userLogueado Is Nothing Then

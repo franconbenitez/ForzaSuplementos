@@ -136,3 +136,8 @@ El aplicador verifica el destino en lectura, conserva las definiciones previas d
 Para una primera instalación en la que ambos SP eran nuevos, hay un script opcional de retiro en rollback/004_Reportes_Dashboards_QA.rollback.sql, igualmente protegido por base/servidor/marca y una variable adicional de autorización. No usarlo para eliminar definiciones anteriores que deban restaurarse. No se ejecutó ningún retiro.
 
 Los 15 ensayos ficticios aprobaron con rollback; el runner está en tests/qa/Probar-Dashboards-Preparados.ps1; requieren que 004 ya esté aplicada y **otra autorización de escrituras QA**. Crean filas nuevas en una transacción y siempre hacen rollback; no generan backups físicos ni alteran registros previos. Sin -AutorizarFixtures no conectan ni escriben. Ver docs/DASHBOARDS_REPORTES.md para fórmulas, limitaciones y validación pendiente.
+
+
+## Propuestas 005–008 — NO EJECUTADAS
+
+Ver docs/ENTREGA_AVANCE_INTENSIVO.md para orden, alcance, transacciones, recuperación y pruebas pendientes. 005 prepara seguridad sin activar claves; 006 proveedores/marcas; 007 compras; 008 movimientos y stock mínimo. Cada archivo exige QA/instancia/marca y una conexión sin transacción previa. No usar Aplicar-Reportes-QA.ps1 para estos scripts. El corte de seguridad y todos los fixtures requieren autorizaciones específicas adicionales. QA sigue con 11 tablas y 30 SP.
