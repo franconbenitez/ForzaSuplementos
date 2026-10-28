@@ -82,7 +82,7 @@ Public Class FrmUsuarios
                 .Nombre = txtNombre.Text.Trim(),
                 .Apellido = txtApellido.Text.Trim(),
                 .NombreUsuario = txtUsuario.Text.Trim(),
-                .Contrasena = txtContrasena.Text.Trim(),
+                .Contrasena = txtContrasena.Text,
                 .Email = txtEmail.Text.Trim(),
                 .Dni = txtDni.Text.Trim(),
                 .Calle = txtCalle.Text.Trim(),

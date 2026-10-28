@@ -74,6 +74,7 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FrmInventario.vb" />
     <Compile Include="FrmCompras.vb" />
     <Compile Include="FrmCatalogoComercial.vb" />
     <Compile Include="FrmBackup.Designer.vb">

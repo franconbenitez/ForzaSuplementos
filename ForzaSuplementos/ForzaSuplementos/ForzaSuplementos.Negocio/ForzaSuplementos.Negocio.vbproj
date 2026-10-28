@@ -64,6 +64,7 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="InventarioBLL.vb" />
     <Compile Include="CompraBLL.vb" />
     <Compile Include="ComercialBLL.vb" />
     <Compile Include="SeguridadBLL.vb" />

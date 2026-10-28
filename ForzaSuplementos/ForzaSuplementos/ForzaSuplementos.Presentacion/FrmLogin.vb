@@ -20,7 +20,7 @@ Public Class FrmLogin
         _autenticando = True
         btnIngresar.Enabled = False
         Try
-            Dim userLogueado = Autenticar(txtUsuario.Text.Trim(), txtContrasena.Text.Trim())
+            Dim userLogueado = Autenticar(txtUsuario.Text.Trim(), txtContrasena.Text)
             MostrarPrincipal(userLogueado)
 
         Catch ex As ApplicationException
