@@ -141,6 +141,7 @@ Public Class UsuarioDAL
                     If dr.Read() Then
                         Return New Usuario() With {
                             .IdUsuario = CInt(dr("idUsuario")),
+                            .Activo = True,
                             .IdPerfil = CInt(dr("idPerfil")),
                             .NombrePerfil = dr("nombrePerfil").ToString(),
                             .Nombre = dr("nombre").ToString(),

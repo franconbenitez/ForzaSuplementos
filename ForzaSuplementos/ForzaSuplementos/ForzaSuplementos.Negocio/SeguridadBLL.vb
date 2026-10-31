@@ -1,4 +1,4 @@
-Option Strict On
+﻿Option Strict On
 Imports ForzaSuplementos.Datos
 Imports ForzaSuplementos.Entidades
 Public Class SeguridadBLL
@@ -20,6 +20,7 @@ Public Class SeguridadBLL
             Return Nothing
         End If
         If Not ClaveSegura.Verificar(clave, credencial.Formato) Then Return Nothing
+        If credencial.Cuenta Is Nothing OrElse Not credencial.Cuenta.Activo OrElse Not Permisos.Puede(credencial.Cuenta, Permiso.Reportes) Then Return Nothing
         Return credencial.Cuenta
     End Function
     Public Sub Cambiar(actor As Usuario, nombre As String, actual As String, nueva As String)

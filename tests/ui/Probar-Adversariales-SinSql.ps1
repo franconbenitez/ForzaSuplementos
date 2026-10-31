@@ -1,4 +1,4 @@
-param([string]$Configuration='Debug')
+﻿param([string]$Configuration='Debug')
 $ErrorActionPreference='Stop'
 $root=Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $out=Join-Path $root "ForzaSuplementos/ForzaSuplementos/ForzaSuplementos.Presentacion/bin/$Configuration"
@@ -98,5 +98,12 @@ try{
  }finally{$r.Dispose();$hostMdi.Dispose()}
  $actor=New-Object ForzaSuplementos.Entidades.Usuario;$actor.IdUsuario=1;$actor.NombrePerfil='VENDEDOR';$caja=New-Object ForzaSuplementos.Negocio.CajaBLL
  Reject 'Caja rechaza fechas fuera del rango SQL antes de conectar' {$caja.Historial($actor,[datetime]'1700-01-01',[datetime]'2026-01-01')}
+ $cred=New-Object CredencialMemoria;$identidad=New-Object ForzaSuplementos.Entidades.Usuario;$identidad.IdUsuario=37;$identidad.NombrePerfil='VENDEDOR'
+ $entrada='Clave sintetica validacion 2026!';$formato=[ForzaSuplementos.Negocio.ClaveSegura]::Crear($entrada)
+ $valor=New-Object ForzaSuplementos.Entidades.CredencialAcceso;$valor.Cuenta=$identidad;$valor.Formato=$formato;$cred.Valor=$valor
+ $seguridad=New-Object ForzaSuplementos.Negocio.SeguridadBLL($cred)
+ Check ($null -eq $seguridad.Login('qa',$entrada)) 'Cuenta inactiva no autentica aunque la clave coincida en el doble DAL'
+ $identidad.Activo=$true;Check ($null -ne $seguridad.Login('qa',$entrada)) 'Cuenta activa con perfil valido autentica en memoria'
+ $identidad.NombrePerfil='DESCONOCIDO';Check ($null -eq $seguridad.Login('qa',$entrada)) 'Perfil fuera de la matriz no autentica'
  Write-Output "TOTAL ADVERSARIALES OFFLINE: $n aprobadas. Sin SQL."
 }finally{$env:FORZA_ENTORNO=$old}

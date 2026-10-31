@@ -86,7 +86,7 @@ Public Class UsuarioBLL
         If usuario.Length > 50 OrElse contrasena.Length > 256 Then Throw New ApplicationException("Usuario o contraseña incorrectos.")
         Dim seguridad As New SeguridadBLL()
         Dim userLogueado = If(seguridad.Activa(), seguridad.Login(usuario, contrasena), _usuarioDAL.Login(usuario, contrasena))
-        If userLogueado Is Nothing Then
+        If userLogueado Is Nothing OrElse Not userLogueado.Activo OrElse Not Permisos.Puede(userLogueado, Permiso.Reportes) Then
             Throw New ApplicationException("Usuario o contraseña incorrectos, o el usuario está inactivo.")
         End If
 

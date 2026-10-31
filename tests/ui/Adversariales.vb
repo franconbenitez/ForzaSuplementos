@@ -6,6 +6,7 @@ Imports System.Collections.Generic
 Imports System.Reflection
 Imports System.Threading.Tasks
 Imports System.Windows.Forms
+Imports ForzaSuplementos.Datos
 Imports ForzaSuplementos.Entidades
 Imports ForzaSuplementos.Negocio
 Imports ForzaSuplementos.Presentacion
@@ -124,4 +125,12 @@ Public Class ReportesAdversarial
                                      End Function
         GetType(FrmReportes).GetMethod("ConsultaHeredada", BindingFlags.Instance Or BindingFlags.NonPublic).Invoke(Me, New Object() {f})
     End Sub
+End Class
+
+Public Class CredencialMemoria
+    Inherits SeguridadDAL
+    Public Valor As CredencialAcceso
+    Public Overrides Function Obtener(nombre As String) As CredencialAcceso
+        Return Valor
+    End Function
 End Class
