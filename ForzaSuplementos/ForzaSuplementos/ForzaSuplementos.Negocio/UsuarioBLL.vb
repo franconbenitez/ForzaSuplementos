@@ -26,6 +26,7 @@ Public Class UsuarioBLL
             dalSeguro.Guardar(u, actor, formato)
             Return
         End If
+        If Not String.IsNullOrEmpty(u.Contrasena) Then UsuarioDAL.ValidarClaveHeredada(u.Contrasena)
         If u.IdUsuario = 0 Then
             _usuarioDAL.Insertar(u)
         Else

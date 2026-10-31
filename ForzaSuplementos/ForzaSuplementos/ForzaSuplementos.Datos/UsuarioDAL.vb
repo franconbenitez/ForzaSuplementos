@@ -131,6 +131,7 @@ Public Class UsuarioDAL
     End Sub
 
     Public Function Login(usuario As String, contrasena As String) As Usuario
+        ValidarClaveHeredada(contrasena)
         Using cn As SqlConnection = Conexion.ObtenerConexion()
             Using cmd As New SqlCommand("sp_Usuarios_Login", cn)
                 cmd.CommandType = CommandType.StoredProcedure
@@ -153,4 +154,7 @@ Public Class UsuarioDAL
         End Using
         Return Nothing ' Si no encuentra coincidencia, devuelve nada
     End Function
+    Public Shared Sub ValidarClaveHeredada(clave As String)
+        If String.IsNullOrWhiteSpace(clave) OrElse clave.Length > 100 Then Throw New ApplicationException("La contraseña del modo heredado debe contener entre 1 y 100 caracteres; no se truncará.")
+    End Sub
 End Class
