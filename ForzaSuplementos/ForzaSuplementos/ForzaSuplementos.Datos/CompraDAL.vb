@@ -7,10 +7,10 @@ Public Class CompraDAL
     Public Overridable Function Registrar(actor As Usuario, compra As Compra) As Integer
         Dim xml As New XElement("detalles")
         For Each d In compra.Detalles
-            xml.Add(New XElement("item", New XAttribute("producto", d.IdProducto), New XAttribute("cantidad", d.Cantidad), New XAttribute("costo", d.CostoUnitario.ToString(System.Globalization.CultureInfo.InvariantCulture))))
+            xml.Add(New XElement("item", New XAttribute("producto", d.IdProducto), New XAttribute("cantidad", d.Cantidad), New XAttribute("costo", d.CostoUnitario.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture))))
         Next
         Dim t = New ComercialDAL().Consultar("dbo.sp_Compras_Registrar", New SqlParameter("@idActor", actor.IdUsuario), New SqlParameter("@idProveedor", compra.IdProveedor), New SqlParameter("@operacion", SqlDbType.UniqueIdentifier) With {.Value = compra.Operacion}, New SqlParameter("@detalles", SqlDbType.Xml) With {.Value = xml.ToString(SaveOptions.DisableFormatting)})
-        If t.Rows.Count <> 1 Then Throw New ApplicationException("No se recibió confirmación de compra. Conservar carrito y consultar historial antes de reintentar.")
+        If t.Rows.Count <> 1 OrElse Not t.Columns.Contains("IdCompra") OrElse IsDBNull(t.Rows(0)("IdCompra")) OrElse Convert.ToInt32(t.Rows(0)("IdCompra")) <= 0 Then Throw New OperacionInciertaException("No se recibió confirmación de compra. Conservar carrito y consultar historial antes de reintentar.")
         Return CInt(t.Rows(0)("IdCompra"))
     End Function
     Public Overridable Function Historial(actor As Usuario, desde As Date, hasta As Date, proveedor As Integer?) As DataTable

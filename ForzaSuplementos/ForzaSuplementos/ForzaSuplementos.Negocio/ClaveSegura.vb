@@ -7,7 +7,7 @@ Public NotInheritable Class ClaveSegura
     Private Sub New()
     End Sub
     Public Shared Sub Validar(clave As String)
-        If clave Is Nothing OrElse clave.Length < 12 OrElse clave.Length > 256 Then Throw New ApplicationException("Usá una contraseña de 12 a 256 caracteres.")
+        If String.IsNullOrWhiteSpace(clave) OrElse clave.Length < 12 OrElse clave.Length > 256 Then Throw New ApplicationException("Usá una contraseña de 12 a 256 caracteres.")
     End Sub
     Public Shared Function Crear(clave As String) As String
         Validar(clave)

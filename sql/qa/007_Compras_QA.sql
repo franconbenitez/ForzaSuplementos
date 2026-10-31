@@ -1,4 +1,4 @@
-:on error exit
+﻿:on error exit
 -- NO EJECUTADA. Requiere 006. No registra compras al desplegar.
 IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('ServerName'))<>N'$(QaExpectedServer)'
  THROW 51200,'Destino rechazado: solo QA verificada.',1;
@@ -24,7 +24,18 @@ BEGIN
  SET NOCOUNT ON; SET XACT_ABORT ON;
 IF NOT EXISTS(SELECT 1 FROM dbo.Usuarios u JOIN dbo.Perfiles p ON p.idPerfil=u.idPerfil WHERE u.idUsuario=@idActor AND u.activo=1 AND p.activo=1 AND UPPER(p.nombrePerfil)=''GERENTE'') THROW 51603,''Solo gerente activo.'',1;
 
-IF @operacion IS NULL OR @idProveedor<=0 OR @detalles IS NULL THROW 51701,''Compra invalida.'',1;
+IF @operacion IS NULL OR @operacion=''00000000-0000-0000-0000-000000000000'' OR @idProveedor<=0 OR @detalles IS NULL THROW 51701,''Compra invalida.'',1;
+-- No redondear entradas XML malformadas antes de validarlas.
+IF EXISTS(SELECT 1 FROM @detalles.nodes(''/detalles/item'') d(n)
+ WHERE d.n.value(''string-length((@producto)[1])'',''int'') NOT BETWEEN 1 AND 10
+ OR d.n.value(''string-length((@cantidad)[1])'',''int'') NOT BETWEEN 1 AND 10
+ OR d.n.value(''string-length((@costo)[1])'',''int'') NOT BETWEEN 1 AND 13
+ OR d.n.value(''(@producto)[1]'',''varchar(100)'') LIKE ''%[^0-9]%''
+ OR d.n.value(''(@cantidad)[1]'',''varchar(100)'') LIKE ''%[^0-9]%''
+ OR d.n.value(''(@costo)[1]'',''varchar(100)'') LIKE ''%[^0-9.]%''
+ OR LEN(d.n.value(''(@costo)[1]'',''varchar(100)''))-LEN(REPLACE(d.n.value(''(@costo)[1]'',''varchar(100)''),''.'',''''))>1
+ OR (CHARINDEX(''.'',d.n.value(''(@costo)[1]'',''varchar(100)''))>0 AND LEN(d.n.value(''(@costo)[1]'',''varchar(100)''))-CHARINDEX(''.'',d.n.value(''(@costo)[1]'',''varchar(100)''))>2))
+ THROW 51701,''Formato de cantidad o costo invalido; no se redondea.'',1;
 DECLARE @raw TABLE(id int,cantidad int,costo decimal(38,10));
 INSERT @raw SELECT TRY_CONVERT(int,d.n.value(''(@producto)[1]'',''varchar(100)'')),TRY_CONVERT(int,d.n.value(''(@cantidad)[1]'',''varchar(100)'')),TRY_CONVERT(decimal(38,10),d.n.value(''(@costo)[1]'',''varchar(100)'')) FROM @detalles.nodes(''/detalles/item'') d(n);
 IF (SELECT COUNT(*) FROM @raw) NOT BETWEEN 1 AND 500 OR EXISTS(SELECT 1 FROM @raw WHERE id IS NULL OR cantidad IS NULL OR costo IS NULL OR id<=0 OR cantidad<=0 OR costo<=0 OR costo>9999999999.99 OR costo<>ROUND(costo,2)) OR EXISTS(SELECT id FROM @raw GROUP BY id HAVING COUNT(*)>1) THROW 51701,''Detalles invalidos o duplicados.'',1;

@@ -1,4 +1,4 @@
-:on error exit
+﻿:on error exit
 -- PROPUESTA NO EJECUTADA. Desplegar y activar son decisiones separadas.
 IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('ServerName'))<>N'$(QaExpectedServer)'
  THROW 51200,'Destino rechazado: solo QA verificada.',1;
@@ -23,6 +23,7 @@ EXEC sys.sp_executesql N'CREATE OR ALTER PROCEDURE dbo.sp_Seguridad_Estado
 AS
 BEGIN
  SET NOCOUNT ON; SET XACT_ABORT ON;
+IF NOT EXISTS(SELECT 1 FROM dbo.SeguridadEstado WHERE id=1) THROW 51512,''Falta estado de seguridad; detener.'',1;
 SELECT activa FROM dbo.SeguridadEstado WHERE id=1;
 END;';
 GO
@@ -52,7 +53,7 @@ AS
 BEGIN
  SET NOCOUNT ON; SET XACT_ABORT ON;
 IF NOT EXISTS(SELECT 1 FROM dbo.SeguridadEstado WHERE id=1 AND activa=1) THROW 51501,''Seguridad pendiente de activacion.'',1;
-IF @nuevo NOT LIKE ''PBKDF2-SHA256$1$600000$%'' OR LEN(@nuevo)>256 THROW 51502,''Formato no admitido.'',1;
+IF @nuevo IS NULL OR LEN(@nuevo)<>92 OR LEFT(@nuevo,23) COLLATE Latin1_General_100_BIN2<>''PBKDF2-SHA256$1$600000$'' OR SUBSTRING(@nuevo,48,1)<>''$'' OR SUBSTRING(@nuevo,46,2)<>''=='' OR RIGHT(@nuevo,1)<>''='' OR SUBSTRING(@nuevo,24,22) COLLATE Latin1_General_100_BIN2 LIKE ''%[^A-Za-z0-9+/]%'' OR SUBSTRING(@nuevo,49,43) COLLATE Latin1_General_100_BIN2 LIKE ''%[^A-Za-z0-9+/]%'' THROW 51502,''Formato no admitido.'',1;
 BEGIN TRY
  BEGIN TRANSACTION;
  IF NOT EXISTS(SELECT 1 FROM dbo.Usuarios u WITH(UPDLOCK,HOLDLOCK) JOIN dbo.Perfiles p ON p.idPerfil=u.idPerfil WHERE u.idUsuario=@idActor AND u.activo=1 AND p.activo=1) THROW 51503,''Actor no activo.'',1;
@@ -83,7 +84,7 @@ BEGIN TRY
  BEGIN TRANSACTION;
  IF NOT EXISTS(SELECT 1 FROM dbo.Usuarios u JOIN dbo.Perfiles p ON p.idPerfil=u.idPerfil WHERE u.idUsuario=@idActor AND u.activo=1 AND p.activo=1 AND UPPER(p.nombrePerfil)=''ADMINISTRADOR'') THROW 51503,''Solo administrador activo.'',1;
  IF NOT EXISTS(SELECT 1 FROM dbo.Perfiles WHERE idPerfil=@idPerfil AND activo=1) THROW 51506,''Perfil inactivo.'',1;
- IF @formato IS NOT NULL AND @formato NOT LIKE ''PBKDF2-SHA256$1$600000$%'' THROW 51502,''Formato no admitido.'',1;
+ IF @formato IS NOT NULL AND (@formato IS NULL OR LEN(@formato)<>92 OR LEFT(@formato,23) COLLATE Latin1_General_100_BIN2<>''PBKDF2-SHA256$1$600000$'' OR SUBSTRING(@formato,48,1)<>''$'' OR SUBSTRING(@formato,46,2)<>''=='' OR RIGHT(@formato,1)<>''='' OR SUBSTRING(@formato,24,22) COLLATE Latin1_General_100_BIN2 LIKE ''%[^A-Za-z0-9+/]%'' OR SUBSTRING(@formato,49,43) COLLATE Latin1_General_100_BIN2 LIKE ''%[^A-Za-z0-9+/]%'') THROW 51502,''Formato no admitido.'',1;
  IF @idUsuario=0
  BEGIN
   IF @formato IS NULL THROW 51502,''Nueva cuenta requiere credencial.'',1;
@@ -114,14 +115,17 @@ AS
 BEGIN
  SET NOCOUNT ON; SET XACT_ABORT ON;
 
-IF IS_MEMBER(''db_owner'')<>1 AND IS_SRVROLEMEMBER(''sysadmin'')<>1 THROW 51507,''Provision solo por operador SQL autorizado.'',1;
+IF ISNULL(IS_MEMBER(''db_owner''),0)<>1 AND ISNULL(IS_SRVROLEMEMBER(''sysadmin''),0)<>1 THROW 51507,''Provision solo por operador SQL autorizado.'',1;
 IF EXISTS(SELECT 1 FROM dbo.SeguridadEstado WHERE activa=1) THROW 51508,''Tras activar usar restablecimiento autenticado.'',1;
-IF @formato NOT LIKE ''PBKDF2-SHA256$1$600000$%'' THROW 51502,''Formato invalido.'',1;
+IF @formato IS NULL OR LEN(@formato)<>92 OR LEFT(@formato,23) COLLATE Latin1_General_100_BIN2<>''PBKDF2-SHA256$1$600000$'' OR SUBSTRING(@formato,48,1)<>''$'' OR SUBSTRING(@formato,46,2)<>''=='' OR RIGHT(@formato,1)<>''='' OR SUBSTRING(@formato,24,22) COLLATE Latin1_General_100_BIN2 LIKE ''%[^A-Za-z0-9+/]%'' OR SUBSTRING(@formato,49,43) COLLATE Latin1_General_100_BIN2 LIKE ''%[^A-Za-z0-9+/]%'' THROW 51502,''Formato invalido.'',1;
 IF NOT EXISTS(SELECT 1 FROM dbo.Usuarios WHERE idUsuario=@idUsuario) THROW 51505,''Usuario inexistente.'',1;
+BEGIN TRY
 BEGIN TRANSACTION;
+IF NOT EXISTS(SELECT 1 FROM dbo.SeguridadEstado WITH(UPDLOCK,HOLDLOCK) WHERE id=1 AND activa=0) THROW 51508,''No provisionar despues del corte.'',1;
 UPDATE dbo.CredencialesUsuario WITH(UPDLOCK,HOLDLOCK) SET formato=@formato,fechaCambio=SYSUTCDATETIME() WHERE idUsuario=@idUsuario;
 IF @@ROWCOUNT=0 INSERT dbo.CredencialesUsuario(idUsuario,formato) VALUES(@idUsuario,@formato);
 COMMIT;
+END TRY BEGIN CATCH IF XACT_STATE()<>0 ROLLBACK; THROW; END CATCH;
 
 END;';
 GO
@@ -135,10 +139,15 @@ AS
 BEGIN
  SET NOCOUNT ON; SET XACT_ABORT ON;
 
-IF IS_MEMBER(''db_owner'')<>1 AND IS_SRVROLEMEMBER(''sysadmin'')<>1 THROW 51507,''Activacion por operador SQL autorizado.'',1;
-IF @confirmacion<>''ACTIVAR_SIN_RETORNO_A_TEXTO_PLANO'' THROW 51508,''Falta confirmacion de corte.'',1;
+IF ISNULL(IS_MEMBER(''db_owner''),0)<>1 AND ISNULL(IS_SRVROLEMEMBER(''sysadmin''),0)<>1 THROW 51507,''Activacion por operador SQL autorizado.'',1;
+IF @confirmacion IS NULL OR @confirmacion<>''ACTIVAR_SIN_RETORNO_A_TEXTO_PLANO'' THROW 51508,''Falta confirmacion de corte.'',1;
 BEGIN TRY
  BEGIN TRANSACTION;
+ DECLARE @modo bit;
+ SELECT @modo=activa FROM dbo.SeguridadEstado WITH(UPDLOCK,HOLDLOCK) WHERE id=1;
+ IF @modo IS NULL OR @modo=1 THROW 51508,''Estado inexistente o seguridad ya activa.'',1;
+ IF NOT EXISTS(SELECT 1 FROM dbo.Usuarios u JOIN dbo.Perfiles p ON p.idPerfil=u.idPerfil JOIN dbo.CredencialesUsuario c ON c.idUsuario=u.idUsuario WHERE u.activo=1 AND p.activo=1 AND UPPER(p.nombrePerfil)=''ADMINISTRADOR'') THROW 51511,''Provisionar al menos un administrador activo antes del corte.'',1;
+ IF EXISTS(SELECT 1 FROM dbo.CredencialesUsuario c WHERE c.formato IS NULL OR LEN(c.formato)<>92 OR LEFT(c.formato,23) COLLATE Latin1_General_100_BIN2<>''PBKDF2-SHA256$1$600000$'' OR SUBSTRING(c.formato,48,1)<>''$'' OR SUBSTRING(c.formato,46,2)<>''=='' OR RIGHT(c.formato,1)<>''='' OR SUBSTRING(c.formato,24,22) COLLATE Latin1_General_100_BIN2 LIKE ''%[^A-Za-z0-9+/]%'' OR SUBSTRING(c.formato,49,43) COLLATE Latin1_General_100_BIN2 LIKE ''%[^A-Za-z0-9+/]%'' ) THROW 51502,''Credencial malformada; no activar.'',1;
  IF EXISTS(SELECT 1 FROM dbo.Usuarios u WITH(UPDLOCK,HOLDLOCK) JOIN dbo.Perfiles p ON p.idPerfil=u.idPerfil WHERE u.activo=1 AND p.activo=1 AND NOT EXISTS(SELECT 1 FROM dbo.CredencialesUsuario c WHERE c.idUsuario=u.idUsuario)) THROW 51509,''Provisionar primero todas las cuentas activas.'',1;
  UPDATE dbo.SeguridadEstado SET activa=1 WHERE id=1;
  -- Inutiliza claves recuperables de todas las cuentas; no se intenta convertir secretos existentes.
@@ -174,10 +183,10 @@ BEGIN
  SET NOCOUNT ON; SET XACT_ABORT ON;
 
 IF ISNULL(IS_MEMBER(''db_owner''),0)<>1 AND ISNULL(IS_SRVROLEMEMBER(''sysadmin''),0)<>1 THROW 51507,''Solo operador SQL autorizado.'',1;
-IF @confirmacion<>''RECUPERAR_SOLO_ADMINISTRADOR'' THROW 51508,''Falta confirmacion.'',1;
+IF @confirmacion IS NULL OR @confirmacion<>''RECUPERAR_SOLO_ADMINISTRADOR'' THROW 51508,''Falta confirmacion.'',1;
 IF NOT EXISTS(SELECT 1 FROM dbo.SeguridadEstado WHERE activa=1) THROW 51501,''Usar provision antes del corte.'',1;
 IF NOT EXISTS(SELECT 1 FROM dbo.Usuarios u JOIN dbo.Perfiles p ON p.idPerfil=u.idPerfil WHERE u.idUsuario=@idUsuario AND u.activo=1 AND p.activo=1 AND UPPER(p.nombrePerfil)=''ADMINISTRADOR'') THROW 51503,''No es administrador activo.'',1;
-IF @formato NOT LIKE ''PBKDF2-SHA256$1$600000$%'' THROW 51502,''Formato no admitido.'',1;
+IF @formato IS NULL OR LEN(@formato)<>92 OR LEFT(@formato,23) COLLATE Latin1_General_100_BIN2<>''PBKDF2-SHA256$1$600000$'' OR SUBSTRING(@formato,48,1)<>''$'' OR SUBSTRING(@formato,46,2)<>''=='' OR RIGHT(@formato,1)<>''='' OR SUBSTRING(@formato,24,22) COLLATE Latin1_General_100_BIN2 LIKE ''%[^A-Za-z0-9+/]%'' OR SUBSTRING(@formato,49,43) COLLATE Latin1_General_100_BIN2 LIKE ''%[^A-Za-z0-9+/]%'' THROW 51502,''Formato no admitido.'',1;
 UPDATE dbo.CredencialesUsuario SET formato=@formato,fechaCambio=SYSUTCDATETIME() WHERE idUsuario=@idUsuario;
 IF @@ROWCOUNT=0 THROW 51505,''Falta credencial de administrador.'',1;
 

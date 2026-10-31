@@ -9,12 +9,16 @@ Public Class SeguridadDAL
             cmd.CommandType = CommandType.StoredProcedure
             cn.Open()
             Try
-                Return Convert.ToBoolean(cmd.ExecuteScalar())
+                Return InterpretarEstado(cmd.ExecuteScalar())
             Catch ex As SqlException When ex.Number = 2812
                 ' Compatibilidad SOLO antes de desplegar 005. No se ignoran otros errores.
                 Return False
             End Try
         End Using
+    End Function
+    Public Shared Function InterpretarEstado(valor As Object) As Boolean
+        If Not TypeOf valor Is Boolean Then Throw New ApplicationException("Estado de seguridad ausente o incompatible. No se habilita autenticación heredada.")
+        Return DirectCast(valor, Boolean)
     End Function
     Public Overridable Function Obtener(nombre As String) As CredencialAcceso
         Using cn = Conexion.ObtenerConexion(), cmd As New SqlCommand("dbo.sp_Seguridad_Credencial", cn)
