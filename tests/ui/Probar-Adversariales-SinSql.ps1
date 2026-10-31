@@ -1,4 +1,4 @@
-﻿param([string]$Configuration='Debug')
+param([string]$Configuration='Debug')
 $ErrorActionPreference='Stop'
 $root=Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $out=Join-Path $root "ForzaSuplementos/ForzaSuplementos/ForzaSuplementos.Presentacion/bin/$Configuration"
@@ -87,6 +87,15 @@ try{
   Check ((Field $r 'grafico').Series[0].Points.Count -eq 800) 'Grafico grande conserva todos los puntos sin inventar ni descartar'
   Check (!(Field $r 'grafico').Series[0].IsValueShownAsLabel -and (Field $r 'grafico').ChartAreas[0].AxisX.Interval -gt 1) 'Grafico grande reduce solapamiento de etiquetas'
  }finally{$r.Dispose()}
+ $hostMdi=New-Object Windows.Forms.Form;$r=New-Object ReportesAdversarial
+ try{
+  $hostMdi.IsMdiContainer=$true;$hostMdi.Size=New-Object Drawing.Size(800,600);Show-Test $hostMdi
+  $r.MdiParent=$hostMdi;$r.WindowState='Maximized';$r.Show();[Windows.Forms.Application]::DoEvents()
+  Check ($r.ClientSize.Width -le $hostMdi.ClientSize.Width -and $r.ClientSize.Height -le $hostMdi.ClientSize.Height) 'Dashboard se adapta a MDI de 800x600 sin imponer minimo fuera del contenedor'
+  Check ($r.AutoScroll -and $r.HorizontalScroll.Visible -and $r.VerticalScroll.Visible) 'Lienzo conserva layout con desplazamiento en viewport pequeno'
+  $boton=Field $r 'btnHistorial';$r.ScrollControlIntoView($boton);[Windows.Forms.Application]::DoEvents()
+  Check ($boton.Top -ge 0 -and $boton.Bottom -le $r.ClientSize.Height) 'Botones inferiores alcanzables mediante scroll'
+ }finally{$r.Dispose();$hostMdi.Dispose()}
  $actor=New-Object ForzaSuplementos.Entidades.Usuario;$actor.IdUsuario=1;$actor.NombrePerfil='VENDEDOR';$caja=New-Object ForzaSuplementos.Negocio.CajaBLL
  Reject 'Caja rechaza fechas fuera del rango SQL antes de conectar' {$caja.Historial($actor,[datetime]'1700-01-01',[datetime]'2026-01-01')}
  Write-Output "TOTAL ADVERSARIALES OFFLINE: $n aprobadas. Sin SQL."

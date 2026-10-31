@@ -17,6 +17,10 @@ Public Class FrmReportes
 
     Public Sub New()
         InitializeComponent()
+        ' Mantener el lienzo aprobado y permitir alcanzarlo en un MDI pequeño.
+        AutoScroll = True
+        AutoScrollMinSize = ClientSize
+        MinimumSize = New Drawing.Size(640, 480)
         TemaForza.Aplicar(Me)
         ConfigurarGrafico()
     End Sub
