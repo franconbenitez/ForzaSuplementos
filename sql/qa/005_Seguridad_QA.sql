@@ -82,9 +82,16 @@ BEGIN
 IF NOT EXISTS(SELECT 1 FROM dbo.SeguridadEstado WHERE id=1 AND activa=1) THROW 51501,''Seguridad pendiente de activacion.'',1;
 BEGIN TRY
  BEGIN TRANSACTION;
+ DECLARE @bloqueoAdmin int;
+ EXEC @bloqueoAdmin=sys.sp_getapplock @Resource=''Forza.Administradores'',@LockMode=''Exclusive'',@LockOwner=''Transaction'',@LockTimeout=10000;
+ IF @bloqueoAdmin<0 THROW 51514,''Administracion ocupada; reintentar.'',1;
+
  IF NOT EXISTS(SELECT 1 FROM dbo.Usuarios u JOIN dbo.Perfiles p ON p.idPerfil=u.idPerfil WHERE u.idUsuario=@idActor AND u.activo=1 AND p.activo=1 AND UPPER(p.nombrePerfil)=''ADMINISTRADOR'') THROW 51503,''Solo administrador activo.'',1;
  IF NOT EXISTS(SELECT 1 FROM dbo.Perfiles WHERE idPerfil=@idPerfil AND activo=1) THROW 51506,''Perfil inactivo.'',1;
  IF @formato IS NOT NULL AND (@formato IS NULL OR LEN(@formato)<>92 OR LEFT(@formato,23) COLLATE Latin1_General_100_BIN2<>''PBKDF2-SHA256$1$600000$'' OR SUBSTRING(@formato,48,1)<>''$'' OR SUBSTRING(@formato,46,2)<>''=='' OR RIGHT(@formato,1)<>''='' OR SUBSTRING(@formato,24,22) COLLATE Latin1_General_100_BIN2 LIKE ''%[^A-Za-z0-9+/]%'' OR SUBSTRING(@formato,49,43) COLLATE Latin1_General_100_BIN2 LIKE ''%[^A-Za-z0-9+/]%'') THROW 51502,''Formato no admitido.'',1;
+ IF @idUsuario<>0 AND EXISTS(SELECT 1 FROM dbo.Usuarios u JOIN dbo.Perfiles p ON p.idPerfil=u.idPerfil WHERE u.idUsuario=@idUsuario AND u.activo=1 AND p.activo=1 AND UPPER(p.nombrePerfil)=''ADMINISTRADOR'')
+ AND NOT EXISTS(SELECT 1 FROM dbo.Perfiles WHERE idPerfil=@idPerfil AND activo=1 AND UPPER(nombrePerfil)=''ADMINISTRADOR'')
+ AND NOT EXISTS(SELECT 1 FROM dbo.Usuarios u JOIN dbo.Perfiles p ON p.idPerfil=u.idPerfil WHERE u.idUsuario<>@idUsuario AND u.activo=1 AND p.activo=1 AND UPPER(p.nombrePerfil)=''ADMINISTRADOR'') THROW 51511,''No se puede quitar el ultimo administrador activo.'',1;
  IF @idUsuario=0
  BEGIN
   IF @formato IS NULL THROW 51502,''Nueva cuenta requiere credencial.'',1;
@@ -190,6 +197,30 @@ IF @formato IS NULL OR LEN(@formato)<>92 OR LEFT(@formato,23) COLLATE Latin1_Gen
 UPDATE dbo.CredencialesUsuario SET formato=@formato,fechaCambio=SYSUTCDATETIME() WHERE idUsuario=@idUsuario;
 IF @@ROWCOUNT=0 THROW 51505,''Falta credencial de administrador.'',1;
 
+END;';
+GO
+IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('ServerName'))<>N'$(QaExpectedServer)'
+ THROW 51200,'Destino rechazado: solo QA verificada.',1;
+IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'ForzaQaEnvironment' AND CONVERT(nvarchar(128),value)=N'Forza-QA-Aislada-v1')
+ THROW 51201,'Falta marca QA.',1;
+SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON;
+EXEC sys.sp_executesql N'CREATE OR ALTER PROCEDURE dbo.sp_Usuarios_CambiarEstado @idUsuario int,@activo bit
+AS
+BEGIN
+ SET NOCOUNT ON; SET XACT_ABORT ON;
+ IF @idUsuario IS NULL OR @idUsuario<=0 OR @activo IS NULL THROW 51505,''Usuario o estado invalido.'',1;
+ BEGIN TRY
+  BEGIN TRANSACTION;
+ DECLARE @bloqueoAdmin int;
+ EXEC @bloqueoAdmin=sys.sp_getapplock @Resource=''Forza.Administradores'',@LockMode=''Exclusive'',@LockOwner=''Transaction'',@LockTimeout=10000;
+ IF @bloqueoAdmin<0 THROW 51514,''Administracion ocupada; reintentar.'',1;
+
+  IF NOT EXISTS(SELECT 1 FROM dbo.Usuarios WHERE idUsuario=@idUsuario) THROW 51505,''Usuario inexistente.'',1;
+  IF @activo=0 AND EXISTS(SELECT 1 FROM dbo.Usuarios u JOIN dbo.Perfiles p ON p.idPerfil=u.idPerfil WHERE u.idUsuario=@idUsuario AND u.activo=1 AND p.activo=1 AND UPPER(p.nombrePerfil)=''ADMINISTRADOR'')
+  AND NOT EXISTS(SELECT 1 FROM dbo.Usuarios u JOIN dbo.Perfiles p ON p.idPerfil=u.idPerfil WHERE u.idUsuario<>@idUsuario AND u.activo=1 AND p.activo=1 AND UPPER(p.nombrePerfil)=''ADMINISTRADOR'') THROW 51511,''No se puede desactivar el ultimo administrador activo.'',1;
+  UPDATE dbo.Usuarios SET activo=@activo WHERE idUsuario=@idUsuario;
+  COMMIT;
+ END TRY BEGIN CATCH IF XACT_STATE()<>0 ROLLBACK; THROW; END CATCH;
 END;';
 GO
 IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('ServerName'))<>N'$(QaExpectedServer)'

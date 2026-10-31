@@ -17,6 +17,7 @@ Public Class UsuarioBLL
 
     Public Sub GuardarUsuario(u As Usuario, actor As Usuario)
         Permisos.Exigir(actor, Permiso.Usuarios)
+        If u IsNot Nothing AndAlso u.IdUsuario = actor.IdUsuario AndAlso u.IdPerfil <> actor.IdPerfil Then Throw New ApplicationException("No podés cambiar el perfil de tu propia sesión. Usá otro administrador.")
         ValidarDatosUsuario(u)
         Dim seguridad As New SeguridadBLL()
         If seguridad.Activa() Then
@@ -37,6 +38,7 @@ Public Class UsuarioBLL
     Public Sub DarDeBaja(idUsuario As Integer, actor As Usuario)
         Permisos.Exigir(actor, Permiso.Usuarios)
         If idUsuario <= 0 Then Throw New ApplicationException("Seleccioná un usuario válido.")
+        If idUsuario = actor.IdUsuario Then Throw New ApplicationException("No podés dar de baja tu propia sesión.")
         _usuarioDAL.CambiarEstado(idUsuario, False)
     End Sub
 

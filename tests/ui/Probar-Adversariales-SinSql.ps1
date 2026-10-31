@@ -105,5 +105,12 @@ try{
  Check ($null -eq $seguridad.Login('qa',$entrada)) 'Cuenta inactiva no autentica aunque la clave coincida en el doble DAL'
  $identidad.Activo=$true;Check ($null -ne $seguridad.Login('qa',$entrada)) 'Cuenta activa con perfil valido autentica en memoria'
  $identidad.NombrePerfil='DESCONOCIDO';Check ($null -eq $seguridad.Login('qa',$entrada)) 'Perfil fuera de la matriz no autentica'
+ $admin=New-Object ForzaSuplementos.Entidades.Usuario;$admin.IdUsuario=37;$admin.IdPerfil=1;$admin.NombrePerfil='ADMINISTRADOR'
+ $usuarios=New-Object ForzaSuplementos.Negocio.UsuarioBLL
+ $rechazo=$false;try{$usuarios.DarDeBaja(37,$admin)}catch{$e=$_.Exception;while($e.InnerException){$e=$e.InnerException};$rechazo=$e -is [ApplicationException] -and $e.Message -match 'propia ses'}
+ Check $rechazo 'Administrador no se desactiva en su propia sesion'
+ $editar=New-Object ForzaSuplementos.Entidades.Usuario;$editar.IdUsuario=37;$editar.IdPerfil=2
+ $rechazo=$false;try{$usuarios.GuardarUsuario($editar,$admin)}catch{$e=$_.Exception;while($e.InnerException){$e=$e.InnerException};$rechazo=$e -is [ApplicationException] -and $e.Message -match 'perfil de tu propia'}
+ Check $rechazo 'Cambio de perfil propio no deja permisos de sesion obsoletos'
  Write-Output "TOTAL ADVERSARIALES OFFLINE: $n aprobadas. Sin SQL."
 }finally{$env:FORZA_ENTORNO=$old}
