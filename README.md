@@ -178,3 +178,6 @@ Ventas selecciona clientes y productos mediante búsqueda y grillas oscuras, con
 ## Avance intensivo (28/10/2026)
 
 [Entrega y límites](docs/ENTREGA_AVANCE_INTENSIVO.md), [checklist del usuario](docs/GUIA_PRUEBAS_USUARIO.md), [modelo proyectado no desplegado](docs/DIAGRAMA_ER_PROYECTADO.md) y [transición de contraseñas](docs/SEGURIDAD_CONTRASENAS.md). Dashboards completos habilitados en QA. Seguridad, proveedores/marcas, compras e inventario desarrollados, con operaciones pendientes de autorización y despliegue de 005–008. No ejecutar estas migraciones como parte del inicio de la aplicación.
+
+
+[Estabilización final y límites](docs/INFORME_ESTABILIZACION_FINAL.md) y [guía de defensa](docs/DEMO_DEFENSA.md), revisión del 31/10/2026. No ejecutar las migraciones pendientes como parte del inicio QA.

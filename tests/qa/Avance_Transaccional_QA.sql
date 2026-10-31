@@ -5,7 +5,9 @@ IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'For
 IF N'$(AutorizarEnsayo)'<>N'SOLO_FIXTURES_ROLLBACK' THROW 51900,'Falta autorizacion especifica.',1;
 IF OBJECT_ID('dbo.sp_Inventario_Ajustar','P') IS NULL THROW 51900,'Aplicar migraciones autorizadas primero.',1;
 SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON; SET ARITHABORT ON; SET CONCAT_NULL_YIELDS_NULL ON; SET NUMERIC_ROUNDABORT OFF;
-SET XACT_ABORT ON; SET NOCOUNT ON;
+SET XACT_ABORT ON; IF @@TRANCOUNT<>0 THROW 51932,'El ensayo requiere una conexion sin transaccion previa.',1;
+SET IMPLICIT_TRANSACTIONS OFF;
+SET NOCOUNT ON;
 DECLARE @gerente int=(SELECT TOP(1) gerente FROM qa.Fixtures),@admin int=(SELECT TOP(1) administrador FROM qa.Fixtures),@vendedor int=(SELECT TOP(1) vendedor FROM qa.Fixtures),@categoria int=(SELECT TOP(1) categoria FROM qa.Fixtures);
 DECLARE @productos bigint=(SELECT COUNT_BIG(*) FROM dbo.Productos),@proveedores bigint=(SELECT COUNT_BIG(*) FROM dbo.Proveedores),@compras bigint=(SELECT COUNT_BIG(*) FROM dbo.Compras),@movimientos bigint=(SELECT COUNT_BIG(*) FROM dbo.MovimientosStock);
 BEGIN TRY
