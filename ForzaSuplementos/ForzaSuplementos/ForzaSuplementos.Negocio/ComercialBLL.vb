@@ -39,14 +39,14 @@ Public Class ComercialBLL
     Public Shared Sub Texto(valor As String, limite As Integer, campo As String)
         If String.IsNullOrWhiteSpace(valor) OrElse valor.Trim().Length > limite Then Throw New ApplicationException(campo & " es obligatorio; máximo " & limite.ToString() & " caracteres.")
     End Sub
-    Public Sub Guardar(actor As Usuario, p As Proveedor)
-        Permisos.Exigir(actor, Permiso.Productos) : Validar(p) : _dal.Guardar(actor, p)
-    End Sub
-    Public Sub Guardar(actor As Usuario, m As Marca)
+    Public Function Guardar(actor As Usuario, p As Proveedor) As Integer
+        Permisos.Exigir(actor, Permiso.Productos) : Validar(p) : Return _dal.Guardar(actor, p)
+    End Function
+    Public Function Guardar(actor As Usuario, m As Marca) As Integer
         Permisos.Exigir(actor, Permiso.Productos)
         If m Is Nothing OrElse m.IdMarca < 0 Then Throw New ApplicationException("Marca inválida.")
-        Texto(m.Nombre, 100, "Marca") : _dal.Guardar(actor, m)
-    End Sub
+        Texto(m.Nombre, 100, "Marca") : Return _dal.Guardar(actor, m)
+    End Function
     Public Sub Asociar(actor As Usuario, producto As Integer, marca As Integer)
         Permisos.Exigir(actor, Permiso.Productos)
         If producto <= 0 OrElse marca <= 0 Then Throw New ApplicationException("Seleccioná producto y marca.")

@@ -81,6 +81,12 @@ try{
   Check ($null -eq (Field $r '_ventas') -and !(Field $r 'grafico').Visible) 'Respuesta de filtro obsoleto descartada'
   Check ((Field $r 'btnActualizar').Enabled) 'Consulta obsoleta libera estado ocupado'
  }finally{$r.Dispose()}
+ $r=New-Object ReportesAdversarial
+ try{
+  $r.CantidadPuntos=800;Show-Test $r;Wait-Test ($r.Actualizar())
+  Check ((Field $r 'grafico').Series[0].Points.Count -eq 800) 'Grafico grande conserva todos los puntos sin inventar ni descartar'
+  Check (!(Field $r 'grafico').Series[0].IsValueShownAsLabel -and (Field $r 'grafico').ChartAreas[0].AxisX.Interval -gt 1) 'Grafico grande reduce solapamiento de etiquetas'
+ }finally{$r.Dispose()}
  $actor=New-Object ForzaSuplementos.Entidades.Usuario;$actor.IdUsuario=1;$actor.NombrePerfil='VENDEDOR';$caja=New-Object ForzaSuplementos.Negocio.CajaBLL
  Reject 'Caja rechaza fechas fuera del rango SQL antes de conectar' {$caja.Historial($actor,[datetime]'1700-01-01',[datetime]'2026-01-01')}
  Write-Output "TOTAL ADVERSARIALES OFFLINE: $n aprobadas. Sin SQL."

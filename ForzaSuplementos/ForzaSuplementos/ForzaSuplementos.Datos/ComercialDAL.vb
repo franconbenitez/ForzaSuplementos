@@ -22,12 +22,18 @@ Public Class ComercialDAL
     Public Function Listar(actor As Usuario, tipo As String, filtro As String) As DataTable
         Return Consultar("dbo.sp_" & tipo & "_Buscar", New SqlParameter("@idActor", actor.IdUsuario), New SqlParameter("@filtro", SqlDbType.NVarChar, 100) With {.Value = filtro})
     End Function
-    Public Sub Guardar(actor As Usuario, p As Proveedor)
-        Consultar("dbo.sp_Proveedores_Guardar", New SqlParameter("@idActor", actor.IdUsuario), New SqlParameter("@id", p.IdProveedor), New SqlParameter("@nombre", SqlDbType.NVarChar, 100) With {.Value = p.Nombre}, New SqlParameter("@razonSocial", SqlDbType.NVarChar, 150) With {.Value = p.RazonSocial}, New SqlParameter("@cuit", SqlDbType.VarChar, 11) With {.Value = If(String.IsNullOrWhiteSpace(p.Cuit), CType(DBNull.Value, Object), p.Cuit)}, New SqlParameter("@activo", p.Activo))
-    End Sub
-    Public Sub Guardar(actor As Usuario, m As Marca)
-        Consultar("dbo.sp_Marcas_Guardar", New SqlParameter("@idActor", actor.IdUsuario), New SqlParameter("@id", m.IdMarca), New SqlParameter("@nombre", SqlDbType.NVarChar, 100) With {.Value = m.Nombre}, New SqlParameter("@activo", m.Activo))
-    End Sub
+    Public Function Guardar(actor As Usuario, p As Proveedor) As Integer
+        Dim tabla = Consultar("dbo.sp_Proveedores_Guardar", New SqlParameter("@idActor", actor.IdUsuario), New SqlParameter("@id", p.IdProveedor), New SqlParameter("@nombre", SqlDbType.NVarChar, 100) With {.Value = p.Nombre}, New SqlParameter("@razonSocial", SqlDbType.NVarChar, 150) With {.Value = p.RazonSocial}, New SqlParameter("@cuit", SqlDbType.VarChar, 11) With {.Value = If(String.IsNullOrWhiteSpace(p.Cuit), CType(DBNull.Value, Object), p.Cuit)}, New SqlParameter("@activo", p.Activo))
+        Return IdentificadorConfirmado(tabla)
+    End Function
+    Public Function Guardar(actor As Usuario, m As Marca) As Integer
+        Dim tabla = Consultar("dbo.sp_Marcas_Guardar", New SqlParameter("@idActor", actor.IdUsuario), New SqlParameter("@id", m.IdMarca), New SqlParameter("@nombre", SqlDbType.NVarChar, 100) With {.Value = m.Nombre}, New SqlParameter("@activo", m.Activo))
+        Return IdentificadorConfirmado(tabla)
+    End Function
+    Private Shared Function IdentificadorConfirmado(tabla As DataTable) As Integer
+        If tabla Is Nothing OrElse tabla.Rows.Count <> 1 OrElse Not tabla.Columns.Contains("Id") OrElse IsDBNull(tabla.Rows(0)("Id")) OrElse Convert.ToInt32(tabla.Rows(0)("Id")) <= 0 Then Throw New OperacionInciertaException("No se recibió un ID confirmado. Consultá el registro antes de reintentar.")
+        Return Convert.ToInt32(tabla.Rows(0)("Id"))
+    End Function
     Public Sub Asociar(actor As Usuario, producto As Integer, marca As Integer)
         Consultar("dbo.sp_Marcas_AsociarProducto", New SqlParameter("@idActor", actor.IdUsuario), New SqlParameter("@idProducto", producto), New SqlParameter("@idMarca", marca))
     End Sub

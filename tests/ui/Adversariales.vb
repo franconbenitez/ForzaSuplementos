@@ -1,4 +1,4 @@
-Option Strict On
+﻿Option Strict On
 Option Infer On
 Imports System
 Imports System.Data
@@ -91,6 +91,7 @@ End Class
 Public Class ReportesAdversarial
     Inherits FrmReportes
     Public Demora As New TaskCompletionSource(Of DashboardVentas)()
+    Public CantidadPuntos As Integer = 1
     Public UsarDemora As Boolean
     Public Fallar As Boolean
     Public Sub New()
@@ -100,7 +101,7 @@ Public Class ReportesAdversarial
     Protected Overrides Sub OnLoad(e As EventArgs)
     End Sub
     Public Shared Function Modelo(Optional cantidad As Integer = 1) As DashboardVentas
-        Dim d As New DashboardVentas With {.Completo = True, .TotalFacturado = 10, .Operaciones = 1, .Unidades = 1}
+        Dim d As New DashboardVentas With {.Completo = True, .TotalFacturado = 10D * cantidad, .Operaciones = cantidad, .Unidades = cantidad}
         For i As Integer = 1 To cantidad
             d.Diaria.Add(New PuntoReporte With {.Etiqueta = i.ToString(), .Importe = 10, .Cantidad = 1})
         Next
@@ -111,7 +112,7 @@ Public Class ReportesAdversarial
         If Fallar Then
             Dim t As New TaskCompletionSource(Of DashboardVentas)() : t.SetException(New ApplicationException("Error sintético SQL")) : Return t.Task
         End If
-        Return Task.FromResult(Modelo())
+        Return Task.FromResult(Modelo(CantidadPuntos))
     End Function
     Public Function Actualizar() As Task
         Return DirectCast(GetType(FrmReportes).GetMethod("ActualizarDashboard", BindingFlags.Instance Or BindingFlags.NonPublic).Invoke(Me, Nothing), Task)

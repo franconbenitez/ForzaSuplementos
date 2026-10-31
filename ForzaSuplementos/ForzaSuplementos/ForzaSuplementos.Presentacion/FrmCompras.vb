@@ -1,4 +1,4 @@
-Option Strict On
+﻿Option Strict On
 Imports System.ComponentModel
 Imports System.Data
 Imports System.Linq
@@ -29,6 +29,7 @@ Public Class FrmCompras
         Dim buscarProveedor As New Button With {.Text = "Buscar proveedor", .AutoSize = True}, buscarProducto As New Button With {.Text = "Buscar producto", .AutoSize = True}, agregar As New Button With {.Text = "Agregar al carrito", .AutoSize = True}, quitar As New Button With {.Text = "Quitar seleccionado", .AutoSize = True}, historial As New Button With {.Text = "Historial y detalle…", .AutoSize = True}
         _edicion.Controls.AddRange(New Control() {_seleccion, buscarProveedor, _producto, buscarProducto, New Label With {.Text = "Cantidad", .AutoSize = True}, _cantidad, New Label With {.Text = "Costo unitario (no precio de venta)", .AutoSize = True}, _costo, agregar, quitar, _vaciar, _confirmar, historial, _total})
         Controls.Add(_grid) : Controls.Add(_edicion) : Controls.Add(_estado)
+        _grid.AllowUserToDeleteRows = False
         _grid.DataSource = _carrito : TemaForza.Aplicar(Me) : _edicion.Enabled = False
         _protector = New ProtectorCambios(Me, Function() _carrito.Count > 0, "Tenés una compra sin confirmar. Si salís, se perderá el carrito. ¿Querés continuar?")
         AddHandler Me.Load, AddressOf Iniciar

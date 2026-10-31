@@ -1,4 +1,4 @@
-:on error exit
+﻿:on error exit
 -- NO EJECUTADA. Requiere estructura 005, sin activar contrasenas.
 IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('ServerName'))<>N'$(QaExpectedServer)'
  THROW 51200,'Destino rechazado: solo QA verificada.',1;
@@ -24,9 +24,9 @@ AS
 BEGIN
  SET NOCOUNT ON; SET XACT_ABORT ON;
 SELECT CONVERT(bit,CASE
-WHEN @modulo=''Catalogos'' AND OBJECT_ID(''dbo.sp_Proveedores_Guardar'',''P'') IS NOT NULL AND OBJECT_ID(''dbo.sp_Marcas_Guardar'',''P'') IS NOT NULL THEN 1
-WHEN @modulo=''Compras'' AND OBJECT_ID(''dbo.sp_Compras_Registrar'',''P'') IS NOT NULL THEN 1
-WHEN @modulo=''Inventario'' AND OBJECT_ID(''dbo.sp_Inventario_Ajustar'',''P'') IS NOT NULL THEN 1 ELSE 0 END) disponible;
+WHEN @modulo=''Catalogos'' AND OBJECT_ID(''dbo.sp_Proveedores_Guardar'',''P'') IS NOT NULL AND OBJECT_ID(''dbo.sp_Marcas_Guardar'',''P'') IS NOT NULL AND OBJECT_ID(''dbo.sp_Proveedores_Buscar'',''P'') IS NOT NULL AND OBJECT_ID(''dbo.sp_Marcas_Buscar'',''P'') IS NOT NULL AND OBJECT_ID(''dbo.sp_Marcas_AsociarProducto'',''P'') IS NOT NULL THEN 1
+WHEN @modulo=''Compras'' AND OBJECT_ID(''dbo.sp_Compras_Registrar'',''P'') IS NOT NULL AND OBJECT_ID(''dbo.sp_Compras_Historial'',''P'') IS NOT NULL AND OBJECT_ID(''dbo.sp_Compras_Detalle'',''P'') IS NOT NULL THEN 1
+WHEN @modulo=''Inventario'' AND OBJECT_ID(''dbo.sp_Inventario_Ajustar'',''P'') IS NOT NULL AND OBJECT_ID(''dbo.sp_Inventario_Stock'',''P'') IS NOT NULL AND OBJECT_ID(''dbo.sp_Inventario_Minimo'',''P'') IS NOT NULL AND OBJECT_ID(''dbo.sp_Inventario_Historial'',''P'') IS NOT NULL THEN 1 ELSE 0 END) disponible;
 END;';
 GO
 IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('ServerName'))<>N'$(QaExpectedServer)'
@@ -52,14 +52,21 @@ BEGIN
 IF NOT EXISTS(SELECT 1 FROM dbo.Usuarios u JOIN dbo.Perfiles p ON p.idPerfil=u.idPerfil WHERE u.idUsuario=@idActor AND u.activo=1 AND p.activo=1 AND UPPER(p.nombrePerfil)=''GERENTE'') THROW 51603,''Solo gerente activo.'',1;
 
 IF @id<0 OR LEN(LTRIM(RTRIM(@nombre)))=0 THROW 51601,''Nombre o ID invalido.'',1;
+SET @cuit=NULLIF(LTRIM(RTRIM(@cuit)),'''');
+IF @cuit IS NOT NULL BEGIN
+ IF LEN(@cuit)<>11 OR @cuit LIKE ''%[^0-9]%'' THROW 51606,''CUIT invalido.'',1;
+ DECLARE @suma int=5*CONVERT(int,SUBSTRING(@cuit,1,1))+4*CONVERT(int,SUBSTRING(@cuit,2,1))+3*CONVERT(int,SUBSTRING(@cuit,3,1))+2*CONVERT(int,SUBSTRING(@cuit,4,1))+7*CONVERT(int,SUBSTRING(@cuit,5,1))+6*CONVERT(int,SUBSTRING(@cuit,6,1))+5*CONVERT(int,SUBSTRING(@cuit,7,1))+4*CONVERT(int,SUBSTRING(@cuit,8,1))+3*CONVERT(int,SUBSTRING(@cuit,9,1))+2*CONVERT(int,SUBSTRING(@cuit,10,1));
+ IF (11-@suma%11)%11<>CONVERT(int,RIGHT(@cuit,1)) THROW 51606,''CUIT invalido.'',1;
+END;
 BEGIN TRY
  BEGIN TRANSACTION;
- IF @id=0 INSERT dbo.Proveedores(nombre,activo,razonSocial,cuit) VALUES(@nombre,@activo,@razonSocial,NULLIF(@cuit,''''));
+ IF @id=0 BEGIN INSERT dbo.Proveedores(nombre,activo,razonSocial,cuit) VALUES(@nombre,@activo,@razonSocial,NULLIF(@cuit,'''')); SET @id=CONVERT(int,SCOPE_IDENTITY()); END;
  ELSE BEGIN
   UPDATE dbo.Proveedores SET nombre=@nombre,activo=@activo,razonSocial=@razonSocial,cuit=@cuit WHERE idProveedor=@id;
   IF @@ROWCOUNT=0 THROW 51602,''Registro inexistente.'',1;
  END;
  COMMIT;
+ SELECT @id Id;
 END TRY BEGIN CATCH IF XACT_STATE()<>0 ROLLBACK; THROW; END CATCH;
 
 END;';
@@ -89,12 +96,13 @@ IF NOT EXISTS(SELECT 1 FROM dbo.Usuarios u JOIN dbo.Perfiles p ON p.idPerfil=u.i
 IF @id<0 OR LEN(LTRIM(RTRIM(@nombre)))=0 THROW 51601,''Nombre o ID invalido.'',1;
 BEGIN TRY
  BEGIN TRANSACTION;
- IF @id=0 INSERT dbo.Marcas(nombre,activo) VALUES(@nombre,@activo);
+ IF @id=0 BEGIN INSERT dbo.Marcas(nombre,activo) VALUES(@nombre,@activo); SET @id=CONVERT(int,SCOPE_IDENTITY()); END;
  ELSE BEGIN
   UPDATE dbo.Marcas SET nombre=@nombre,activo=@activo WHERE idMarca=@id;
   IF @@ROWCOUNT=0 THROW 51602,''Registro inexistente.'',1;
  END;
  COMMIT;
+ SELECT @id Id;
 END TRY BEGIN CATCH IF XACT_STATE()<>0 ROLLBACK; THROW; END CATCH;
 
 END;';

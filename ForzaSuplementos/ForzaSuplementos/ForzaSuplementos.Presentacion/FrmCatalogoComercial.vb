@@ -7,7 +7,11 @@ Public Class FrmCatalogoComercial
     Inherits Form
     Public Property UsuarioActual As Usuario
     Private ReadOnly _tipo As String
-    Private ReadOnly _bll As New ComercialBLL()
+    Private ReadOnly _bll As ComercialBLL
+    Private _habilitado As Boolean
+    Private _guardando As Boolean
+    Private _resultadoIncierto As Boolean
+    Private _versionCarga As Integer
     Private ReadOnly _buscar As New TextBox With {.Width = 280, .Name = "txtBuscar"}
     Private ReadOnly _nombre As New TextBox With {.Width = 250, .MaxLength = 100}
     Private ReadOnly _razon As New TextBox With {.Width = 250, .MaxLength = 150}
@@ -15,13 +19,19 @@ Public Class FrmCatalogoComercial
     Private ReadOnly _activo As New CheckBox With {.Text = "Activo", .Checked = True, .AutoSize = True}
     Private ReadOnly _grid As New DataGridView With {.Dock = DockStyle.Fill, .ReadOnly = True, .AllowUserToAddRows = False, .MultiSelect = False, .SelectionMode = DataGridViewSelectionMode.FullRowSelect, .AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill}
     Private ReadOnly _estado As New Label With {.Dock = DockStyle.Top, .Height = 38}
+    Private ReadOnly _barraBusqueda As New FlowLayoutPanel With {.Dock = DockStyle.Top, .Height = 52, .Padding = New Padding(10), .Enabled = False}
     Private ReadOnly _editor As New FlowLayoutPanel With {.Dock = DockStyle.Bottom, .Height = 145, .Padding = New Padding(10)}
     Private ReadOnly _protector As ProtectorCambios
     Private _id As Integer
     Public Sub New(tipo As String)
+        Me.New(tipo, New ComercialBLL())
+    End Sub
+    Public Sub New(tipo As String, bll As ComercialBLL)
+        If bll Is Nothing Then Throw New ArgumentNullException(NameOf(bll))
+        _bll = bll
         If tipo <> "Proveedores" AndAlso tipo <> "Marcas" Then Throw New ArgumentException("Catálogo desconocido.")
         _tipo = tipo : Text = tipo : Size = New Drawing.Size(980, 640) : MinimumSize = New Drawing.Size(850, 560)
-        Dim barra As New FlowLayoutPanel With {.Dock = DockStyle.Top, .Height = 52, .Padding = New Padding(10)}
+        Dim barra = _barraBusqueda
         Dim buscar As New Button With {.Text = "Buscar", .AutoSize = True}
         barra.Controls.AddRange(New Control() {_buscar, buscar})
         _editor.Controls.AddRange(New Control() {New Label With {.Text = "Nombre", .AutoSize = True}, _nombre})
@@ -37,6 +47,15 @@ Public Class FrmCatalogoComercial
         _editor.Enabled = False
         _protector = ProtectorCambios.ParaEdicion(Me, _nombre, _razon, _cuit, _activo)
         AddHandler buscar.Click, Async Sub(sender, e) Await Cargar()
+        AddHandler _buscar.TextChanged, Sub()
+                                           If Not _habilitado Then Return
+                                           _versionCarga += 1
+                                           _grid.DataSource = Nothing
+                                           _estado.Text = "Filtro modificado. Pulsá Buscar."
+                                       End Sub
+        AddHandler Me.FormClosing, Sub(sender, e)
+                                       If _guardando Then e.Cancel = True
+                                   End Sub
         AddHandler nuevo.Click, Sub()
                                     If Not ConfirmarDescartar() Then Return
                                     _id = 0 : _nombre.Clear() : _razon.Clear() : _cuit.Clear() : _activo.Checked = True : _base = Valores() : _protector.EstablecerBase()
@@ -58,7 +77,9 @@ Public Class FrmCatalogoComercial
         Try
             Dim disponible = Await Task.Run(Function() _bll.Disponible(UsuarioActual, "Catalogos"))
             If IsDisposed Then Return
+            _habilitado = disponible
             _editor.Enabled = disponible
+            _barraBusqueda.Enabled = disponible
             If Not disponible Then
                 _estado.Text = "Requiere habilitación QA: migración 006. No se puede guardar ni modificar datos."
                 Return
@@ -68,14 +89,19 @@ Public Class FrmCatalogoComercial
             If Not IsDisposed Then _estado.Text = ex.Message : _editor.Enabled = False
         End Try
     End Sub
-    Private Async Function Cargar() As Task
+    Private Async Function Cargar() As Task(Of Boolean)
+        _versionCarga += 1
+        Dim version = _versionCarga
+        _grid.DataSource = Nothing
         Try
             Dim filtro = _buscar.Text
             Dim tabla = Await Task.Run(Function() _bll.Buscar(UsuarioActual, _tipo, filtro))
-            If IsDisposed Then Return
+            If IsDisposed OrElse version <> _versionCarga Then Return False
             _grid.DataSource = tabla : _estado.Text = If(tabla.Rows.Count = 0, "Sin resultados.", tabla.Rows.Count.ToString() & " resultados (máximo 500).")
+            Return True
         Catch ex As Exception
-            If Not IsDisposed Then _estado.Text = "No se pudo consultar. " & ex.Message
+            If Not IsDisposed AndAlso version = _versionCarga Then _estado.Text = "No se pudo consultar. " & ex.Message
+            Return False
         End Try
     End Function
     Private Sub Seleccionar(sender As Object, e As DataGridViewCellEventArgs)
@@ -86,19 +112,26 @@ Public Class FrmCatalogoComercial
         _base = Valores() : _protector.EstablecerBase()
     End Sub
     Private Async Sub Guardar(sender As Object, e As EventArgs)
+        If _guardando OrElse _resultadoIncierto OrElse Not _habilitado Then Return
+        _guardando = True
         _editor.Enabled = False
         Try
             If _tipo = "Proveedores" Then
-                _bll.Guardar(UsuarioActual, New Proveedor With {.IdProveedor = _id, .Nombre = _nombre.Text.Trim(), .RazonSocial = _razon.Text.Trim(), .Cuit = _cuit.Text.Trim(), .Activo = _activo.Checked})
+                _id = _bll.Guardar(UsuarioActual, New Proveedor With {.IdProveedor = _id, .Nombre = _nombre.Text.Trim(), .RazonSocial = _razon.Text.Trim(), .Cuit = _cuit.Text.Trim(), .Activo = _activo.Checked})
             Else
-                _bll.Guardar(UsuarioActual, New Marca With {.IdMarca = _id, .Nombre = _nombre.Text.Trim(), .Activo = _activo.Checked})
+                _id = _bll.Guardar(UsuarioActual, New Marca With {.IdMarca = _id, .Nombre = _nombre.Text.Trim(), .Activo = _activo.Checked})
             End If
-            _base = Valores() : _protector.EstablecerBase() : Await Cargar()
-            _estado.Text = "Guardado confirmado por SQL Server. Seleccioná Nuevo para otra alta."
+            _base = Valores() : _protector.EstablecerBase()
+            Dim recargado = Await Cargar()
+            If Not IsDisposed Then _estado.Text = If(recargado, "Guardado confirmado. El próximo Guardar modifica este mismo registro.", "Guardado confirmado, pero falló la recarga. No repitas el alta; volvé a consultar.")
+        Catch ex As OperacionInciertaException
+            _resultadoIncierto = True
+            _estado.Text = "Resultado incierto. Consultá el registro antes de repetir el alta. Guardado bloqueado."
         Catch ex As Exception
             _estado.Text = "No se guardó: " & ex.Message
         Finally
-            _editor.Enabled = True
+            _guardando = False
+            If Not IsDisposed Then _editor.Enabled = _habilitado AndAlso Not _resultadoIncierto
         End Try
     End Sub
     Private Sub Asociar(sender As Object, e As EventArgs)

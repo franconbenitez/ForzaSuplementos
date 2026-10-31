@@ -145,7 +145,7 @@ try{
         Reject 'Confirmacion sin cliente/carrito se rechaza' {$ventas.PrepararVenta()}
     }finally{$ventas.Dispose()}
     $source=[IO.File]::ReadAllText((Join-Path $root 'ForzaSuplementos/ForzaSuplementos/ForzaSuplementos.Presentacion/FrmVentas.vb'))
-    Assert-Search ($source -match 'Dim nuevaVenta = CrearVentaPendiente\(\)' -and $source -match '_ventaBLL.ProcesarVenta\(nuevaVenta, UsuarioActual\)') 'Confirmar utiliza el mismo payload comprobado'
+    Assert-Search ($source -match 'Dim nuevaVenta = CrearVentaPendiente\(\)' -and $source -match 'RegistrarVenta\(nuevaVenta\)' -and $source -match '_ventaBLL.ProcesarVenta\(venta, UsuarioActual\)') 'Confirmar utiliza el mismo payload comprobado'
     Assert-Search ($source -notmatch 'cboCliente|cboProducto|SqlConnection|SqlCommand') 'Ventas sin combos extensos ni SQL directo'
     Write-Output "TOTAL BUSCADORES: $script:checks comprobaciones aprobadas. Sin SQL."
 }finally{$env:FORZA_ENTORNO=$old;$provider.Dispose()}

@@ -26,6 +26,14 @@ Public Class FrmVentas
                                        If _confirmando Then e.Cancel = True
                                    End Sub
         TemaForza.Aplicar(Me)
+        dgvCarrito.AllowUserToDeleteRows = False
+        AddHandler dgvCarrito.KeyDown, Sub(sender, e)
+                                          If e.KeyCode <> Keys.Delete Then Return
+                                          e.Handled = True : e.SuppressKeyPress = True
+                                          If _confirmando OrElse _resultadoIncierto OrElse dgvCarrito.CurrentRow Is Nothing Then Return
+                                          Dim detalle = TryCast(dgvCarrito.CurrentRow.DataBoundItem, DetalleVenta)
+                                          If detalle IsNot Nothing Then _carrito.Remove(detalle)
+                                      End Sub
         AddHandler _carrito.ListChanged, AddressOf CarritoCambiado
         ActualizarTotal()
         _protector = New ProtectorCambios(Me, Function() _carrito.Count > 0,
