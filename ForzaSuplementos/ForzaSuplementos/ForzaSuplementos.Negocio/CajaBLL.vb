@@ -1,4 +1,4 @@
-Option Strict On
+﻿Option Strict On
 Imports ForzaSuplementos.Datos
 Imports ForzaSuplementos.Entidades
 
@@ -46,7 +46,7 @@ Public Class CajaBLL
 
     Public Function Historial(usuario As Usuario, desde As Date, hasta As Date) As List(Of SesionCaja)
         ValidarVendedor(usuario)
-        If desde.Date > hasta.Date OrElse hasta.Date = Date.MaxValue.Date Then Throw New ApplicationException("El rango de fechas es inválido.")
+        If desde.Date < New Date(1753, 1, 1) OrElse desde.Date > hasta.Date OrElse hasta.Date = Date.MaxValue.Date Then Throw New ApplicationException("El rango de fechas es inválido.")
         Return _dal.ListarHistorial(usuario.IdUsuario, desde, hasta)
     End Function
 

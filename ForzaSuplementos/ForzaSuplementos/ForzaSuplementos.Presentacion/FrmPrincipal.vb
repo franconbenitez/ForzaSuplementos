@@ -4,6 +4,7 @@ Imports System.Drawing
 Imports System.Windows.Forms
 
 Public Class FrmPrincipal
+    Public Property LoginOrigen As FrmLogin
     Private ReadOnly _usuarioLogueado As Usuario
 
     Public Sub New(usuario As Usuario)
@@ -141,7 +142,9 @@ Public Class FrmPrincipal
 
     Private Sub MenuCerrarSesion_Click(sender As Object, e As EventArgs) Handles MenuCerrarSesion.Click
         If Not CerrarModulos() Then Return
-        Dim login As New FrmLogin()
+        Dim login = If(LoginOrigen, New FrmLogin())
+        LoginOrigen = Nothing
+        login.PrepararNuevoIngreso()
         login.Show()
         Me.Close()
     End Sub
@@ -151,7 +154,13 @@ Public Class FrmPrincipal
     End Sub
 
     Private Sub FrmPrincipal_FormClosed(sender As Object, e As FormClosedEventArgs) Handles MyBase.FormClosed
-        If Application.OpenForms.Count = 0 Then Application.Exit()
+        If LoginOrigen IsNot Nothing Then
+            Dim login = LoginOrigen
+            LoginOrigen = Nothing
+            login.Close()
+        ElseIf Application.OpenForms.Count = 0 Then
+            Application.Exit()
+        End If
     End Sub
 
 End Class

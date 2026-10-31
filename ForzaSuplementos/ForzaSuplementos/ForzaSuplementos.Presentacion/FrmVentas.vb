@@ -14,12 +14,17 @@ Public Class FrmVentas
     Private _productoSeleccionado As Producto
     Private _buscadorAbierto As Boolean
     Private _catalogoDisponible As Boolean
+    Private _confirmando As Boolean
+    Private _resultadoIncierto As Boolean
     Public UsuarioActualId As Integer = 0
     Public Property UsuarioActual As Usuario
     Private ReadOnly _protector As ProtectorCambios
 
     Public Sub New()
         InitializeComponent()
+        AddHandler Me.FormClosing, Sub(sender, e)
+                                       If _confirmando Then e.Cancel = True
+                                   End Sub
         TemaForza.Aplicar(Me)
         AddHandler _carrito.ListChanged, AddressOf CarritoCambiado
         ActualizarTotal()
@@ -66,7 +71,7 @@ Public Class FrmVentas
                 btnBuscarCliente.Enabled = _catalogoDisponible
                 btnBuscarProducto.Enabled = _catalogoDisponible
                 btnAgregar.Enabled = _catalogoDisponible
-                btnConfirmar.Enabled = _catalogoDisponible
+                btnConfirmar.Enabled = _catalogoDisponible AndAlso Not _confirmando AndAlso Not _resultadoIncierto
             End If
         End Try
     End Function
@@ -96,6 +101,8 @@ Public Class FrmVentas
         _buscadorAbierto = True
         Try
             SeleccionarCliente(BuscarCliente())
+        Catch ex As Exception
+            NotificarVenta("No se pudo seleccionar el cliente. " & ex.Message, True)
         Finally
             _buscadorAbierto = False
         End Try
@@ -106,6 +113,8 @@ Public Class FrmVentas
         _buscadorAbierto = True
         Try
             SeleccionarProducto(BuscarProducto())
+        Catch ex As Exception
+            NotificarVenta("No se pudo seleccionar el producto. " & ex.Message, True)
         Finally
             _buscadorAbierto = False
         End Try
@@ -152,14 +161,18 @@ Public Class FrmVentas
         If prodSel Is Nothing OrElse Not prodSel.Activo OrElse prodSel.IdProducto <= 0 Then Throw New ApplicationException("Seleccioná un producto activo del catálogo.")
         If cantidad <= 0 Then Throw New ApplicationException("Ingresá una cantidad numérica mayor a 0.")
         If cantidad > prodSel.Stock Then Throw New ApplicationException($"Stock insuficiente. Solo quedan {prodSel.Stock} unidades.")
+        CajaBLL.ValidarImporte(prodSel.Precio)
+        If prodSel.Precio = 0 Then Throw New ApplicationException("El precio debe ser mayor a cero.")
         Dim itemExistente = _carrito.FirstOrDefault(Function(d) d.IdProducto = prodSel.IdProducto)
         If itemExistente IsNot Nothing Then
             If CLng(itemExistente.Cantidad) + cantidad > prodSel.Stock Then Throw New ApplicationException("La cantidad acumulada en el carrito supera el stock físico disponible.")
+            CajaBLL.ValidarImporte((CDec(itemExistente.Cantidad) + cantidad) * itemExistente.PrecioUnitario)
             itemExistente.Cantidad += cantidad
             itemExistente.CalcularSubtotal()
         Else
             Dim nuevoDetalle As New DetalleVenta With {.IdProducto = prodSel.IdProducto, .NombreProducto = prodSel.Nombre, .Cantidad = cantidad, .PrecioUnitario = prodSel.Precio}
             nuevoDetalle.CalcularSubtotal()
+            CajaBLL.ValidarImporte(nuevoDetalle.Subtotal)
             _carrito.Add(nuevoDetalle)
         End If
         _carrito.ResetBindings()
@@ -178,23 +191,51 @@ Public Class FrmVentas
         If _clienteSeleccionado Is Nothing OrElse Not _clienteSeleccionado.Activo OrElse _clienteSeleccionado.IdCliente <= 0 Then Throw New ApplicationException("Tenés que seleccionar un cliente activo para facturar.")
         If _carrito.Count = 0 Then Throw New ApplicationException("El carrito de compras está vacío.")
         Return New Venta With {.IdCliente = _clienteSeleccionado.IdCliente, .IdUsuario = UsuarioActualId,
-            .MedioPago = CType(Math.Max(0, cboMedioPago.SelectedIndex), MedioPago), .Detalles = _carrito.ToList()}
+            .MedioPago = CType(Math.Max(0, cboMedioPago.SelectedIndex), MedioPago), .Detalles = _carrito.Select(Function(d) New DetalleVenta With {.IdProducto = d.IdProducto, .NombreProducto = d.NombreProducto, .Cantidad = d.Cantidad, .PrecioUnitario = d.PrecioUnitario, .Subtotal = d.Subtotal}).ToList()}
     End Function
 
     Private Async Sub btnConfirmar_Click(sender As Object, e As EventArgs) Handles btnConfirmar.Click
+        If _confirmando OrElse _resultadoIncierto Then Return
+        _confirmando = True
+        btnConfirmar.Enabled = False
         Try
             Dim nuevaVenta = CrearVentaPendiente()
-            btnConfirmar.Enabled = False
-            _ventaBLL.ProcesarVenta(nuevaVenta, UsuarioActual)
-            MessageBox.Show("¡Venta registrada con éxito! El stock ha sido descontado.", "Transacción Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            RegistrarVenta(nuevaVenta)
             LimpiarVenta()
-            Await CargarCatalogosAsync()
+            NotificarVenta("¡Venta registrada con éxito! El stock ha sido descontado.", False)
+            Try
+                Await RecargarTrasConfirmacion()
+            Catch ex As Exception
+                _catalogoDisponible = False
+                btnBuscarCliente.Enabled = False : btnBuscarProducto.Enabled = False : btnAgregar.Enabled = False
+                NotificarVenta("La venta ya fue confirmada. Falló la recarga del catálogo; volvé a abrir Ventas para actualizar. No repitas la venta. " & ex.Message, True)
+            End Try
+        Catch ex As OperacionInciertaException
+            _resultadoIncierto = True
+            NotificarVenta("No se conoce el resultado de la confirmación. Consultá el historial antes de repetir la operación. Se conserva el carrito y se bloquea Confirmar para evitar duplicados.", True)
         Catch ex As Exception
-            If Not IsDisposed Then MessageBox.Show(ex.Message, "Error en la Venta", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            If Not IsDisposed Then NotificarVenta(ex.Message, True)
         Finally
-            If Not IsDisposed Then btnConfirmar.Enabled = _catalogoDisponible
+            _confirmando = False
+            If Not IsDisposed Then btnConfirmar.Enabled = _catalogoDisponible AndAlso Not _resultadoIncierto
         End Try
     End Sub
+
+    Protected Overridable Sub RegistrarVenta(venta As Venta)
+        _ventaBLL.ProcesarVenta(venta, UsuarioActual)
+    End Sub
+
+    Protected Overridable Function RecargarTrasConfirmacion() As Task
+        Return CargarCatalogosAsync()
+    End Function
+
+    Protected Overridable Sub NotificarVenta(mensaje As String, errorOperacion As Boolean)
+        MessageBox.Show(Me, mensaje, "Ventas", MessageBoxButtons.OK, If(errorOperacion, MessageBoxIcon.Warning, MessageBoxIcon.Information))
+    End Sub
+
+    Protected Overridable Function ConfirmarDescarteIncierto() As Boolean
+        Return MessageBox.Show(Me, "El resultado de la venta es incierto. ¿Verificaste el historial y querés descartar únicamente el carrito en memoria?", "Verificar venta", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) = DialogResult.Yes
+    End Function
 
     Private Sub LimpiarProductoSeleccionado()
         _productoSeleccionado = Nothing
@@ -213,6 +254,11 @@ Public Class FrmVentas
     End Sub
 
     Private Sub btnCancelar_Click(sender As Object, e As EventArgs) Handles btnCancelar.Click
+        If _confirmando Then Return
+        If _resultadoIncierto AndAlso Not ConfirmarDescarteIncierto() Then Return
+        Dim eraIncierto = _resultadoIncierto
+        _resultadoIncierto = False
         LimpiarVenta()
+        If eraIncierto Then btnConfirmar.Enabled = _catalogoDisponible
     End Sub
 End Class

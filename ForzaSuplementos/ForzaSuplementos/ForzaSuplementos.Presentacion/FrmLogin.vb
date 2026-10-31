@@ -5,6 +5,7 @@ Imports ForzaSuplementos.Negocio
 Public Class FrmLogin
     Private ReadOnly _bll As New UsuarioBLL()
     Private _autenticando As Boolean
+    Private _sesionIniciada As Boolean
 
     Public Sub New()
         InitializeComponent()
@@ -16,23 +17,43 @@ Public Class FrmLogin
     End Sub
 
     Private Sub btnIngresar_Click(sender As Object, e As EventArgs) Handles btnIngresar.Click
-        If _autenticando Then Return
+        If _autenticando OrElse _sesionIniciada Then Return
         _autenticando = True
         btnIngresar.Enabled = False
         Try
             Dim userLogueado = Autenticar(txtUsuario.Text.Trim(), txtContrasena.Text)
-            MostrarPrincipal(userLogueado)
+            If userLogueado Is Nothing Then Throw New ApplicationException("Usuario o contraseña incorrectos.")
+            _sesionIniciada = True
+            Try
+                MostrarPrincipal(userLogueado)
+                txtContrasena.Clear()
+            Catch
+                _sesionIniciada = False
+                Throw
+            End Try
 
         Catch ex As ApplicationException
-            MessageBox.Show(ex.Message, "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            InformarError(ex.Message)
         Catch ex As SqlException
-            MessageBox.Show("Error de base de datos: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            InformarError("No se pudo validar la sesión con SQL Server. Revisá la conexión e intentá nuevamente.")
         Catch ex As Exception
-            MessageBox.Show("Error inesperado: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            InformarError("No se pudo abrir la sesión. " & ex.Message)
         Finally
             _autenticando = False
-            btnIngresar.Enabled = True
+            btnIngresar.Enabled = Not _sesionIniciada
         End Try
+    End Sub
+
+    Protected Overridable Sub InformarError(mensaje As String)
+        MessageBox.Show(Me, mensaje, "Acceso denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+    End Sub
+
+    Public Sub PrepararNuevoIngreso()
+        _sesionIniciada = False
+        _autenticando = False
+        txtContrasena.Clear()
+        btnIngresar.Enabled = True
+        txtUsuario.Select()
     End Sub
 
     ' Unica ruta de autenticacion para clic y AcceptButton; conserva la BLL existente.
@@ -41,7 +62,7 @@ Public Class FrmLogin
     End Function
 
     Protected Overridable Sub MostrarPrincipal(usuario As Usuario)
-        Dim frmMain As New FrmPrincipal(usuario)
+        Dim frmMain As New FrmPrincipal(usuario) With {.LoginOrigen = Me}
         frmMain.Show()
         Me.Hide()
     End Sub

@@ -27,7 +27,12 @@ Public Class VentaDAL
             cn.Open()
             ' SQL confirma cabecera, detalles, pago y stock en una sola transaccion.
             ' No se modifica el objeto hasta que el procedimiento haya confirmado todo.
-            cmd.ExecuteNonQuery()
+            Try
+                cmd.ExecuteNonQuery()
+            Catch ex As SqlException When ex.Number = -2 OrElse ex.Number = 0 OrElse ex.Number = 20 OrElse ex.Number = 64 OrElse ex.Number = 233 OrElse ex.Number = 10053 OrElse ex.Number = 10054 OrElse ex.Number = 10060
+                Throw New OperacionInciertaException("No se recibió la confirmación SQL. Verificar historial antes de reintentar.", ex)
+            End Try
+            If nuevoId.Value Is Nothing OrElse nuevoId.Value Is DBNull.Value OrElse Convert.ToInt32(nuevoId.Value) <= 0 Then Throw New OperacionInciertaException("SQL no devolvió un identificador de venta válido. Verificar historial.")
             v.IdVenta = CInt(nuevoId.Value)
         End Using
     End Sub

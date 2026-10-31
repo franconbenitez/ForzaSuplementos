@@ -13,6 +13,7 @@ Public Class FrmReportes
     Private _ventas As DashboardVentas
     Private _backups As DashboardBackups
     Private _ocupado As Boolean
+    Private _versionFiltro As Integer
 
     Public Sub New()
         InitializeComponent()
@@ -63,6 +64,7 @@ Public Class FrmReportes
     Private Async Function ActualizarDashboard() As Task
         If _ocupado Then Return
         _ocupado = True
+        Dim version = _versionFiltro
         EstadoControles(False)
         _ventas = Nothing : _backups = Nothing
         grafico.Series.Clear() : grafico.Visible = False : dgvReportes.DataSource = Nothing
@@ -71,8 +73,8 @@ Public Class FrmReportes
             Dim actor = UsuarioActual
             Dim desde = dtpDesde.Value.Date, hasta = dtpHasta.Value.Date
             If Permisos.Puede(actor, Permiso.Backups) Then
-                Dim datos = Await Task.Run(Function() _dashboard.Backups(actor, desde, hasta))
-                If IsDisposed Then Return
+                Dim datos = Await ConsultarBackupsAsync(actor, desde, hasta)
+                If IsDisposed OrElse version <> _versionFiltro Then Return
                 _backups = datos
                 lblResumen.Text = $"Backups registrados: {datos.Cantidad:N0}"
             Else
@@ -82,15 +84,16 @@ Public Class FrmReportes
                     If nudVendedor.Value > 0 Then vendedor = CInt(nudVendedor.Value)
                     If nudProducto.Value > 0 Then producto = CInt(nudProducto.Value)
                 End If
-                Dim datos = Await Task.Run(Function() _dashboard.Ventas(actor, desde, hasta, vendedor, producto))
-                If IsDisposed Then Return
+                Dim datos = Await ConsultarVentasAsync(actor, desde, hasta, vendedor, producto)
+                If IsDisposed OrElse version <> _versionFiltro Then Return
                 _ventas = datos
                 Dim unidades = If(datos.Unidades.HasValue, datos.Unidades.Value.ToString("N0"), "pendiente de habilitar")
                 lblResumen.Text = $"Facturado: $ {datos.TotalFacturado:N2}   |   Operaciones: {datos.Operaciones:N0}   |   Unidades: {unidades}"
             End If
             MostrarGrafico()
         Catch ex As Exception
-            If Not IsDisposed Then
+            If Not IsDisposed AndAlso version = _versionFiltro Then
+                LimpiarResultados()
                 lblResumen.Text = "Reporte no disponible para este filtro."
                 lblEstado.Text = ex.Message
             End If
@@ -98,6 +101,19 @@ Public Class FrmReportes
             _ocupado = False
             If Not IsDisposed Then EstadoControles(True)
         End Try
+    End Function
+
+    Private Sub LimpiarResultados()
+        _ventas = Nothing : _backups = Nothing
+        grafico.Series.Clear() : grafico.Visible = False : dgvReportes.DataSource = Nothing
+    End Sub
+
+    Protected Overridable Function ConsultarVentasAsync(actor As Usuario, desde As Date, hasta As Date, vendedor As Integer?, producto As Integer?) As Task(Of DashboardVentas)
+        Return Task.Run(Function() _dashboard.Ventas(actor, desde, hasta, vendedor, producto))
+    End Function
+
+    Protected Overridable Function ConsultarBackupsAsync(actor As Usuario, desde As Date, hasta As Date) As Task(Of DashboardBackups)
+        Return Task.Run(Function() _dashboard.Backups(actor, desde, hasta))
     End Function
 
     Private Sub EstadoControles(activo As Boolean)
@@ -108,7 +124,7 @@ Public Class FrmReportes
     End Sub
 
     Private Sub FiltrosCambiados(sender As Object, e As EventArgs) Handles dtpDesde.ValueChanged, dtpHasta.ValueChanged, nudVendedor.ValueChanged, nudProducto.ValueChanged
-        If _ocupado Then Return
+        _versionFiltro += 1
         _ventas = Nothing : _backups = Nothing
         grafico.Series.Clear() : grafico.Visible = False : dgvReportes.DataSource = Nothing
         lblResumen.Text = "Filtros modificados"
@@ -160,7 +176,8 @@ Public Class FrmReportes
             lblEstado.Text = "Sin datos para el período seleccionado"
             Return
         End If
-        Dim serie As New Series("Datos") With {.ChartType = SeriesChartType.Column, .Color = TemaForza.Primario, .IsValueShownAsLabel = True, .LabelForeColor = TemaForza.Texto}
+        grafico.ChartAreas(0).AxisX.Interval = Math.Max(1, CInt(Math.Ceiling(puntos.Count / 12.0)))
+        Dim serie As New Series("Datos") With {.ChartType = SeriesChartType.Column, .Color = TemaForza.Primario, .IsValueShownAsLabel = puntos.Count <= 30, .LabelForeColor = TemaForza.Texto}
         serie.LabelFormat = If(cantidad, "N0", "N2")
         For Each punto In puntos
             serie.Points.AddXY(punto.Etiqueta, If(cantidad, CDbl(punto.Cantidad), CDbl(punto.Importe)))
@@ -173,13 +190,16 @@ Public Class FrmReportes
 
     Private Sub ConsultaHeredada(accion As Func(Of System.Data.DataTable))
         If _ocupado Then Return
+        LimpiarResultados()
         Try
             dgvReportes.DataSource = accion()
             grafico.Series.Clear() : grafico.Visible = False
             lblResumen.Text = "Consulta existente"
             lblEstado.Text = "Consulta heredada sin filtros del dashboard; Actualizar vuelve al período seleccionado."
         Catch ex As Exception
-            MessageBox.Show(ex.Message, "Reportes", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            LimpiarResultados()
+            lblResumen.Text = "Consulta no disponible."
+            lblEstado.Text = ex.Message
         End Try
     End Sub
 

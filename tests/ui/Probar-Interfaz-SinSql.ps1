@@ -1,4 +1,4 @@
-param([ValidateSet('Debug','UIRevision')][string]$BuildFolder='Debug',[switch]$SoloInicial)
+﻿param([ValidateSet('Debug','UIRevision')][string]$BuildFolder='Debug',[switch]$SoloInicial)
 $ErrorActionPreference='Stop'
 $root=Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $out=Join-Path $root "ForzaSuplementos\ForzaSuplementos\ForzaSuplementos.Presentacion\bin\$BuildFolder"
@@ -74,10 +74,10 @@ try {
         Assert-UI ($login.Intentos -eq 1 -and $login.Aperturas -eq 1) 'Enter ejecuta un unico intento aun ante reentrada'
         (Control-Of $login 'txtContrasena').Select()
         $null=$login.PulsarEnter()
-        Assert-UI ($login.Intentos -eq 2 -and $login.Aperturas -eq 2) 'Enter tambien funciona desde Contrasena'
+        Assert-UI ($login.Intentos -eq 1 -and $login.Aperturas -eq 1) 'Enter posterior al exito no duplica la sesion'
         $button.PerformClick()
-        Assert-UI ($login.Intentos -eq 3 -and $login.Aperturas -eq 3) 'Clic conserva la misma autenticacion y navegacion'
-        Assert-UI $button.Enabled 'Ingresar vuelve a habilitarse al finalizar'
+        Assert-UI ($login.Intentos -eq 1 -and $login.Aperturas -eq 1) 'Clic posterior al exito no reautentica'
+        Assert-UI (!$button.Enabled) 'Ingresar queda bloqueado mientras la sesion esta abierta'
         Save-Preview $login 'Login'
     }finally{$login.Dispose()}
     $ventas=New-Preview 'Ventas'
