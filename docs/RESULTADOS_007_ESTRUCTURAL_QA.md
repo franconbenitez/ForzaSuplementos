@@ -1,5 +1,7 @@
 ﻿# Resultado del intento autorizado de 007: fallo estructural, sin reintento
 
+Actualizacion local posterior: CHECK corregido y nueva revision preparada, sin segundo intento SQL. Ver [CORRECCION_007_CHECK_Y_REVISION_008.md](CORRECCION_007_CHECK_Y_REVISION_008.md).
+
 Fecha local: 2026-10-31. Repositorio ForzaSuplementos_GitHub. HEAD de entrada 01f3116, arbol limpio.
 
 ## Intento y causa exacta

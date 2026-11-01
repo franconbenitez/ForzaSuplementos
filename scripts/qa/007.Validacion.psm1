@@ -7,7 +7,7 @@ function Get-007PlanHash([string]$Source){
 }
 function Assert-007Plan([string]$Source){
  # Hash del texto SQL revisado, normalizado para LF/CRLF y sin BOM.
- if((Get-007PlanHash $Source) -cne '6A53D5C8FD2D82C68F27026997EC4531F43197C125CE082B5F0E1D9BED58C0D3'){throw '007 cambio respecto del alcance revisado. Detener y revisar; no ejecutar.'}
+ if((Get-007PlanHash $Source) -cne 'D506BFCDAEF58541FA357FA6B16BE838FB783E55788E86E740BAE137E6978EC0'){throw '007 cambio respecto del alcance revisado. Detener y revisar; no ejecutar.'}
  $names=@([regex]::Matches($Source,'CREATE OR ALTER PROCEDURE dbo\.(\w+)') | ForEach-Object {$_.Groups[1].Value})
  if(($names -join ',') -cne 'sp_Compras_Registrar,sp_Compras_Historial,sp_Compras_Detalle'){throw 'Contratos 007 inesperados.'}
  foreach($batch in ([regex]::Split(($Source -replace '(?m)^:on error exit\s*',''),'(?im)^\s*GO\s*\r?$') | Where-Object {![string]::IsNullOrWhiteSpace($_)})){

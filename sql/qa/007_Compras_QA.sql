@@ -9,9 +9,30 @@ SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON; SET ANSI_WARNI
 SET XACT_ABORT ON;
 IF @@TRANCOUNT<>0 THROW 51950,'Ejecutar migracion sin transaccion externa.',1;
 BEGIN TRANSACTION;
-IF OBJECT_ID('dbo.Compras','U') IS NULL CREATE TABLE dbo.Compras(idCompra int IDENTITY CONSTRAINT PK_Compras PRIMARY KEY,idProveedor int NOT NULL CONSTRAINT FK_Compras_Proveedor REFERENCES dbo.Proveedores(idProveedor),idUsuario int NOT NULL CONSTRAINT FK_Compras_Usuario REFERENCES dbo.Usuarios(idUsuario),fecha datetime2 NOT NULL CONSTRAINT DF_Compras_Fecha DEFAULT(SYSDATETIME()),total decimal(18,2) NOT NULL CONSTRAINT CK_Compras_Total CHECK(total>0),operacion uniqueidentifier NOT NULL CONSTRAINT UQ_Compras_Operacion UNIQUE,huella varbinary(32) NOT NULL);
-IF OBJECT_ID('dbo.DetalleCompras','U') IS NULL CREATE TABLE dbo.DetalleCompras(idDetalleCompra int IDENTITY CONSTRAINT PK_DetalleCompras PRIMARY KEY,idCompra int NOT NULL CONSTRAINT FK_DetalleCompras_Compra REFERENCES dbo.Compras(idCompra),idProducto int NOT NULL CONSTRAINT FK_DetalleCompras_Producto REFERENCES dbo.Productos(idProducto),cantidad int NOT NULL CONSTRAINT CK_DetalleCompras_Cantidad CHECK(cantidad>0),costoUnitario decimal(18,2) NOT NULL CONSTRAINT CK_DetalleCompras_Costo CHECK(costoUnitario>0),subtotal decimal(18,2) NOT NULL CONSTRAINT CK_DetalleCompras_Subtotal CHECK(subtotal=cantidad*costoUnitario),CONSTRAINT UQ_DetalleCompras_Producto UNIQUE(idCompra,idProducto));
-IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID('dbo.Compras') AND name='IX_Compras_FechaProveedor') CREATE INDEX IX_Compras_FechaProveedor ON dbo.Compras(fecha,idProveedor) INCLUDE(total,idUsuario);
+IF OBJECT_ID('dbo.Compras','U') IS NULL
+ CREATE TABLE dbo.Compras(
+  idCompra int IDENTITY CONSTRAINT PK_Compras PRIMARY KEY,
+  idProveedor int NOT NULL CONSTRAINT FK_Compras_Proveedor REFERENCES dbo.Proveedores(idProveedor),
+  idUsuario int NOT NULL CONSTRAINT FK_Compras_Usuario REFERENCES dbo.Usuarios(idUsuario),
+  fecha datetime2 NOT NULL CONSTRAINT DF_Compras_Fecha DEFAULT(SYSDATETIME()),
+  total decimal(18,2) NOT NULL CONSTRAINT CK_Compras_Total CHECK(total>0),
+  operacion uniqueidentifier NOT NULL CONSTRAINT UQ_Compras_Operacion UNIQUE,
+  huella varbinary(32) NOT NULL
+ );
+IF OBJECT_ID('dbo.DetalleCompras','U') IS NULL
+ CREATE TABLE dbo.DetalleCompras(
+  idDetalleCompra int IDENTITY CONSTRAINT PK_DetalleCompras PRIMARY KEY,
+  idCompra int NOT NULL CONSTRAINT FK_DetalleCompras_Compra REFERENCES dbo.Compras(idCompra),
+  idProducto int NOT NULL CONSTRAINT FK_DetalleCompras_Producto REFERENCES dbo.Productos(idProducto),
+  cantidad int NOT NULL CONSTRAINT CK_DetalleCompras_Cantidad CHECK(cantidad>0),
+  costoUnitario decimal(18,2) NOT NULL CONSTRAINT CK_DetalleCompras_Costo CHECK(costoUnitario>0),
+  subtotal decimal(18,2) NOT NULL,
+  -- Referencia varias columnas: SQL Server exige CHECK a nivel de tabla.
+  CONSTRAINT CK_DetalleCompras_Subtotal CHECK(subtotal=CONVERT(decimal(10,0),cantidad)*costoUnitario),
+  CONSTRAINT UQ_DetalleCompras_Producto UNIQUE(idCompra,idProducto)
+ );
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE object_id=OBJECT_ID('dbo.Compras') AND name='IX_Compras_FechaProveedor')
+ CREATE INDEX IX_Compras_FechaProveedor ON dbo.Compras(fecha,idProveedor) INCLUDE(total,idUsuario);
 -- La transaccion continua hasta desplegar todos los contratos.
 GO
 IF DB_NAME()<>N'ForzaSuplementosDB_QA' OR CONVERT(nvarchar(128),SERVERPROPERTY('ServerName'))<>N'$(QaExpectedServer)'
@@ -56,7 +77,7 @@ BEGIN TRY
  IF EXISTS(SELECT 1 FROM @raw r LEFT JOIN dbo.Productos p WITH(UPDLOCK,HOLDLOCK) ON p.idProducto=r.id WHERE p.idProducto IS NULL OR p.activo=0 OR CONVERT(bigint,p.stock)+r.cantidad>2147483647) THROW 51705,''Producto inactivo o limite de stock excedido.'',1;
  INSERT dbo.Compras(idProveedor,idUsuario,total,operacion,huella) VALUES(@idProveedor,@idActor,@total,@operacion,@hash);
  SET @id=CONVERT(int,SCOPE_IDENTITY());
- INSERT dbo.DetalleCompras(idCompra,idProducto,cantidad,costoUnitario,subtotal) SELECT @id,id,cantidad,costo,cantidad*costo FROM @raw;
+ INSERT dbo.DetalleCompras(idCompra,idProducto,cantidad,costoUnitario,subtotal) SELECT @id,id,cantidad,CONVERT(decimal(18,2),costo),CONVERT(decimal(18,2),CONVERT(decimal(10,0),cantidad)*CONVERT(decimal(18,2),costo)) FROM @raw;
  UPDATE p SET stock=p.stock+r.cantidad FROM dbo.Productos p JOIN @raw r ON p.idProducto=r.id;
  COMMIT;
  SELECT @id IdCompra;

@@ -5,10 +5,12 @@ if($AutorizarEstructura007 -and $VerificarSoloLectura){throw 'Elegir solo lectur
 if(!$AutorizarEstructura007 -and !$VerificarSoloLectura){throw 'Falta autorizacion especifica para 007. No se conecta.'}
 Import-Module (Join-Path $PSScriptRoot 'QA.Common.psm1') -Force
 Import-Module (Join-Path $PSScriptRoot '007.Validacion.psm1') -Force -DisableNameChecking
+Import-Module (Join-Path $PSScriptRoot 'Validar-Restricciones.psm1') -Force -DisableNameChecking
 $cfg=Get-QaConfig
 $path=Join-Path $cfg.Root 'sql/qa/007_Compras_QA.sql'
 $source=[IO.File]::ReadAllText($path)
 Assert-007Plan $source
+Assert-ForzaColumnChecks $source
 $hash=(Get-FileHash $path -Algorithm SHA256).Hash
 $running=@(Get-CimInstance Win32_Process -Filter "Name = 'ForzaSuplementos.Presentacion.exe'" | Where-Object {$_.ExecutablePath -and $_.ExecutablePath.StartsWith($cfg.Root+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)})
 if($running.Count){throw 'Cerrar aplicacion del repositorio por su interfaz. No se finalizan procesos.'}
