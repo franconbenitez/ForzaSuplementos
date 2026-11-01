@@ -8,8 +8,9 @@ try{
  $state=(Invoke-QaQuery $cn "SELECT (SELECT COUNT(*) FROM sys.tables WHERE is_ms_shipped=0) tablas,(SELECT COUNT(*) FROM sys.procedures WHERE is_ms_shipped=0) procedimientos,CASE WHEN OBJECT_ID('dbo.sp_Comercial_Estado','P') IS NULL THEN 1 ELSE 0 END pendientes,CASE WHEN OBJECT_ID('dbo.sp_Seguridad_Estado','P') IS NOT NULL THEN 1 ELSE 0 END seguridad;").Rows[0]
  $base004=$state.tablas -eq 11 -and $state.procedimientos -eq 30 -and !$state.seguridad
  $base005=$state.tablas -eq 13 -and $state.procedimientos -eq 37 -and $state.seguridad
- if((!$base004 -and !$base005) -or !$state.pendientes){throw 'Estado de despliegue distinto; revisar antes de probar pendientes.'}
- if($base005){
+ $base006=$state.tablas -eq 15 -and $state.procedimientos -eq 43 -and $state.seguridad -and !$state.pendientes
+ if((!$base004 -and !$base005 -and !$base006) -or ((!$base006) -and !$state.pendientes)){throw 'Estado de despliegue distinto; revisar antes de probar disponibilidad.'}
+ if($base005 -or $base006){
   $modo=Invoke-QaQuery $cn 'EXEC dbo.sp_Seguridad_Estado;'
   if($modo.Rows.Count -ne 1 -or [bool]$modo.Rows[0].activa){throw 'Esta suite requiere modo seguro inactivo.'}
  }
@@ -51,16 +52,17 @@ try{
     $type=[ForzaSuplementos.Presentacion.FrmPrincipal].Assembly.GetType('ForzaSuplementos.Presentacion.'+$name)
     $main.Abrir($type)
     if($role -ne 'GERENTE'){Check ($main.MdiChildren.Count -eq 0) "$role no abre $name por acceso directo";continue}
+    $catalogoHabilitado=$base006 -and $name -in @('FrmProveedores','FrmMarcas')
     $clock=[Diagnostics.Stopwatch]::StartNew()
-    do{[Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds 10;$f=$main.ActiveMdiChild;$flags=[Reflection.BindingFlags]'Instance,NonPublic';$base=if($name -in @('FrmProveedores','FrmMarcas')){$f.GetType().BaseType}else{$f.GetType()};$field=$base.GetField('_estado',$flags);$label=$field.GetValue($f);if($clock.Elapsed.TotalSeconds -gt 10){throw 'Modulo no termino de validar disponibilidad'}}while($label.Text -notmatch 'Requiere habilitaci')
+    do{[Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds 10;$f=$main.ActiveMdiChild;$flags=[Reflection.BindingFlags]'Instance,NonPublic';$base=if($name -in @('FrmProveedores','FrmMarcas')){$f.GetType().BaseType}else{$f.GetType()};$field=$base.GetField('_estado',$flags);$label=$field.GetValue($f);if($clock.Elapsed.TotalSeconds -gt 10){throw 'Modulo no termino de validar disponibilidad'}}while(($catalogoHabilitado -and $label.Text -notmatch 'Sin resultados|resultados \(') -or (!$catalogoHabilitado -and $label.Text -notmatch 'Requiere habilitaci'))
     Check ($main.MdiChildren.Count -eq 1 -and $type.IsInstanceOfType($f)) "$name conserva un unico MDI"
     $editorName=if($name -in @('FrmProveedores','FrmMarcas')){'_editor'}elseif($name -eq 'FrmCompras'){'_edicion'}else{'_acciones'}
-    Check (!$base.GetField($editorName,$flags).GetValue($f).Enabled) "$name bloquea escrituras sin migracion"
+    Check ($base.GetField($editorName,$flags).GetValue($f).Enabled -eq $catalogoHabilitado) "$name respeta disponibilidad desplegada sin ejecutar guardados"
     $main.Abrir($type);Check ($main.MdiChildren.Count -eq 1 -and [object]::ReferenceEquals($f,$main.ActiveMdiChild)) "$name no crea duplicado"
     $bitmap=New-Object Drawing.Bitmap($f.Width,$f.Height);try{$f.DrawToBitmap($bitmap,(New-Object Drawing.Rectangle(0,0,$f.Width,$f.Height)));$bitmap.Save((Join-Path $dir ($name+'.png')))}finally{$bitmap.Dispose()}
    }
   }finally{$main.Dispose()}
  }
- Check ($base004 -or $base005) 'QA reconoce baseline de reportes o 005 estructural; 006-008 no aplicadas'
+ Check ($base004 -or $base005 -or $base006) 'QA reconoce baseline desplegado; 007-008 siguen pendientes'
  Write-Output "TOTAL MODULOS PENDIENTES QA LECTURA: $n aprobadas. Sin escrituras SQL."
 }finally{$env:FORZA_ENTORNO=$old;$env:FORZA_QA_CONFIG=$oldcfg}

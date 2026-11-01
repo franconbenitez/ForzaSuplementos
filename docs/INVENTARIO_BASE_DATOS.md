@@ -2,7 +2,7 @@
 
 Fecha: 2026-10-31. Extracción exclusivamente de sys.* mediante conexión QA validada. No se ejecutó DDL/DML ni se exportaron filas, credenciales, rutas de backups o identificadores de equipo.
 
-**13 tablas**: 12 tablas en dbo y 1 tabla(s) auxiliar(es). **12 claves foráneas, 18 índices, 6 restricciones CHECK y 37 procedimientos.** La tabla de fixtures no forma parte del modelo comercial.
+**15 tablas**: 14 tablas en dbo y 1 tabla(s) auxiliar(es). **13 claves foráneas, 23 índices, 9 restricciones CHECK y 43 procedimientos.** La tabla de fixtures no forma parte del modelo comercial.
 
 ## dbo.AuditoriaBackups
 
@@ -62,6 +62,18 @@ Fecha: 2026-10-31. Extracción exclusivamente de sys.* mediante conexión QA val
 
 - `PK__DetalleV__49CAE2FB138EB16A`: CLUSTERED; PK=True, UNIQUE=True, deshabilitado=False; columnas (idDetalle ASC).
 
+## dbo.Marcas
+
+- `idMarca`: `int`, NOT NULL IDENTITY.
+- `nombre`: `nvarchar(100)`, NOT NULL.
+- `activo`: `bit`, NOT NULL; DEFAULT `DF_Marcas_Activo` ((1)).
+
+Índices y claves:
+
+- `PK_Marcas`: CLUSTERED; PK=True, UNIQUE=True, deshabilitado=False; columnas (idMarca ASC).
+- `UQ_Marcas_Nombre`: NONCLUSTERED; PK=False, UNIQUE=True, deshabilitado=False; columnas (nombre ASC).
+- CHECK `CK_Marcas_Nombre`: `(len(ltrim(rtrim([nombre])))>(0))`; deshabilitada=False, no confiable=False.
+
 ## dbo.PagosVenta
 
 - `idVenta`: `int`, NOT NULL.
@@ -95,11 +107,28 @@ Fecha: 2026-10-31. Extracción exclusivamente de sys.* mediante conexión QA val
 - `precio`: `decimal(10,2)`, NOT NULL.
 - `stock`: `int`, NOT NULL.
 - `activo`: `bit`, NOT NULL; DEFAULT `DF__Productos__activ__571DF1D5` ((1)).
+- `idMarca`: `int`, NULL.
 
 Índices y claves:
 
+- `IX_Productos_Marca`: NONCLUSTERED; PK=False, UNIQUE=False, deshabilitado=False; columnas (idMarca ASC).
 - `PK__Producto__07F4A132E33100FE`: CLUSTERED; PK=True, UNIQUE=True, deshabilitado=False; columnas (idProducto ASC).
 - CHECK `CK_Productos_StockNoNegativo`: `([stock]>=(0))`; deshabilitada=False, no confiable=False.
+
+## dbo.Proveedores
+
+- `idProveedor`: `int`, NOT NULL IDENTITY.
+- `nombre`: `nvarchar(100)`, NOT NULL.
+- `razonSocial`: `nvarchar(150)`, NOT NULL.
+- `cuit`: `varchar(11)`, NULL.
+- `activo`: `bit`, NOT NULL; DEFAULT `DF_Proveedores_Activo` ((1)).
+
+Índices y claves:
+
+- `PK_Proveedores`: CLUSTERED; PK=True, UNIQUE=True, deshabilitado=False; columnas (idProveedor ASC).
+- `UX_Proveedores_Cuit`: NONCLUSTERED; PK=False, UNIQUE=True, deshabilitado=False; columnas (cuit ASC); filtro `([cuit] IS NOT NULL)`.
+- CHECK `CK_Proveedores_Cuit`: `([cuit] IS NULL OR len([cuit])=(11) AND NOT [cuit] like '%[^0-9]%')`; deshabilitada=False, no confiable=False.
+- CHECK `CK_Proveedores_Nombre`: `(len(ltrim(rtrim([nombre])))>(0) AND len(ltrim(rtrim([razonSocial])))>(0))`; deshabilitada=False, no confiable=False.
 
 ## dbo.SeguridadEstado
 
@@ -198,6 +227,7 @@ Fecha: 2026-10-31. Extracción exclusivamente de sys.* mediante conexión QA val
 - `FK__Ventas__idUsuari__71D1E811`: `Ventas(idUsuario)` → `Usuarios(idUsuario)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 - `FK_Credenciales_Usuario`: `CredencialesUsuario(idUsuario)` → `Usuarios(idUsuario)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 - `FK_PagosVenta_Ventas`: `PagosVenta(idVenta)` → `Ventas(idVenta)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
+- `FK_Productos_Marca`: `Productos(idMarca)` → `Marcas(idMarca)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 - `FK_Usuarios_Perfiles`: `Usuarios(idPerfil)` → `Perfiles(idPerfil)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 
 ## Procedimientos existentes y parámetros
@@ -214,12 +244,18 @@ Fecha: 2026-10-31. Extracción exclusivamente de sys.* mediante conexión QA val
 - `sp_Clientes_Insertar`: `@dni varchar(20)`; `@nombre varchar(50)`; `@apellido varchar(50)`; `@telefono varchar(30)`; `@email varchar(100)`; `@nuevoId int OUTPUT`.
 - `sp_Clientes_ListarPorEstado`: `@activo bit`.
 - `sp_Clientes_Modificar`: `@idCliente int`; `@dni varchar(20)`; `@nombre varchar(50)`; `@apellido varchar(50)`; `@telefono varchar(30)`; `@email varchar(100)`.
+- `sp_Comercial_Estado`: `@modulo varchar(30)`.
 - `sp_DetalleVentas_Insertar`: `@idVenta int`; `@idProducto int`; `@cantidad int`; `@precioUnitario decimal(10,2)`; `@subtotal decimal(10,2)`.
+- `sp_Marcas_AsociarProducto`: `@idActor int`; `@idProducto int`; `@idMarca int`.
+- `sp_Marcas_Buscar`: `@idActor int`; `@filtro nvarchar(100)`.
+- `sp_Marcas_Guardar`: `@idActor int`; `@id int`; `@nombre nvarchar(100)`; `@activo bit`.
 - `sp_Perfiles_Listar`: sin parámetros.
 - `sp_Productos_CambiarEstado`: `@idProducto int`; `@activo bit`.
 - `sp_Productos_Insertar`: `@idCategoria int`; `@nombre varchar(100)`; `@descripcion varchar(255)`; `@precio decimal(10,2)`; `@stock int`; `@nuevoId int OUTPUT`.
 - `sp_Productos_ListarPorEstado`: `@activo bit`.
 - `sp_Productos_Modificar`: `@idProducto int`; `@idCategoria int`; `@nombre varchar(100)`; `@descripcion varchar(255)`; `@precio decimal(10,2)`; `@stock int`.
+- `sp_Proveedores_Buscar`: `@idActor int`; `@filtro nvarchar(100)`.
+- `sp_Proveedores_Guardar`: `@idActor int`; `@id int`; `@nombre nvarchar(100)`; `@razonSocial nvarchar(150)`; `@cuit varchar(11)`; `@activo bit`.
 - `sp_Reporte_BajoStock`: sin parámetros.
 - `sp_Reporte_HistorialVentas`: sin parámetros.
 - `sp_Reporte_MisVentas`: `@idUsuario int`.

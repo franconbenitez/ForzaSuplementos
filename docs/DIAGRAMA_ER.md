@@ -1,6 +1,6 @@
 # Diagrama entidad-relación auditado
 
-Fecha: 2026-10-31. Basado en las 12 FK reales de QA; no se deducen relaciones por semejanza de nombres. qa.Fixtures es auxiliar de pruebas y no tiene FK. Ver INVENTARIO_BASE_DATOS.md para tipos completos y restricciones.
+Fecha: 2026-10-31. Basado en las 13 FK reales de QA; no se deducen relaciones por semejanza de nombres. qa.Fixtures es auxiliar de pruebas y no tiene FK. Ver INVENTARIO_BASE_DATOS.md para tipos completos y restricciones.
 
 ```mermaid
 erDiagram
@@ -36,6 +36,11 @@ erDiagram
         decimal precioUnitario "decimal(10,2) required"
         decimal subtotal "decimal(10,2) required"
     }
+    dbo_Marcas {
+        int idMarca PK "int required"
+        nvarchar nombre "nvarchar(100) required"
+        bit activo "bit required"
+    }
     dbo_PagosVenta {
         int idVenta PK,FK "int required"
         varchar medioPago "varchar(20) required"
@@ -54,6 +59,14 @@ erDiagram
         varchar descripcion "varchar(255) nullable"
         decimal precio "decimal(10,2) required"
         int stock "int required"
+        bit activo "bit required"
+        int idMarca FK "int nullable"
+    }
+    dbo_Proveedores {
+        int idProveedor PK "int required"
+        nvarchar nombre "nvarchar(100) required"
+        nvarchar razonSocial "nvarchar(150) required"
+        varchar cuit "varchar(11) nullable"
         bit activo "bit required"
     }
     dbo_SeguridadEstado {
@@ -119,6 +132,7 @@ erDiagram
     dbo_Usuarios ||--o{ dbo_Ventas : FK__Ventas__idUsuari__71D1E811
     dbo_Usuarios ||--o| dbo_CredencialesUsuario : FK_Credenciales_Usuario
     dbo_Ventas ||--o| dbo_PagosVenta : FK_PagosVenta_Ventas
+    dbo_Marcas o|--o{ dbo_Productos : FK_Productos_Marca
     dbo_Perfiles ||--o{ dbo_Usuarios : FK_Usuarios_Perfiles
 ```
 
