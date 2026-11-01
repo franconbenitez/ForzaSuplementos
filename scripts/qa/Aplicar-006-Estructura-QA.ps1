@@ -15,6 +15,16 @@ $cn=Open-QaConnection
 try{
  $counts=Invoke-QaQuery $cn 'SELECT s.name Esquema,t.name Tabla,SUM(p.rows) Filas FROM sys.tables t JOIN sys.schemas s ON s.schema_id=t.schema_id JOIN sys.partitions p ON p.object_id=t.object_id AND p.index_id IN(0,1) GROUP BY s.name,t.name;'
  $definitions=Invoke-QaQuery $cn 'SELECT p.name Nombre,m.definition Codigo FROM sys.procedures p JOIN sys.sql_modules m ON m.object_id=p.object_id WHERE p.schema_id=SCHEMA_ID(''dbo'');'
+ # Comparar todas las columnas preexistentes, sin exportar filas ni huellas.
+ $integrity=@()
+ $tables=Invoke-QaQuery $cn "SELECT t.object_id Id,QUOTENAME(s.name)+'.'+QUOTENAME(t.name) Nombre FROM sys.tables t JOIN sys.schemas s ON s.schema_id=t.schema_id WHERE t.is_ms_shipped=0 ORDER BY s.name,t.name;"
+ foreach($table in $tables.Rows){
+  $columns=Invoke-QaQuery $cn 'SELECT QUOTENAME(name) Nombre FROM sys.columns WHERE object_id=@id ORDER BY column_id;' @{'@id'=[int]$table.Id}
+  $cols=(@($columns.Rows | ForEach-Object {[string]$_.Nombre}) -join ',')
+  $query="SELECT HASHBYTES('SHA2_256',COALESCE(CONVERT(varbinary(max),(SELECT $cols FROM $($table.Nombre) ORDER BY $cols FOR XML RAW,BINARY BASE64)),CONVERT(varbinary(max),0x))) Huella;"
+  $digest=(Invoke-QaQuery $cn $query).Rows[0].Huella
+  $integrity+=@{Query=$query;Digest=[Convert]::ToBase64String($digest)}
+ }
  Assert-QaDestination $cn
 }finally{$cn.Dispose()}
 if((Get-FileHash $path -Algorithm SHA256).Hash -cne $hash){throw 'El script cambio durante la preparacion.'}
@@ -38,6 +48,11 @@ try{
  if($r.Transacciones -ne 0 -or $r.Tablas -ne 15 -or $r.Procedimientos -ne 43 -or $r.Seguridad -or $r.Credenciales -ne 0){throw 'Estado posterior inesperado; detener sin reversion adicional.'}
  $after=Invoke-QaQuery $cn 'SELECT s.name Esquema,t.name Tabla,SUM(p.rows) Filas FROM sys.tables t JOIN sys.schemas s ON s.schema_id=t.schema_id JOIN sys.partitions p ON p.object_id=t.object_id AND p.index_id IN(0,1) GROUP BY s.name,t.name;'
  foreach($row in $counts.Rows){$m=@($after.Rows | Where-Object {$_.Esquema -eq $row.Esquema -and $_.Tabla -eq $row.Tabla});if($m.Count -ne 1 -or $m[0].Filas -ne $row.Filas){throw 'Conteos existentes cambiaron; detener.'}}
+ foreach($entry in $integrity){
+  $digest=(Invoke-QaQuery $cn $entry.Query).Rows[0].Huella
+  if([Convert]::ToBase64String($digest) -cne $entry.Digest){throw 'Datos preexistentes distintos; detener sin reversion adicional.'}
+ }
+ $integrity=$null;$digest=$null
  $installed=Invoke-QaQuery $cn 'SELECT p.name Nombre,m.definition Codigo FROM sys.procedures p JOIN sys.sql_modules m ON m.object_id=p.object_id WHERE p.schema_id=SCHEMA_ID(''dbo'');'
  foreach($old in $definitions.Rows){$m=@($installed.Rows | Where-Object {$_.Nombre -eq $old.Nombre});if($m.Count -ne 1 -or [string]$m[0].Codigo -cne [string]$old.Codigo){throw 'Cambio de definicion preexistente; detener.'}}
  foreach($m in [regex]::Matches($source,"(?s)EXEC sys.sp_executesql N'((?:[^']|'')*)';")){
@@ -52,6 +67,6 @@ try{
  $objects=Invoke-QaQuery $cn "SELECT (SELECT COUNT(*) FROM dbo.Proveedores) Proveedores,(SELECT COUNT(*) FROM dbo.Marcas) Marcas,(SELECT COUNT(*) FROM dbo.Productos WHERE idMarca IS NOT NULL) Asociaciones,(SELECT COUNT(*) FROM sys.foreign_keys WHERE name='FK_Productos_Marca' AND is_disabled=0 AND is_not_trusted=0) FK,(SELECT COUNT(*) FROM sys.indexes WHERE (object_id=OBJECT_ID('dbo.Proveedores') AND name IN('PK_Proveedores','UX_Proveedores_Cuit')) OR (object_id=OBJECT_ID('dbo.Marcas') AND name IN('PK_Marcas','UQ_Marcas_Nombre')) OR (object_id=OBJECT_ID('dbo.Productos') AND name='IX_Productos_Marca')) Indices,(SELECT COUNT(*) FROM sys.check_constraints WHERE name IN('CK_Proveedores_Nombre','CK_Proveedores_Cuit','CK_Marcas_Nombre') AND is_disabled=0 AND is_not_trusted=0) Restricciones;"
  $o=$objects.Rows[0]
  if($o.Proveedores -ne 0 -or $o.Marcas -ne 0 -or $o.Asociaciones -ne 0 -or $o.FK -ne 1 -or $o.Indices -ne 5 -or $o.Restricciones -ne 3){throw 'Objetos 006 inesperados; detener.'}
- [pscustomobject]@{Migracion='006';Tablas=15;Procedimientos=43;NuevosContratos=6;PBKDF2=$false;FixturesEjecutados=$false;ConteosPreviosConservados=$true;DefinicionesPreviasConservadas=$true;VerificacionObjetos=$true} | ConvertTo-Json | Set-Content (Join-Path $folder 'resultado.json') -Encoding UTF8
+ [pscustomobject]@{Migracion='006';Tablas=15;Procedimientos=43;NuevosContratos=6;PBKDF2=$false;FixturesEjecutados=$false;ConteosPreviosConservados=$true;DefinicionesPreviasConservadas=$true;VerificacionObjetos=$true;DatosPreexistentesSinCambios=$true} | ConvertTo-Json | Set-Content (Join-Path $folder 'resultado.json') -Encoding UTF8
  Write-Output '006 aplicada exclusivamente a QA. 15 tablas/43 SP; seis contratos nuevos; sin fixtures ni activacion de seguridad.'
 }finally{$cn.Dispose()}
