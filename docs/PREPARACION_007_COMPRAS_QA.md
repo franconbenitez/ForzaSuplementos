@@ -1,5 +1,7 @@
 ﻿# Revision previa de 007: Compras
 
+Actualizacion: aplicador estructural y verificaciones preparados sin ejecutar 007; ver [APLICADOR_007_PREPARACION.md](APLICADOR_007_PREPARACION.md).
+
 Fecha local: 2026-10-31. Revision offline y lecturas sobre QA, sin despliegue ni ensayos SQL de compras.
 
 ## Estado real y dependencias
