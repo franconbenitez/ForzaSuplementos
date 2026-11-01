@@ -1,5 +1,7 @@
 ﻿# Resultado real del despliegue estructural 008
 
+Actualizacion posterior: el positivo de Compras/Inventario fue autorizado y aprobado con rollback completo. Ver [RESULTADOS_008_POSITIVO_QA.md](RESULTADOS_008_POSITIVO_QA.md). No se ejecutaron negativos ni ensayos de Ventas/Caja.
+
 Fecha local: 2026-11-01. Repositorio exclusivo ForzaSuplementos_GitHub. HEAD inicial a893183, arbol limpio. Autorizacion expresa limitada a una ejecucion estructural y verificaciones de lectura.
 
 ## Resultado exacto

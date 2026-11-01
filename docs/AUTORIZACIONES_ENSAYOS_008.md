@@ -1,10 +1,10 @@
 ﻿# Autorizaciones independientes propuestas para ensayos tras 008
 
-Fecha local: 2026-11-01. Todos los ensayos estan PENDIENTES, NO ejecutados. El permiso estructural 008 no autoriza ninguno de estos archivos. Se propone autorizar y completar una etapa antes de solicitar la siguiente.
+Fecha local: 2026-11-01. Estado actualizado: A fue autorizado y aprobado con rollback; ver RESULTADOS_008_POSITIVO_QA.md. B, C y D siguen PENDIENTES, NO ejecutados. El permiso estructural 008 no autoriza ninguno de estos archivos. Se propone autorizar y completar una etapa antes de solicitar la siguiente.
 
 En cada etapa se debe verificar servidor local esperado, base exacta ForzaSuplementosDB_QA, marca Forza-QA-Aislada-v1, estructura 18 tablas/50 SP, ausencia de transaccion previa o incompatible y contratos instalados. Conservar evidencia privada, conteos/huellas antes y despues, verificar el rollback y @@TRANCOUNT=0. Solo los registros ficticios del runner pueden modificarse. Los IDENTITY pueden avanzar y no se reseedean. Ante cualquier error o rollback no comprobable, detenerse sin reintentar, reparar ni ejecutar reversiones adicionales. Ninguna etapa autoriza cambiar credenciales/PBKDF2, escribir otras bases, aplicar migraciones ni hacer push.
 
-## A. Compra e Inventario positivos: solicitar primero
+## A. Compra e Inventario positivos: ejecutado y aprobado bajo permiso separado
 
 Texto propuesto:
 
