@@ -1,8 +1,8 @@
 # Inventario real de ForzaSuplementosDB_QA
 
-Fecha: 2026-10-31. Extracción exclusivamente de sys.* mediante conexión QA validada. No se ejecutó DDL/DML ni se exportaron filas, credenciales, rutas de backups o identificadores de equipo.
+Fecha: 2026-11-01. Extracción exclusivamente de sys.* mediante conexión QA validada. No se ejecutó DDL/DML ni se exportaron filas, credenciales, rutas de backups o identificadores de equipo.
 
-**15 tablas**: 14 tablas en dbo y 1 tabla(s) auxiliar(es). **13 claves foráneas, 23 índices, 9 restricciones CHECK y 43 procedimientos.** La tabla de fixtures no forma parte del modelo comercial.
+**17 tablas**: 16 tablas en dbo y 1 tabla(s) auxiliar(es). **17 claves foráneas, 28 índices, 13 restricciones CHECK y 46 procedimientos.** La tabla de fixtures no forma parte del modelo comercial.
 
 ## dbo.AuditoriaBackups
 
@@ -38,6 +38,23 @@ Fecha: 2026-10-31. Extracción exclusivamente de sys.* mediante conexión QA val
 
 - `PK__Clientes__885457EEB20DAE12`: CLUSTERED; PK=True, UNIQUE=True, deshabilitado=False; columnas (idCliente ASC).
 
+## dbo.Compras
+
+- `idCompra`: `int`, NOT NULL IDENTITY.
+- `idProveedor`: `int`, NOT NULL.
+- `idUsuario`: `int`, NOT NULL.
+- `fecha`: `datetime2`, NOT NULL; DEFAULT `DF_Compras_Fecha` (sysdatetime()).
+- `total`: `decimal(18,2)`, NOT NULL.
+- `operacion`: `uniqueidentifier`, NOT NULL.
+- `huella`: `varbinary(32)`, NOT NULL.
+
+Índices y claves:
+
+- `IX_Compras_FechaProveedor`: NONCLUSTERED; PK=False, UNIQUE=False, deshabilitado=False; columnas (fecha ASC, idProveedor ASC); INCLUDE (total, idUsuario).
+- `PK_Compras`: CLUSTERED; PK=True, UNIQUE=True, deshabilitado=False; columnas (idCompra ASC).
+- `UQ_Compras_Operacion`: NONCLUSTERED; PK=False, UNIQUE=True, deshabilitado=False; columnas (operacion ASC).
+- CHECK `CK_Compras_Total`: `([total]>(0))`; deshabilitada=False, no confiable=False.
+
 ## dbo.CredencialesUsuario
 
 - `idUsuario`: `int`, NOT NULL.
@@ -48,6 +65,23 @@ Fecha: 2026-10-31. Extracción exclusivamente de sys.* mediante conexión QA val
 
 - `PK_CredencialesUsuario`: CLUSTERED; PK=True, UNIQUE=True, deshabilitado=False; columnas (idUsuario ASC).
 - CHECK `CK_Credenciales_Formato`: `([formato] like 'PBKDF2-SHA256$1$600000$%')`; deshabilitada=False, no confiable=False.
+
+## dbo.DetalleCompras
+
+- `idDetalleCompra`: `int`, NOT NULL IDENTITY.
+- `idCompra`: `int`, NOT NULL.
+- `idProducto`: `int`, NOT NULL.
+- `cantidad`: `int`, NOT NULL.
+- `costoUnitario`: `decimal(18,2)`, NOT NULL.
+- `subtotal`: `decimal(18,2)`, NOT NULL.
+
+Índices y claves:
+
+- `PK_DetalleCompras`: CLUSTERED; PK=True, UNIQUE=True, deshabilitado=False; columnas (idDetalleCompra ASC).
+- `UQ_DetalleCompras_Producto`: NONCLUSTERED; PK=False, UNIQUE=True, deshabilitado=False; columnas (idCompra ASC, idProducto ASC).
+- CHECK `CK_DetalleCompras_Cantidad`: `([cantidad]>(0))`; deshabilitada=False, no confiable=False.
+- CHECK `CK_DetalleCompras_Costo`: `([costoUnitario]>(0))`; deshabilitada=False, no confiable=False.
+- CHECK `CK_DetalleCompras_Subtotal`: `([subtotal]=CONVERT([decimal](10,0),[cantidad])*[costoUnitario])`; deshabilitada=False, no confiable=False.
 
 ## dbo.DetalleVentas
 
@@ -225,7 +259,11 @@ Fecha: 2026-10-31. Extracción exclusivamente de sys.* mediante conexión QA val
 - `FK__Ventas__idClient__70DDC3D8`: `Ventas(idCliente)` → `Clientes(idCliente)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 - `FK__Ventas__idSesion__19DFD96B`: `Ventas(idSesion)` → `SesionesCaja(idSesion)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 - `FK__Ventas__idUsuari__71D1E811`: `Ventas(idUsuario)` → `Usuarios(idUsuario)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
+- `FK_Compras_Proveedor`: `Compras(idProveedor)` → `Proveedores(idProveedor)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
+- `FK_Compras_Usuario`: `Compras(idUsuario)` → `Usuarios(idUsuario)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 - `FK_Credenciales_Usuario`: `CredencialesUsuario(idUsuario)` → `Usuarios(idUsuario)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
+- `FK_DetalleCompras_Compra`: `DetalleCompras(idCompra)` → `Compras(idCompra)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
+- `FK_DetalleCompras_Producto`: `DetalleCompras(idProducto)` → `Productos(idProducto)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 - `FK_PagosVenta_Ventas`: `PagosVenta(idVenta)` → `Ventas(idVenta)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 - `FK_Productos_Marca`: `Productos(idMarca)` → `Marcas(idMarca)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 - `FK_Usuarios_Perfiles`: `Usuarios(idPerfil)` → `Perfiles(idPerfil)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
@@ -245,6 +283,9 @@ Fecha: 2026-10-31. Extracción exclusivamente de sys.* mediante conexión QA val
 - `sp_Clientes_ListarPorEstado`: `@activo bit`.
 - `sp_Clientes_Modificar`: `@idCliente int`; `@dni varchar(20)`; `@nombre varchar(50)`; `@apellido varchar(50)`; `@telefono varchar(30)`; `@email varchar(100)`.
 - `sp_Comercial_Estado`: `@modulo varchar(30)`.
+- `sp_Compras_Detalle`: `@idActor int`; `@idCompra int`.
+- `sp_Compras_Historial`: `@idActor int`; `@desde date`; `@hasta date`; `@idProveedor int`.
+- `sp_Compras_Registrar`: `@idActor int`; `@idProveedor int`; `@operacion uniqueidentifier`; `@detalles xml`.
 - `sp_DetalleVentas_Insertar`: `@idVenta int`; `@idProducto int`; `@cantidad int`; `@precioUnitario decimal(10,2)`; `@subtotal decimal(10,2)`.
 - `sp_Marcas_AsociarProducto`: `@idActor int`; `@idProducto int`; `@idMarca int`.
 - `sp_Marcas_Buscar`: `@idActor int`; `@filtro nvarchar(100)`.

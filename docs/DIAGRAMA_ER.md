@@ -1,6 +1,6 @@
 # Diagrama entidad-relación auditado
 
-Fecha: 2026-10-31. Basado en las 13 FK reales de QA; no se deducen relaciones por semejanza de nombres. qa.Fixtures es auxiliar de pruebas y no tiene FK. Ver INVENTARIO_BASE_DATOS.md para tipos completos y restricciones.
+Fecha: 2026-11-01. Basado en las 17 FK reales de QA; no se deducen relaciones por semejanza de nombres. qa.Fixtures es auxiliar de pruebas y no tiene FK. Ver INVENTARIO_BASE_DATOS.md para tipos completos y restricciones.
 
 ```mermaid
 erDiagram
@@ -23,10 +23,27 @@ erDiagram
         varchar email "varchar(100) nullable"
         bit activo "bit required"
     }
+    dbo_Compras {
+        int idCompra PK "int required"
+        int idProveedor FK "int required"
+        int idUsuario FK "int required"
+        datetime2 fecha "datetime2 required"
+        decimal total "decimal(18,2) required"
+        uniqueidentifier operacion "uniqueidentifier required"
+        varbinary huella "varbinary(32) required"
+    }
     dbo_CredencialesUsuario {
         int idUsuario PK,FK "int required"
         varchar formato "varchar(256) required"
         datetime2 fechaCambio "datetime2 required"
+    }
+    dbo_DetalleCompras {
+        int idDetalleCompra PK "int required"
+        int idCompra FK "int required"
+        int idProducto FK "int required"
+        int cantidad "int required"
+        decimal costoUnitario "decimal(18,2) required"
+        decimal subtotal "decimal(18,2) required"
     }
     dbo_DetalleVentas {
         int idDetalle PK "int required"
@@ -130,7 +147,11 @@ erDiagram
     dbo_Clientes ||--o{ dbo_Ventas : FK__Ventas__idClient__70DDC3D8
     dbo_SesionesCaja o|--o{ dbo_Ventas : FK__Ventas__idSesion__19DFD96B
     dbo_Usuarios ||--o{ dbo_Ventas : FK__Ventas__idUsuari__71D1E811
+    dbo_Proveedores ||--o{ dbo_Compras : FK_Compras_Proveedor
+    dbo_Usuarios ||--o{ dbo_Compras : FK_Compras_Usuario
     dbo_Usuarios ||--o| dbo_CredencialesUsuario : FK_Credenciales_Usuario
+    dbo_Compras ||--o{ dbo_DetalleCompras : FK_DetalleCompras_Compra
+    dbo_Productos ||--o{ dbo_DetalleCompras : FK_DetalleCompras_Producto
     dbo_Ventas ||--o| dbo_PagosVenta : FK_PagosVenta_Ventas
     dbo_Marcas o|--o{ dbo_Productos : FK_Productos_Marca
     dbo_Perfiles ||--o{ dbo_Usuarios : FK_Usuarios_Perfiles

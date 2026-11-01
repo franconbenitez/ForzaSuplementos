@@ -1,4 +1,54 @@
-﻿# Resultado del intento autorizado de 007: fallo estructural, sin reintento
+﻿# Resultado actual: 007 corregida instalada correctamente en QA
+
+Fecha local: 2026-11-01. Segundo intento expresamente autorizado, ejecutado una sola vez desde ForzaSuplementos_GitHub. El antecedente del primer fallo se conserva mas abajo y no representa el estado actual.
+
+## Despliegue real y controles previos
+
+Se ejecuto scripts/qa/Aplicar-007-Estructura-QA.ps1 -AutorizarEstructura007. La huella normalizada coincidio exactamente con D506BFCDAEF58541FA357FA6B16BE838FB783E55788E86E740BAE137E6978EC0. Pasaron el analisis semantico adicional de CHECK, destino/servidor local esperado, base exacta ForzaSuplementosDB_QA, marca Forza-QA-Aislada-v1, dependencias 005/006, transaccion previa cero, ausencia de otras transacciones incompatibles y ausencia de objetos/residuos de 007.
+
+Se preservaron definiciones con opciones ANSI, columnas, indices, relaciones, restricciones y conteos anteriores en almacenamiento privado ignorado por Git (private/007-despliegue-* y private/007-revision-*). Las huellas de datos solo vivieron en memoria; no se exportaron filas ni contrasenas.
+
+sqlcmd ejecuto exclusivamente el archivo 007 corregido, una sola vez, con salida 0. El SQL mantiene una transaccion entre GO y verifica @@TRANCOUNT=1 antes de COMMIT. El aplicador completo las comprobaciones posteriores y guardo resultado.json exitoso. La conexion de despliegue termino; la inspeccion posterior reporto @@TRANCOUNT=0. No hubo error, reintento ni reversion adicional.
+
+## Objetos realmente instalados
+
+QA contiene 17 tablas (16 dbo y qa.Fixtures), 46 procedimientos, 17 FK, 28 indices y 13 CHECK.
+
+- dbo.Compras y dbo.DetalleCompras creadas y vacias: cero compras y cero detalles.
+- sp_Compras_Registrar, sp_Compras_Historial y sp_Compras_Detalle instalados. Sus cuerpos y parametros se compararon con el SQL/DAL previstos y coincidieron.
+- Las cuatro FK y cuatro CHECK nuevos estan habilitados y son confiables.
+- Se verificaron las dos PK, las dos UNIQUE, el indice IX_Compras_FechaProveedor, sus claves e INCLUDE, y el DEFAULT de fecha SYSDATETIME().
+- CK_DetalleCompras_Subtotal fue aceptado efectivamente por SQL Server como restriccion de tabla. Esto verifica su creacion; no equivale a probar compras reales o todas las rutas del SP.
+
+El inventario y el diagrama ER se regeneraron mediante metadatos de QA y reflejan este estado real. No se aplico 008.
+
+## Integridad y limites de prueba
+
+Los conteos de las 15 tablas anteriores y sus huellas agregadas de todas las columnas preexistentes coincidieron antes/despues; incluye Usuarios (con sus valores de contrasena), Productos (precios/stock), Ventas/DetalleVentas, PagosVenta y Caja. Tambien coincidieron las 43 definiciones previas y sus opciones ANSI. PBKDF2 sigue inactivo y CredencialesUsuario vacia.
+
+No se invoco sp_Compras_Registrar, no se registraron compras, no se modificaron stock/precios/credenciales y no se ejecutaron fixtures SQL de escritura. No se escribio sobre otras bases. No hubo push.
+
+## Compilacion y regresion
+
+Se adapto exclusivamente la comprobacion de metadata de Probar-007-Numericos-Lectura.ps1 para reconocer el baseline 006 (15/43 y nombres nuevos ausentes) o 007 (17/46 y sus 13 restricciones presentes); sigue rechazando otros estados y exige que sus lecturas no cambien la estructura. El resto de la regresion ya reconoce Compras habilitado y 008 pendiente. No se modifico VB, estetica, permisos ni conexiones.
+
+La compilacion Debug/AnyCPU termino correctamente. La regresion offline/de lectura aprobo sus 707 comprobaciones y 65 analisis estaticos SQL. Registro: private/regresion-007-instalada.log. La validacion visual humana y las operaciones transaccionales de Compras siguen pendientes.
+
+## Autorizacion independiente para el siguiente ensayo
+
+El archivo tests/qa/Compras_007_Rollback_Preparado.sql NO se ejecuto. Para su proxima etapa se solicita autorizar exclusivamente ese archivo sobre QA/instancia/marca verificadas, una sola vez y con sus comprobaciones de rollback.
+
+El ensayo crea un proveedor y producto exclusivamente ficticios, con precio de venta 99 y stock inicial 0. Registra una compra de 3 unidades a costo 2.50 (total 7.50), repite exactamente el GUID y pedido para comprobar que devuelve el mismo ID sin duplicar cabecera/detalle ni sumar stock otra vez, y consulta historial/detalle. El stock del producto nuevo pasa temporalmente a 3; no debe alterar productos ni usuarios preexistentes. Revierte toda la transaccion y comprueba conteos, ausencia del token/operacion/detalles y @@TRANCOUNT=0. Los contadores IDENTITY pueden avanzar y no se restablecen.
+
+Este permiso futuro no incluye 008, otras suites SQL de escritura, PBKDF2, credenciales, otras bases ni push. Ante error o rollback no comprobable debe detenerse sin reintentar ni reparar. Hasta recibirlo no se ejecuta el ensayo.
+
+Para inspeccionar desde Windows: abrir FORZA SUPLEMENTOS - QA (GITHUB), ingresar como gerente y abrir Compras; el modulo ya puede mostrar su interfaz. No confirmar compras manualmente dentro de la autorizacion estructural. En SSMS, tras verificar servidor/base/marca, consultar metadatos y COUNT_BIG de Compras/DetalleCompras (esperado 0/0). No volver a ejecutar la migracion.
+
+---
+
+## Antecedente historico: primer intento fallido
+
+# Resultado del intento autorizado de 007: fallo estructural, sin reintento
 
 Actualizacion local posterior: CHECK corregido y nueva revision preparada, sin segundo intento SQL. Ver [CORRECCION_007_CHECK_Y_REVISION_008.md](CORRECCION_007_CHECK_Y_REVISION_008.md).
 
