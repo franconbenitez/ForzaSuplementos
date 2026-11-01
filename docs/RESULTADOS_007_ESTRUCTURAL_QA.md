@@ -1,5 +1,7 @@
 ﻿# Resultado actual: 007 corregida instalada correctamente en QA
 
+Actualizacion posterior: el ensayo de Compras fue autorizado y aprobado con rollback e integridad comprobados. Ver [RESULTADOS_COMPRAS_007_QA.md](RESULTADOS_COMPRAS_007_QA.md). La autorizacion de estructura 008 sigue pendiente.
+
 Fecha local: 2026-11-01. Segundo intento expresamente autorizado, ejecutado una sola vez desde ForzaSuplementos_GitHub. El antecedente del primer fallo se conserva mas abajo y no representa el estado actual.
 
 ## Despliegue real y controles previos
