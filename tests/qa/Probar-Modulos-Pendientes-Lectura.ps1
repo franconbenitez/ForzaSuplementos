@@ -1,12 +1,18 @@
-param([string]$Configuration='Debug')
+﻿param([string]$Configuration='Debug')
 $ErrorActionPreference='Stop'
 $root=Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 Import-Module (Join-Path $root 'scripts/qa/QA.Common.psm1') -Force
 $cfg=Get-QaConfig;$cn=Open-QaConnection
 try{
  $ids=(Invoke-QaQuery $cn 'SELECT TOP(1) gerente,administrador,vendedor FROM qa.Fixtures;').Rows[0]
- $state=(Invoke-QaQuery $cn "SELECT (SELECT COUNT(*) FROM sys.tables WHERE is_ms_shipped=0) tablas,(SELECT COUNT(*) FROM sys.procedures WHERE is_ms_shipped=0) procedimientos,CASE WHEN OBJECT_ID('dbo.sp_Comercial_Estado','P') IS NULL AND OBJECT_ID('dbo.sp_Seguridad_Estado','P') IS NULL THEN 1 ELSE 0 END pendientes;").Rows[0]
- if($state.tablas -ne 11 -or $state.procedimientos -ne 30 -or !$state.pendientes){throw 'Estado de despliegue distinto; revisar antes de probar pendientes.'}
+ $state=(Invoke-QaQuery $cn "SELECT (SELECT COUNT(*) FROM sys.tables WHERE is_ms_shipped=0) tablas,(SELECT COUNT(*) FROM sys.procedures WHERE is_ms_shipped=0) procedimientos,CASE WHEN OBJECT_ID('dbo.sp_Comercial_Estado','P') IS NULL THEN 1 ELSE 0 END pendientes,CASE WHEN OBJECT_ID('dbo.sp_Seguridad_Estado','P') IS NOT NULL THEN 1 ELSE 0 END seguridad;").Rows[0]
+ $base004=$state.tablas -eq 11 -and $state.procedimientos -eq 30 -and !$state.seguridad
+ $base005=$state.tablas -eq 13 -and $state.procedimientos -eq 37 -and $state.seguridad
+ if((!$base004 -and !$base005) -or !$state.pendientes){throw 'Estado de despliegue distinto; revisar antes de probar pendientes.'}
+ if($base005){
+  $modo=Invoke-QaQuery $cn 'EXEC dbo.sp_Seguridad_Estado;'
+  if($modo.Rows.Count -ne 1 -or [bool]$modo.Rows[0].activa){throw 'Esta suite requiere modo seguro inactivo.'}
+ }
 }finally{$cn.Dispose()}
 Add-Type -AssemblyName System.Windows.Forms,System.Drawing,System.Data
 $out=Join-Path $root "ForzaSuplementos/ForzaSuplementos/ForzaSuplementos.Presentacion/bin/$Configuration"
@@ -55,6 +61,6 @@ try{
    }
   }finally{$main.Dispose()}
  }
- Check ([int]$state.procedimientos -eq 30 -and [int]$state.tablas -eq 11) 'QA mantiene esquema desplegado de reportes; 005-008 no aplicadas'
+ Check ($base004 -or $base005) 'QA reconoce baseline de reportes o 005 estructural; 006-008 no aplicadas'
  Write-Output "TOTAL MODULOS PENDIENTES QA LECTURA: $n aprobadas. Sin escrituras SQL."
 }finally{$env:FORZA_ENTORNO=$old;$env:FORZA_QA_CONFIG=$oldcfg}

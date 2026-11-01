@@ -1,8 +1,8 @@
 # Inventario real de ForzaSuplementosDB_QA
 
-Fecha: 2026-10-27. Extracción exclusivamente de sys.* mediante conexión QA validada. No se ejecutó DDL/DML ni se exportaron filas, credenciales, rutas de backups o identificadores de equipo.
+Fecha: 2026-10-31. Extracción exclusivamente de sys.* mediante conexión QA validada. No se ejecutó DDL/DML ni se exportaron filas, credenciales, rutas de backups o identificadores de equipo.
 
-**11 tablas**: 10 tablas de aplicación en dbo y 1 tabla auxiliar qa.Fixtures. **11 claves foráneas, 16 índices, 4 restricciones CHECK y 30 procedimientos.** La tabla de fixtures no forma parte del modelo comercial.
+**13 tablas**: 12 tablas en dbo y 1 tabla(s) auxiliar(es). **12 claves foráneas, 18 índices, 6 restricciones CHECK y 37 procedimientos.** La tabla de fixtures no forma parte del modelo comercial.
 
 ## dbo.AuditoriaBackups
 
@@ -38,6 +38,17 @@ Fecha: 2026-10-27. Extracción exclusivamente de sys.* mediante conexión QA val
 
 - `PK__Clientes__885457EEB20DAE12`: CLUSTERED; PK=True, UNIQUE=True, deshabilitado=False; columnas (idCliente ASC).
 
+## dbo.CredencialesUsuario
+
+- `idUsuario`: `int`, NOT NULL.
+- `formato`: `varchar(256)`, NOT NULL.
+- `fechaCambio`: `datetime2`, NOT NULL; DEFAULT `DF_Credenciales_Fecha` (sysutcdatetime()).
+
+Índices y claves:
+
+- `PK_CredencialesUsuario`: CLUSTERED; PK=True, UNIQUE=True, deshabilitado=False; columnas (idUsuario ASC).
+- CHECK `CK_Credenciales_Formato`: `([formato] like 'PBKDF2-SHA256$1$600000$%')`; deshabilitada=False, no confiable=False.
+
 ## dbo.DetalleVentas
 
 - `idDetalle`: `int`, NOT NULL IDENTITY.
@@ -68,6 +79,7 @@ Fecha: 2026-10-27. Extracción exclusivamente de sys.* mediante conexión QA val
 - `idPerfil`: `int`, NOT NULL IDENTITY.
 - `nombrePerfil`: `varchar(50)`, NOT NULL.
 - `descripcion`: `varchar(150)`, NULL.
+- `activo`: `bit`, NOT NULL; DEFAULT `DF_Perfiles_Activo` ((1)).
 
 Índices y claves:
 
@@ -88,6 +100,16 @@ Fecha: 2026-10-27. Extracción exclusivamente de sys.* mediante conexión QA val
 
 - `PK__Producto__07F4A132E33100FE`: CLUSTERED; PK=True, UNIQUE=True, deshabilitado=False; columnas (idProducto ASC).
 - CHECK `CK_Productos_StockNoNegativo`: `([stock]>=(0))`; deshabilitada=False, no confiable=False.
+
+## dbo.SeguridadEstado
+
+- `id`: `int`, NOT NULL.
+- `activa`: `bit`, NOT NULL.
+
+Índices y claves:
+
+- `PK_SeguridadEstado`: CLUSTERED; PK=True, UNIQUE=True, deshabilitado=False; columnas (id ASC).
+- CHECK `CK_SeguridadEstado_Id`: `([id]=(1))`; deshabilitada=False, no confiable=False.
 
 ## dbo.SesionesCaja
 
@@ -174,6 +196,7 @@ Fecha: 2026-10-27. Extracción exclusivamente de sys.* mediante conexión QA val
 - `FK__Ventas__idClient__70DDC3D8`: `Ventas(idCliente)` → `Clientes(idCliente)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 - `FK__Ventas__idSesion__19DFD96B`: `Ventas(idSesion)` → `SesionesCaja(idSesion)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 - `FK__Ventas__idUsuari__71D1E811`: `Ventas(idUsuario)` → `Usuarios(idUsuario)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
+- `FK_Credenciales_Usuario`: `CredencialesUsuario(idUsuario)` → `Usuarios(idUsuario)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 - `FK_PagosVenta_Ventas`: `PagosVenta(idVenta)` → `Ventas(idVenta)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 - `FK_Usuarios_Perfiles`: `Usuarios(idPerfil)` → `Perfiles(idPerfil)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 
@@ -202,6 +225,13 @@ Fecha: 2026-10-27. Extracción exclusivamente de sys.* mediante conexión QA val
 - `sp_Reporte_MisVentas`: `@idUsuario int`.
 - `sp_Reportes_BackupsDashboard`: `@idActor int`; `@desde date`; `@hasta date`.
 - `sp_Reportes_VentasDashboard`: `@idActor int`; `@desde date`; `@hasta date`; `@idVendedor int`; `@idProducto int`.
+- `sp_Seguridad_Activar`: `@confirmacion varchar(50)`.
+- `sp_Seguridad_Cambiar`: `@idActor int`; `@idDestino int`; `@nuevo varchar(256)`; `@anterior varchar(256)`.
+- `sp_Seguridad_Credencial`: `@usuario varchar(50)`.
+- `sp_Seguridad_Estado`: sin parámetros.
+- `sp_Seguridad_Provisionar`: `@idUsuario int`; `@formato varchar(256)`.
+- `sp_Seguridad_RecuperarAdministrador`: `@idUsuario int`; `@formato varchar(256)`; `@confirmacion varchar(50)`.
+- `sp_Seguridad_UsuarioGuardar`: `@idActor int`; `@idUsuario int`; `@idPerfil int`; `@nombre varchar(50)`; `@apellido varchar(50)`; `@usuario varchar(50)`; `@email varchar(100)`; `@dni varchar(20)`; `@calle varchar(100)`; `@altura varchar(20)`; `@telefono varchar(30)`; `@fechaNacimiento date`; `@sexo char(1)`; `@formato varchar(256)`.
 - `sp_Usuarios_CambiarEstado`: `@idUsuario int`; `@activo bit`.
 - `sp_Usuarios_Insertar`: `@idPerfil int`; `@nombre varchar(50)`; `@apellido varchar(50)`; `@usuario varchar(50)`; `@contrasena varchar(100)`; `@email varchar(100)`; `@dni varchar(20)`; `@calle varchar(100)`; `@altura varchar(20)`; `@telefono varchar(30)`; `@fechaNacimiento date`; `@sexo char(1)`; `@nuevoId int OUTPUT`.
 - `sp_Usuarios_ListarPorEstado`: `@activo bit`.

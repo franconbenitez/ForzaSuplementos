@@ -20,7 +20,7 @@ fks=defaultdict(list)
 for f in m['fks']:fks[f['nombre']].append(f)
 sp=defaultdict(list)
 for s in m['procedimientos']:sp[s['procedimiento']].append(s)
-lines=['# Inventario real de ForzaSuplementosDB_QA','',f'Fecha: {a.fecha}. Extracción exclusivamente de sys.* mediante conexión QA validada. No se ejecutó DDL/DML ni se exportaron filas, credenciales, rutas de backups o identificadores de equipo.','',f'**{len(groups)} tablas**: 10 tablas de aplicación en dbo y 1 tabla auxiliar qa.Fixtures. **{len(fks)} claves foráneas, {len(idx)} índices, {len(m["checks"])} restricciones CHECK y {len(sp)} procedimientos.** La tabla de fixtures no forma parte del modelo comercial.','']
+lines=['# Inventario real de ForzaSuplementosDB_QA','',f'Fecha: {a.fecha}. Extracción exclusivamente de sys.* mediante conexión QA validada. No se ejecutó DDL/DML ni se exportaron filas, credenciales, rutas de backups o identificadores de equipo.','',f'**{len(groups)} tablas**: {sum(1 for schema,table in groups if schema=="dbo")} tablas en dbo y {sum(1 for schema,table in groups if schema!="dbo")} tabla(s) auxiliar(es). **{len(fks)} claves foráneas, {len(idx)} índices, {len(m["checks"])} restricciones CHECK y {len(sp)} procedimientos.** La tabla de fixtures no forma parte del modelo comercial.','']
 for (schema,table),cols in groups.items():
  lines+=['## '+schema+'.'+table,'']
  for c in cols:

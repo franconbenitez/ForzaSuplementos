@@ -1,6 +1,6 @@
 # Diagrama entidad-relación auditado
 
-Fecha: 2026-10-27. Basado en las 11 FK reales de QA; no se deducen relaciones por semejanza de nombres. qa.Fixtures es auxiliar de pruebas y no tiene FK. Ver INVENTARIO_BASE_DATOS.md para tipos completos y restricciones.
+Fecha: 2026-10-31. Basado en las 12 FK reales de QA; no se deducen relaciones por semejanza de nombres. qa.Fixtures es auxiliar de pruebas y no tiene FK. Ver INVENTARIO_BASE_DATOS.md para tipos completos y restricciones.
 
 ```mermaid
 erDiagram
@@ -23,6 +23,11 @@ erDiagram
         varchar email "varchar(100) nullable"
         bit activo "bit required"
     }
+    dbo_CredencialesUsuario {
+        int idUsuario PK,FK "int required"
+        varchar formato "varchar(256) required"
+        datetime2 fechaCambio "datetime2 required"
+    }
     dbo_DetalleVentas {
         int idDetalle PK "int required"
         int idVenta FK "int required"
@@ -40,6 +45,7 @@ erDiagram
         int idPerfil PK "int required"
         varchar nombrePerfil "varchar(50) required"
         varchar descripcion "varchar(150) nullable"
+        bit activo "bit required"
     }
     dbo_Productos {
         int idProducto PK "int required"
@@ -49,6 +55,10 @@ erDiagram
         decimal precio "decimal(10,2) required"
         int stock "int required"
         bit activo "bit required"
+    }
+    dbo_SeguridadEstado {
+        int id PK "int required"
+        bit activa "bit required"
     }
     dbo_SesionesCaja {
         int idSesion PK "int required"
@@ -107,6 +117,7 @@ erDiagram
     dbo_Clientes ||--o{ dbo_Ventas : FK__Ventas__idClient__70DDC3D8
     dbo_SesionesCaja o|--o{ dbo_Ventas : FK__Ventas__idSesion__19DFD96B
     dbo_Usuarios ||--o{ dbo_Ventas : FK__Ventas__idUsuari__71D1E811
+    dbo_Usuarios ||--o| dbo_CredencialesUsuario : FK_Credenciales_Usuario
     dbo_Ventas ||--o| dbo_PagosVenta : FK_PagosVenta_Ventas
     dbo_Perfiles ||--o{ dbo_Usuarios : FK_Usuarios_Perfiles
 ```
