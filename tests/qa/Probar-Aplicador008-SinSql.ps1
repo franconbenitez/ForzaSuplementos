@@ -40,4 +40,26 @@ try{
  $code=$LASTEXITCODE
 }finally{$ErrorActionPreference=$previous}
 Check ($code -ne 0 -and ($output | Out-String) -match 'no ambos') 'Modos contradictorios rechazados antes de conectar'
+$qualified=Get-008ProcedureContract 'CREATE OR ALTER PROCEDURE dbo.sp_T @id int,@monto decimal(10,2),@nuevo int OUTPUT AS BEGIN SELECT 1; END;'
+$unqualified=Get-008ProcedureContract 'CREATE PROCEDURE sp_T @id INT, @monto DECIMAL (10, 2), @nuevo INT OUT AS BEGIN SELECT 1; END;'
+Check ($qualified.Firma -ceq $unqualified.Firma) 'Cabeceras dbo y antiguas sin esquema equivalentes'
+Check ((Get-008ProcedureContract 'CREATE PROCEDURE dbo.sp_T @nombre varchar(20) AS BEGIN SELECT 1; END;').Firma -cne (Get-008ProcedureContract 'CREATE PROCEDURE dbo.sp_T @nombre varchar(21) AS BEGIN SELECT 1; END;').Firma) 'Cambios de longitud no pasan como mismo contrato'
+Check ((Get-008ProcedureContract 'CREATE PROCEDURE dbo.sp_T @id int OUTPUT AS BEGIN SELECT 1; END;').Firma -cne (Get-008ProcedureContract 'CREATE PROCEDURE dbo.sp_T @id int AS BEGIN SELECT 1; END;').Firma) 'OUTPUT es parte obligatoria del contrato'
+Check ((Get-008ProcedureContract 'CREATE PROCEDURE dbo.sp_T @id int=NULL AS BEGIN SELECT 1; END;').Firma -cne (Get-008ProcedureContract 'CREATE PROCEDURE dbo.sp_T @id int AS BEGIN SELECT 1; END;').Firma) 'Default NULL no se confunde con parametro obligatorio'
+Reject 'Tipo no revisado se rechaza al analizar firmas' {Get-008ProcedureContract 'CREATE PROCEDURE dbo.sp_T @id sql_variant AS BEGIN SELECT 1; END;'}
+$bodies=@{}
+foreach($m in [regex]::Matches($source,"(?s)EXEC sys.sp_executesql N'((?:[^']|'')*)';")){
+ $body=$m.Groups[1].Value.Replace("''","'")
+ $contract=Get-008ProcedureContract $body
+ $bodies[$contract.Nombre]=($body -replace '(?m)--.*$','')
+}
+Check ($bodies.Count -eq 8) 'Ocho firmas completas analizadas offline'
+foreach($name in @('sp_Compras_Registrar','sp_Ventas_RegistrarConCaja')){
+ $body=$bodies[$name]
+ Check ([regex]::Matches($body,'(?i)\bUPDATE\s+(?:p|dbo\.Productos)\s+SET\s+stock\s*=').Count -eq 1) "$name solo actualiza stock una vez"
+ Check ([regex]::Matches($body,'(?i)\bOUTPUT\s+inserted.idProducto,deleted.stock,inserted.stock\s+INTO\s+@').Count -eq 1 -and [regex]::Matches($body,'(?i)INSERT\s+dbo.MovimientosStock').Count -eq 1) "$name deriva movimiento del OUTPUT de ese UPDATE"
+}
+Check ($bodies['sp_Productos_Modificar'] -notmatch '(?is)SET\s+[^;]*?\bstock\s*=.*?WHERE') 'Modificar producto no asigna existencias en SET'
+Check ($bodies['sp_Productos_Insertar'] -match '(?i)@stock<>0' -and $bodies['sp_Productos_Insertar'] -match '(?i)@precio,0,1') 'Insertar producto mantiene contrato de stock inicial cero'
+Check (@(@('sp_Compras_Registrar','sp_Ventas_RegistrarConCaja','sp_Inventario_Ajustar') | Where-Object {$bodies[$_] -notmatch "@Resource='Forza.Caja.Unica'"}).Count -eq 0) 'Tres operaciones de stock usan el mismo bloqueo transaccional'
 Write-Output "TOTAL APLICADOR 008 OFFLINE: $n comprobaciones aprobadas. Sin SQL."

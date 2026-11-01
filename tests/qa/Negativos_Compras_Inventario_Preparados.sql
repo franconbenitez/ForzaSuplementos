@@ -7,8 +7,11 @@ IF OBJECT_ID('dbo.sp_Inventario_Ajustar','P') IS NULL THROW 51900,'Requiere 008.
 IF @@TRANCOUNT<>0 THROW 51932,'El ensayo requiere una conexion sin transaccion previa.',1;
 SET IMPLICIT_TRANSACTIONS OFF;
 SET NOCOUNT ON; SET XACT_ABORT ON;
+IF (SELECT COUNT(*) FROM sys.tables WHERE is_ms_shipped=0)<>18 OR (SELECT COUNT(*) FROM sys.procedures WHERE is_ms_shipped=0)<>50 THROW 51900,'Requiere estructura 008 completa.',1;
+IF (SELECT COUNT(*) FROM qa.Fixtures)<>1 THROW 51900,'Fixtures ambiguos.',1;
 SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON; SET ARITHABORT ON; SET CONCAT_NULL_YIELDS_NULL ON; SET NUMERIC_ROUNDABORT OFF;
 DECLARE @actor int=(SELECT TOP(1) gerente FROM qa.Fixtures),@admin int=(SELECT TOP(1) administrador FROM qa.Fixtures),@cat int=(SELECT TOP(1) categoria FROM qa.Fixtures),@caso int=1;
+DECLARE @baseDetalles bigint=(SELECT COUNT_BIG(*) FROM dbo.DetalleCompras);
 DECLARE @baseProductos bigint=(SELECT COUNT_BIG(*) FROM dbo.Productos),@baseProveedores bigint=(SELECT COUNT_BIG(*) FROM dbo.Proveedores),@baseCompras bigint=(SELECT COUNT_BIG(*) FROM dbo.Compras),@baseMov bigint=(SELECT COUNT_BIG(*) FROM dbo.MovimientosStock);
 WHILE @caso<=10
 BEGIN
@@ -38,7 +41,7 @@ BEGIN
  END CATCH;
  IF XACT_STATE()<>0 ROLLBACK;
  IF @error IS NULL OR @error<>@esperado THROW 51930,'Caso no rechazo con el contrato esperado; detener.',1;
- IF @@TRANCOUNT<>0 OR (SELECT COUNT_BIG(*) FROM dbo.Productos)<>@baseProductos OR (SELECT COUNT_BIG(*) FROM dbo.Proveedores)<>@baseProveedores OR (SELECT COUNT_BIG(*) FROM dbo.Compras)<>@baseCompras OR (SELECT COUNT_BIG(*) FROM dbo.MovimientosStock)<>@baseMov THROW 51931,'Rollback inconsistente; detener.',1;
+ IF @@TRANCOUNT<>0 OR (SELECT COUNT_BIG(*) FROM dbo.Productos)<>@baseProductos OR (SELECT COUNT_BIG(*) FROM dbo.Proveedores)<>@baseProveedores OR (SELECT COUNT_BIG(*) FROM dbo.Compras)<>@baseCompras OR (SELECT COUNT_BIG(*) FROM dbo.MovimientosStock)<>@baseMov OR (SELECT COUNT_BIG(*) FROM dbo.DetalleCompras)<>@baseDetalles OR EXISTS(SELECT 1 FROM dbo.Productos WHERE nombre=@nombre) OR EXISTS(SELECT 1 FROM dbo.Proveedores WHERE nombre=@nombre) OR EXISTS(SELECT 1 FROM dbo.Compras WHERE operacion=@operacion) OR EXISTS(SELECT 1 FROM dbo.MovimientosStock WHERE idProducto=@producto) THROW 51931,'Rollback inconsistente; detener.',1;
  PRINT CONCAT('Caso negativo ',@caso,' aprobado con rollback (solo tras ejecutar).');
  SET @caso+=1;
 END;

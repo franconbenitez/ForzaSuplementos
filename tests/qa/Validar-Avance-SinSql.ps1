@@ -25,7 +25,7 @@ $fixture=[IO.File]::ReadAllText((Join-Path $root 'tests/qa/Avance_Transaccional_
 Parse $fixture 'Fixture transaccional propuesto'
 $negativos=[IO.File]::ReadAllText((Join-Path $root 'tests/qa/Negativos_Compras_Inventario_Preparados.sql')) -replace '(?m)^:on error exit\s*',''
 Parse $negativos 'Negativos preparados'
-foreach($name in @('Catalogos_006_Rollback_Preparado.sql','Compras_007_Rollback_Preparado.sql','Ventas_Caja_008_Rollback_Preparado.sql')){
+foreach($name in @('Catalogos_006_Rollback_Preparado.sql','Compras_007_Rollback_Preparado.sql','Ventas_Caja_008_Rollback_Preparado.sql','Negativos_Ventas_Caja_008_Preparados.sql')){
  $script=[IO.File]::ReadAllText((Join-Path $root ('tests/qa/'+$name))) -replace '(?m)^:on error exit\s*',''
  if(!$script.Contains('Forza-QA-Aislada-v1') -or !$script.Contains('@@TRANCOUNT<>0') -or !$script.Contains('AutorizarEnsayo')){throw 'Fixture sin guardas.'}
  Parse $script $name

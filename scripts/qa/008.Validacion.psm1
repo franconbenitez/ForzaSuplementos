@@ -25,4 +25,15 @@ function Get-008IntegrityQuery([string]$Table,[string]$Columns){
  # Table/Columns se obtienen exclusivamente de sys.* con QUOTENAME, no de entrada UI.
  return "SELECT HASHBYTES('SHA2_256',COALESCE(CONVERT(varbinary(max),(SELECT $Columns FROM $Table ORDER BY $Columns FOR XML RAW,BINARY BASE64)),CONVERT(varbinary(max),0x))) Huella;"
 }
-Export-ModuleMember -Function Get-008PlanHash,Assert-008Plan,Assert-008Destination,Assert-008Baseline,Get-008IntegrityQuery
+function Get-008ProcedureContract([string]$Definition){
+ $text=$Definition -replace '(?m)--.*$',''
+ $m=[regex]::Match($text,'(?is)\b(?:CREATE(?:\s+OR\s+ALTER)?|ALTER)\s+PROCEDURE\s+(?:\[?dbo\]?\.)?\[?(?<name>\w+)\]?\s*(?<parameters>.*?)\s+AS\s+BEGIN\b')
+ if(!$m.Success){throw 'Cabecera de procedimiento no reconocida; revisar.'}
+ $pattern='(?is)@(?<name>\w+)\s+(?<type>int|varchar|nvarchar|decimal|date|uniqueidentifier|xml)\b(?<args>\s*\(\s*\d+\s*(?:,\s*\d+\s*)?\))?\s*(?:=\s*(?<default>NULL))?\s*(?<output>OUTPUT|OUT)?'
+ $parameters=$m.Groups['parameters'].Value
+ $parts=@([regex]::Matches($parameters,$pattern))
+ if(!$parts.Count -or ([regex]::Replace($parameters,$pattern,'') -replace '[,\s]','') -ne ''){throw 'Parametros no reconocidos; revisar contrato sin asumir compatibilidad.'}
+ $signature=@($parts | ForEach-Object {'@'+$_.Groups['name'].Value.ToLowerInvariant()+':'+$_.Groups['type'].Value.ToLowerInvariant()+($_.Groups['args'].Value -replace '\s','')+$(if($_.Groups['default'].Success){'=null'}else{''})+$(if($_.Groups['output'].Success){':output'}else{''})}) -join ','
+ return [pscustomobject]@{Nombre=$m.Groups['name'].Value;Firma=$signature;Cantidad=$parts.Count}
+}
+Export-ModuleMember -Function Get-008PlanHash,Assert-008Plan,Assert-008Destination,Assert-008Baseline,Get-008IntegrityQuery,Get-008ProcedureContract

@@ -43,6 +43,19 @@ try{
 
  $counts | Export-Clixml (Join-Path $folder 'conteos-previos.xml')
  $definitions | Export-Clixml (Join-Path $folder 'definiciones-previas.xml')
+ $parameters=Invoke-QaQuery $cn 'SELECT o.name Procedimiento,p.name Parametro,p.parameter_id Orden,TYPE_NAME(p.user_type_id) Tipo,p.max_length Longitud,p.precision Precision,p.scale Escala,p.is_output Salida,p.has_default_value TieneDefault FROM sys.procedures o JOIN sys.parameters p ON p.object_id=o.object_id WHERE o.schema_id=SCHEMA_ID(''dbo'') ORDER BY o.name,p.parameter_id;'
+ $parameters | Export-Clixml (Join-Path $folder 'parametros-previos.xml')
+ $plannedContracts=@()
+ foreach($m in [regex]::Matches($source,"(?s)EXEC sys.sp_executesql N'((?:[^']|'')*)';")){
+  $contract=Get-008ProcedureContract ($m.Groups[1].Value.Replace("''","'"))
+  $plannedContracts+=$contract
+  if($updated -contains $contract.Nombre){
+   $old=@($definitions.Rows | Where-Object {$_.Nombre -eq $contract.Nombre})
+   $oldContract=Get-008ProcedureContract ([string]$old[0].Codigo)
+   if($oldContract.Firma -cne $contract.Firma){throw '008 cambia firma de SP existente; revisar alcance antes de escribir.'}
+  }
+ }
+ ConvertTo-Json -InputObject $plannedContracts -Depth 4 | Set-Content (Join-Path $folder 'contratos-posteriores-previstos.json') -Encoding UTF8
  $columns=Invoke-QaQuery $cn 'SELECT t.object_id Id,QUOTENAME(s.name)+''.''+QUOTENAME(t.name) Tabla,QUOTENAME(c.name) Columna,c.column_id Orden,TYPE_NAME(c.user_type_id) Tipo,c.max_length Longitud,c.precision Precision,c.scale Escala,c.is_nullable Nulable FROM sys.tables t JOIN sys.schemas s ON s.schema_id=t.schema_id JOIN sys.columns c ON c.object_id=t.object_id ORDER BY s.name,t.name,c.column_id;'
  $columns | Export-Clixml (Join-Path $folder 'columnas-previas.xml')
  $indexes=Invoke-QaQuery $cn 'SELECT s.name Esquema,t.name Tabla,i.name Indice,i.is_unique Unico,i.has_filter Filtrado,i.filter_definition Filtro FROM sys.tables t JOIN sys.schemas s ON s.schema_id=t.schema_id JOIN sys.indexes i ON i.object_id=t.object_id WHERE i.index_id>0;'
@@ -96,6 +109,13 @@ try{
  foreach($row in $counts.Rows){$m=@($after.Rows | Where-Object {$_.Esquema -eq $row.Esquema -and $_.Tabla -eq $row.Tabla});if($m.Count -ne 1 -or $m[0].Filas -ne $row.Filas){throw 'Conteos anteriores distintos.'}}
  foreach($entry in $integrity){$digest=(Invoke-QaQuery $cn $entry.Query).Rows[0].Huella;if([Convert]::ToBase64String($digest) -cne $entry.Digest){throw 'Datos anteriores distintos; detener.'}}
  $integrity=$null;$digest=$null
+ $afterColumns=Invoke-QaQuery $cn 'SELECT t.object_id Id,QUOTENAME(s.name)+''.''+QUOTENAME(t.name) Tabla,QUOTENAME(c.name) Columna,c.column_id Orden,TYPE_NAME(c.user_type_id) Tipo,c.max_length Longitud,c.precision Precision,c.scale Escala,c.is_nullable Nulable FROM sys.tables t JOIN sys.schemas s ON s.schema_id=t.schema_id JOIN sys.columns c ON c.object_id=t.object_id ORDER BY s.name,t.name,c.column_id;'
+ if($afterColumns.Rows.Count -ne $columns.Rows.Count+13){throw 'Columnas agregadas distintas: se esperan 12 de MovimientosStock y stockMinimo.'}
+ foreach($column in $columns.Rows){
+  $m=@($afterColumns.Rows | Where-Object {$_.Tabla -eq $column.Tabla -and $_.Columna -eq $column.Columna})
+  if($m.Count -ne 1){throw 'Columna anterior ausente.'}
+  foreach($field in @('Id','Orden','Tipo','Longitud','Precision','Escala','Nulable')){if([string]$m[0].$field -cne [string]$column.$field){throw 'Metadata de columna anterior distinta.'}}
+ }
  $installed=Invoke-QaQuery $cn 'SELECT p.name Nombre,m.definition Codigo,m.uses_ansi_nulls AnsiNulls,m.uses_quoted_identifier QuotedIdentifier FROM sys.procedures p JOIN sys.sql_modules m ON m.object_id=p.object_id WHERE p.schema_id=SCHEMA_ID(''dbo'');'
  foreach($old in @($definitions.Rows | Where-Object {$updated -notcontains $_.Nombre})){$m=@($installed.Rows | Where-Object {$_.Nombre -eq $old.Nombre});if($m.Count -ne 1 -or [string]$m[0].Codigo -cne [string]$old.Codigo -or $m[0].AnsiNulls -ne $old.AnsiNulls -or $m[0].QuotedIdentifier -ne $old.QuotedIdentifier){throw 'Contrato anterior distinto.'}}
  [pscustomobject]@{Migracion='008';Tablas=18;Procedimientos=50;FK=21;Indices=33;Checks=17;DatosPreviosConservados=$true;DefinicionesNoAfectadasConservadas=$true;DefinicionesActualizadasRespaldadas=4;FixturesEjecutados=$false;PBKDF2=$false} | ConvertTo-Json | Set-Content (Join-Path $folder 'resultado.json') -Encoding UTF8

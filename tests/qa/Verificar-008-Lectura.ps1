@@ -2,6 +2,7 @@
 $ErrorActionPreference='Stop'
 $root=Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 Import-Module (Join-Path $root 'scripts/qa/QA.Common.psm1') -Force
+Import-Module (Join-Path $root 'scripts/qa/008.Validacion.psm1') -Force -DisableNameChecking
 $cn=Open-QaConnection
 try{
  $state=Invoke-QaQuery $cn 'SELECT @@TRANCOUNT Transacciones,(SELECT COUNT(*) FROM sys.tables WHERE is_ms_shipped=0) Tablas,(SELECT COUNT(*) FROM sys.procedures WHERE is_ms_shipped=0) Procedimientos,(SELECT COUNT(*) FROM sys.foreign_keys) FK,(SELECT COUNT(*) FROM sys.indexes WHERE object_id IN(SELECT object_id FROM sys.tables) AND index_id>0) Indices,(SELECT COUNT(*) FROM sys.check_constraints) Checks,(SELECT activa FROM dbo.SeguridadEstado WHERE id=1) Seguridad,(SELECT COUNT(*) FROM dbo.CredencialesUsuario) Credenciales;'
@@ -26,11 +27,13 @@ try{
   if(!$rows.Count -or $keys -cne $e.Keys -or [bool]$rows[0].Unico -ne $e.Unique -or $filter -ine $e.Filter -or [bool]$rows[0].Filtrado -ne ($e.Filter -ne '') -or @($rows | Where-Object {$_.Incluida}).Count){throw 'Contrato de indice 008 distinto.'}
  }
  $source=[IO.File]::ReadAllText((Join-Path $root 'sql/qa/008_Inventario_QA.sql'))
- $defs=Invoke-QaQuery $cn 'SELECT p.name Nombre,m.definition Codigo FROM sys.procedures p JOIN sys.sql_modules m ON m.object_id=p.object_id WHERE p.schema_id=SCHEMA_ID(''dbo'');'
+ $defs=Invoke-QaQuery $cn 'SELECT p.name Nombre,m.definition Codigo,m.uses_ansi_nulls AnsiNulls,m.uses_quoted_identifier QuotedIdentifier FROM sys.procedures p JOIN sys.sql_modules m ON m.object_id=p.object_id WHERE p.schema_id=SCHEMA_ID(''dbo'');'
  $n=0
  foreach($m in [regex]::Matches($source,"(?s)EXEC sys.sp_executesql N'((?:[^']|'')*)';")){
   $exp=$m.Groups[1].Value.Replace("''","'");$name=[regex]::Match($exp,'CREATE OR ALTER PROCEDURE dbo\.(\w+)').Groups[1].Value
   $actual=@($defs.Rows | Where-Object {$_.Nombre -eq $name});if($actual.Count -ne 1){throw 'Contrato 008 ausente.'}
+  if(!$actual[0].AnsiNulls -or !$actual[0].QuotedIdentifier){throw 'Opciones ANSI de contrato 008 incorrectas.'}
+  if((Get-008ProcedureContract $exp).Firma -cne (Get-008ProcedureContract ([string]$actual[0].Codigo)).Firma){throw 'Firma de uno de los ocho SP distinta.'}
   $eb=[regex]::Match($exp,'(?is)\bAS\s+BEGIN\b(.*)').Groups[1].Value;$ab=[regex]::Match([string]$actual[0].Codigo,'(?is)\bAS\s+BEGIN\b(.*)').Groups[1].Value
   if(($eb -replace '\s+',' ').Trim() -cne ($ab -replace '\s+',' ').Trim()){throw 'Contrato 008 distinto de fuente.'};$n++
  }

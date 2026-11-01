@@ -5,6 +5,8 @@ IF NOT EXISTS(SELECT 1 FROM sys.extended_properties WHERE class=0 AND name=N'For
 IF N'$(AutorizarEnsayo)'<>N'SOLO_FIXTURES_ROLLBACK' THROW 51900,'Falta autorizacion especifica.',1;
 IF @@TRANCOUNT<>0 THROW 51932,'Conexion sin transaccion previa requerida.',1;
 SET IMPLICIT_TRANSACTIONS OFF; SET XACT_ABORT ON; SET NOCOUNT ON;
+IF (SELECT COUNT(*) FROM sys.tables WHERE is_ms_shipped=0)<>18 OR (SELECT COUNT(*) FROM sys.procedures WHERE is_ms_shipped=0)<>50 THROW 51900,'Requiere estructura 008 completa.',1;
+IF (SELECT COUNT(*) FROM qa.Fixtures)<>1 THROW 51900,'Fixtures ambiguos.',1;
 SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON; SET ANSI_WARNINGS ON; SET ARITHABORT ON; SET CONCAT_NULL_YIELDS_NULL ON; SET NUMERIC_ROUNDABORT OFF;
 IF OBJECT_ID('dbo.MovimientosStock','U') IS NULL THROW 51900,'Requiere 008.',1;
 IF EXISTS(SELECT 1 FROM dbo.SesionesCaja WHERE estado='Abierta') THROW 51947,'Hay una caja abierta: no se opera ni se cierra una sesion ajena.',1;
@@ -27,7 +29,7 @@ BEGIN TRY
    EXEC dbo.sp_Ventas_RegistrarConCaja @idCliente=@cliente,@idUsuario=@vendedor,@idSesion=@sesion,@medioPago=@medio,@detalles=@xml,@totalEsperado=10,@nuevaVentaId=@venta OUTPUT;
    IF @venta IS NULL OR NOT EXISTS(SELECT 1 FROM dbo.Ventas WHERE idVenta=@venta AND idSesion=@sesion) THROW 51949,'Venta no asociada a sesion.',1;
    IF NOT EXISTS(SELECT 1 FROM dbo.PagosVenta WHERE idVenta=@venta AND medioPago=@medio AND importe=10) THROW 51949,'Pago incorrecto.',1;
-   IF (SELECT COUNT(*) FROM dbo.MovimientosStock WHERE idVenta=@venta AND idProducto=@producto AND tipo='Venta' AND cantidad=-1)<>1 THROW 51949,'Movimiento ausente o duplicado.',1;
+   IF (SELECT COUNT(*) FROM dbo.MovimientosStock WHERE idVenta=@venta AND idProducto=@producto AND tipo='Venta' AND cantidad=-1 AND anterior=3-@pago AND posterior=2-@pago)<>1 THROW 51949,'Movimiento ausente o duplicado.',1;
    IF (SELECT stock FROM dbo.Productos WHERE idProducto=@producto)<>2-@pago THROW 51949,'Descuento de stock incorrecto.',1;
    SET @pago+=1;
   END;
@@ -38,6 +40,6 @@ BEGIN TRY
   SET @caso+=1;
  END;
  ROLLBACK;
- IF @@TRANCOUNT<>0 OR (SELECT COUNT_BIG(*) FROM dbo.Productos)<>@bp OR (SELECT COUNT_BIG(*) FROM dbo.SesionesCaja)<>@bs OR (SELECT COUNT_BIG(*) FROM dbo.Ventas)<>@bv OR (SELECT COUNT_BIG(*) FROM dbo.DetalleVentas)<>@bd OR (SELECT COUNT_BIG(*) FROM dbo.PagosVenta)<>@bg OR (SELECT COUNT_BIG(*) FROM dbo.MovimientosStock)<>@bm THROW 51943,'Rollback inconsistente; detener.',1;
+ IF @@TRANCOUNT<>0 OR (SELECT COUNT_BIG(*) FROM dbo.Productos)<>@bp OR (SELECT COUNT_BIG(*) FROM dbo.SesionesCaja)<>@bs OR (SELECT COUNT_BIG(*) FROM dbo.Ventas)<>@bv OR (SELECT COUNT_BIG(*) FROM dbo.DetalleVentas)<>@bd OR (SELECT COUNT_BIG(*) FROM dbo.PagosVenta)<>@bg OR (SELECT COUNT_BIG(*) FROM dbo.MovimientosStock)<>@bm OR EXISTS(SELECT 1 FROM dbo.Productos WHERE nombre LIKE N'QA Venta movimiento %') OR EXISTS(SELECT 1 FROM dbo.MovimientosStock WHERE idProducto=@producto) OR EXISTS(SELECT 1 FROM dbo.SesionesCaja WHERE idSesion=@sesion) THROW 51943,'Rollback inconsistente; detener.',1;
  PRINT 'Ventas/Caja 008: tres medios y tres diferencias, rollback aprobado (solo tras ejecutar).';
 END TRY BEGIN CATCH IF XACT_STATE()<>0 ROLLBACK; THROW; END CATCH;

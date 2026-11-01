@@ -1,5 +1,7 @@
 ﻿# Preparacion protegida de 008 Inventario: NO desplegada
 
+Revision final posterior: [REVISION_FINAL_008.md](REVISION_FINAL_008.md), con firmas completas, respaldo explicito de parametros y ensayos fortalecidos. 008 sigue sin desplegar.
+
 Fecha local: 2026-11-01. Solo analisis offline y SELECT. Complementa la revision estructural previa de CORRECCION_007_CHECK_Y_REVISION_008.md.
 
 ## Destino y punto de partida reales
