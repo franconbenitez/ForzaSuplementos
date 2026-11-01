@@ -1,5 +1,7 @@
 ﻿# Resultado actual: 006 aplicada correctamente en QA
 
+Actualizacion posterior: los 17 ensayos fueron autorizados y ejecutados correctamente. Ver [resultados individuales y rollback](RESULTADOS_CATALOGOS_006_QA.md). El resto de este documento conserva el informe del despliegue y sus pendientes en aquel momento.
+
 Fecha local: 2026-10-31. Nuevo intento expresamente autorizado, ejecutado una sola vez desde ForzaSuplementos_GitHub. La incidencia del intento anterior queda registrada mas abajo como antecedente, no como estado actual.
 
 ## Despliegue y estructura real
