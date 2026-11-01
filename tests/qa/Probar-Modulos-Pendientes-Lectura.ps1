@@ -10,8 +10,9 @@ try{
  $base005=$state.tablas -eq 13 -and $state.procedimientos -eq 37 -and $state.seguridad
  $base006=$state.tablas -eq 15 -and $state.procedimientos -eq 43 -and $state.seguridad -and !$state.pendientes
  $base007=$state.tablas -eq 17 -and $state.procedimientos -eq 46 -and $state.seguridad -and !$state.pendientes
- if((!$base004 -and !$base005 -and !$base006 -and !$base007) -or ((!$base006 -and !$base007) -and !$state.pendientes)){throw 'Estado de despliegue distinto; revisar antes de probar disponibilidad.'}
- if($base005 -or $base006 -or $base007){
+ $base008=$state.tablas -eq 18 -and $state.procedimientos -eq 50 -and $state.seguridad -and !$state.pendientes
+ if((!$base004 -and !$base005 -and !$base006 -and !$base007 -and !$base008) -or ((!$base006 -and !$base007 -and !$base008) -and !$state.pendientes)){throw 'Estado de despliegue distinto; revisar antes de probar disponibilidad.'}
+ if($base005 -or $base006 -or $base007 -or $base008){
   $modo=Invoke-QaQuery $cn 'EXEC dbo.sp_Seguridad_Estado;'
   if($modo.Rows.Count -ne 1 -or [bool]$modo.Rows[0].activa){throw 'Esta suite requiere modo seguro inactivo.'}
  }
@@ -53,9 +54,9 @@ try{
     $type=[ForzaSuplementos.Presentacion.FrmPrincipal].Assembly.GetType('ForzaSuplementos.Presentacion.'+$name)
     $main.Abrir($type)
     if($role -ne 'GERENTE'){Check ($main.MdiChildren.Count -eq 0) "$role no abre $name por acceso directo";continue}
-    $moduloHabilitado=(($base006 -or $base007) -and $name -in @('FrmProveedores','FrmMarcas')) -or ($base007 -and $name -eq 'FrmCompras')
+    $moduloHabilitado=$base008 -or (($base006 -or $base007) -and $name -in @('FrmProveedores','FrmMarcas')) -or ($base007 -and $name -eq 'FrmCompras')
     $clock=[Diagnostics.Stopwatch]::StartNew()
-    do{[Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds 10;$f=$main.ActiveMdiChild;$flags=[Reflection.BindingFlags]'Instance,NonPublic';$base=if($name -in @('FrmProveedores','FrmMarcas')){$f.GetType().BaseType}else{$f.GetType()};$field=$base.GetField('_estado',$flags);$label=$field.GetValue($f);if($clock.Elapsed.TotalSeconds -gt 10){throw 'Modulo no termino de validar disponibilidad'}}while(($moduloHabilitado -and $label.Text -notmatch 'Sin resultados|resultados \(|Los costos se registran') -or (!$moduloHabilitado -and $label.Text -notmatch 'Requiere habilitaci'))
+    do{[Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds 10;$f=$main.ActiveMdiChild;$flags=[Reflection.BindingFlags]'Instance,NonPublic';$base=if($name -in @('FrmProveedores','FrmMarcas')){$f.GetType().BaseType}else{$f.GetType()};$field=$base.GetField('_estado',$flags);$label=$field.GetValue($f);if($clock.Elapsed.TotalSeconds -gt 10){throw 'Modulo no termino de validar disponibilidad'}}while(($moduloHabilitado -and $label.Text -notmatch 'Sin resultados|resultados \(|Los costos se registran|Stock actual:') -or (!$moduloHabilitado -and $label.Text -notmatch 'Requiere habilitaci'))
     Check ($main.MdiChildren.Count -eq 1 -and $type.IsInstanceOfType($f)) "$name conserva un unico MDI"
     $editorName=if($name -in @('FrmProveedores','FrmMarcas')){'_editor'}elseif($name -eq 'FrmCompras'){'_edicion'}else{'_acciones'}
     Check ($base.GetField($editorName,$flags).GetValue($f).Enabled -eq $moduloHabilitado) "$name respeta disponibilidad desplegada sin ejecutar guardados"
@@ -64,6 +65,6 @@ try{
    }
   }finally{$main.Dispose()}
  }
- Check ($base004 -or $base005 -or $base006 -or $base007) 'QA reconoce baseline desplegado; 008 sigue pendiente'
+ Check ($base004 -or $base005 -or $base006 -or $base007 -or $base008) 'QA reconoce baseline desplegado hasta 008 sin ejecutar guardados'
  Write-Output "TOTAL MODULOS PENDIENTES QA LECTURA: $n aprobadas. Sin escrituras SQL."
 }finally{$env:FORZA_ENTORNO=$old;$env:FORZA_QA_CONFIG=$oldcfg}

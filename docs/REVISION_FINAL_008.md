@@ -1,5 +1,7 @@
 ﻿# Revision final de 008: autorizacion estructural pendiente
 
+Actualizacion posterior: 008 se instalo bajo autorizacion estructural especifica; ver [RESULTADOS_008_ESTRUCTURAL_QA.md](RESULTADOS_008_ESTRUCTURAL_QA.md). Este documento conserva la revision previa. Ningun ensayo de escritura esta incluido en ese despliegue.
+
 Fecha local: 2026-11-01. Trabajo exclusivo en ForzaSuplementos_GitHub. NO se ejecuto 008 ni ningun fixture SQL de escritura. No se abrieron, cerraron ni modificaron sesiones de Caja.
 
 ## Estado actual comprobado por lecturas

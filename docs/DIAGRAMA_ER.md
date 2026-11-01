@@ -1,6 +1,6 @@
 # Diagrama entidad-relación auditado
 
-Fecha: 2026-11-01. Basado en las 17 FK reales de QA; no se deducen relaciones por semejanza de nombres. qa.Fixtures es auxiliar de pruebas y no tiene FK. Ver INVENTARIO_BASE_DATOS.md para tipos completos y restricciones.
+Fecha: 2026-11-01. Basado en las 21 FK reales de QA; no se deducen relaciones por semejanza de nombres. qa.Fixtures es auxiliar de pruebas y no tiene FK. Ver INVENTARIO_BASE_DATOS.md para tipos completos y restricciones.
 
 ```mermaid
 erDiagram
@@ -58,6 +58,20 @@ erDiagram
         nvarchar nombre "nvarchar(100) required"
         bit activo "bit required"
     }
+    dbo_MovimientosStock {
+        int idMovimiento PK "int required"
+        int idProducto FK "int required"
+        int idUsuario FK "int required"
+        datetime2 fecha "datetime2 required"
+        varchar tipo "varchar(10) required"
+        int cantidad "int required"
+        int anterior "int required"
+        int posterior "int required"
+        nvarchar motivo "nvarchar(250) required"
+        int idCompra FK "int nullable"
+        int idVenta FK "int nullable"
+        uniqueidentifier operacion "uniqueidentifier nullable"
+    }
     dbo_PagosVenta {
         int idVenta PK,FK "int required"
         varchar medioPago "varchar(20) required"
@@ -78,6 +92,7 @@ erDiagram
         int stock "int required"
         bit activo "bit required"
         int idMarca FK "int nullable"
+        int stockMinimo "int required"
     }
     dbo_Proveedores {
         int idProveedor PK "int required"
@@ -152,6 +167,10 @@ erDiagram
     dbo_Usuarios ||--o| dbo_CredencialesUsuario : FK_Credenciales_Usuario
     dbo_Compras ||--o{ dbo_DetalleCompras : FK_DetalleCompras_Compra
     dbo_Productos ||--o{ dbo_DetalleCompras : FK_DetalleCompras_Producto
+    dbo_Compras o|--o{ dbo_MovimientosStock : FK_Movimientos_Compra
+    dbo_Productos ||--o{ dbo_MovimientosStock : FK_Movimientos_Producto
+    dbo_Usuarios ||--o{ dbo_MovimientosStock : FK_Movimientos_Usuario
+    dbo_Ventas o|--o{ dbo_MovimientosStock : FK_Movimientos_Venta
     dbo_Ventas ||--o| dbo_PagosVenta : FK_PagosVenta_Ventas
     dbo_Marcas o|--o{ dbo_Productos : FK_Productos_Marca
     dbo_Perfiles ||--o{ dbo_Usuarios : FK_Usuarios_Perfiles

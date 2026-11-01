@@ -2,7 +2,7 @@
 
 Fecha: 2026-11-01. Extracción exclusivamente de sys.* mediante conexión QA validada. No se ejecutó DDL/DML ni se exportaron filas, credenciales, rutas de backups o identificadores de equipo.
 
-**17 tablas**: 16 tablas en dbo y 1 tabla(s) auxiliar(es). **17 claves foráneas, 28 índices, 13 restricciones CHECK y 46 procedimientos.** La tabla de fixtures no forma parte del modelo comercial.
+**18 tablas**: 17 tablas en dbo y 1 tabla(s) auxiliar(es). **21 claves foráneas, 33 índices, 17 restricciones CHECK y 50 procedimientos.** La tabla de fixtures no forma parte del modelo comercial.
 
 ## dbo.AuditoriaBackups
 
@@ -108,6 +108,32 @@ Fecha: 2026-11-01. Extracción exclusivamente de sys.* mediante conexión QA val
 - `UQ_Marcas_Nombre`: NONCLUSTERED; PK=False, UNIQUE=True, deshabilitado=False; columnas (nombre ASC).
 - CHECK `CK_Marcas_Nombre`: `(len(ltrim(rtrim([nombre])))>(0))`; deshabilitada=False, no confiable=False.
 
+## dbo.MovimientosStock
+
+- `idMovimiento`: `int`, NOT NULL IDENTITY.
+- `idProducto`: `int`, NOT NULL.
+- `idUsuario`: `int`, NOT NULL.
+- `fecha`: `datetime2`, NOT NULL; DEFAULT `DF_Movimientos_Fecha` (sysdatetime()).
+- `tipo`: `varchar(10)`, NOT NULL.
+- `cantidad`: `int`, NOT NULL.
+- `anterior`: `int`, NOT NULL.
+- `posterior`: `int`, NOT NULL.
+- `motivo`: `nvarchar(250)`, NOT NULL.
+- `idCompra`: `int`, NULL.
+- `idVenta`: `int`, NULL.
+- `operacion`: `uniqueidentifier`, NULL.
+
+Índices y claves:
+
+- `IX_Movimientos_FechaProducto`: NONCLUSTERED; PK=False, UNIQUE=False, deshabilitado=False; columnas (fecha ASC, idProducto ASC).
+- `PK_MovimientosStock`: CLUSTERED; PK=True, UNIQUE=True, deshabilitado=False; columnas (idMovimiento ASC).
+- `UX_Movimientos_Ajuste`: NONCLUSTERED; PK=False, UNIQUE=True, deshabilitado=False; columnas (operacion ASC); filtro `([operacion] IS NOT NULL)`.
+- `UX_Movimientos_Compra`: NONCLUSTERED; PK=False, UNIQUE=True, deshabilitado=False; columnas (idCompra ASC, idProducto ASC); filtro `([idCompra] IS NOT NULL)`.
+- `UX_Movimientos_Venta`: NONCLUSTERED; PK=False, UNIQUE=True, deshabilitado=False; columnas (idVenta ASC, idProducto ASC); filtro `([idVenta] IS NOT NULL)`.
+- CHECK `CK_Movimientos_Motivo`: `(len(ltrim(rtrim([motivo])))>(0))`; deshabilitada=False, no confiable=False.
+- CHECK `CK_Movimientos_Stock`: `([anterior]>=(0) AND [posterior]>=(0) AND CONVERT([bigint],[posterior])=(CONVERT([bigint],[anterior])+[cantidad]) AND [cantidad]<>(0))`; deshabilitada=False, no confiable=False.
+- CHECK `CK_Movimientos_Tipo`: `([tipo]='Compra' AND [cantidad]>(0) AND [idCompra] IS NOT NULL AND [idVenta] IS NULL AND [operacion] IS NULL OR [tipo]='Venta' AND [cantidad]<(0) AND [idVenta] IS NOT NULL AND [idCompra] IS NULL AND [operacion] IS NULL OR [tipo]='Ajuste' AND [idCompra] IS NULL AND [idVenta] IS NULL AND [operacion] IS NOT NULL)`; deshabilitada=False, no confiable=False.
+
 ## dbo.PagosVenta
 
 - `idVenta`: `int`, NOT NULL.
@@ -142,11 +168,13 @@ Fecha: 2026-11-01. Extracción exclusivamente de sys.* mediante conexión QA val
 - `stock`: `int`, NOT NULL.
 - `activo`: `bit`, NOT NULL; DEFAULT `DF__Productos__activ__571DF1D5` ((1)).
 - `idMarca`: `int`, NULL.
+- `stockMinimo`: `int`, NOT NULL; DEFAULT `DF_Productos_StockMinimo` ((0)).
 
 Índices y claves:
 
 - `IX_Productos_Marca`: NONCLUSTERED; PK=False, UNIQUE=False, deshabilitado=False; columnas (idMarca ASC).
 - `PK__Producto__07F4A132E33100FE`: CLUSTERED; PK=True, UNIQUE=True, deshabilitado=False; columnas (idProducto ASC).
+- CHECK `CK_Productos_StockMinimo`: `([stockMinimo]>=(0))`; deshabilitada=False, no confiable=False.
 - CHECK `CK_Productos_StockNoNegativo`: `([stock]>=(0))`; deshabilitada=False, no confiable=False.
 
 ## dbo.Proveedores
@@ -264,6 +292,10 @@ Fecha: 2026-11-01. Extracción exclusivamente de sys.* mediante conexión QA val
 - `FK_Credenciales_Usuario`: `CredencialesUsuario(idUsuario)` → `Usuarios(idUsuario)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 - `FK_DetalleCompras_Compra`: `DetalleCompras(idCompra)` → `Compras(idCompra)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 - `FK_DetalleCompras_Producto`: `DetalleCompras(idProducto)` → `Productos(idProducto)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
+- `FK_Movimientos_Compra`: `MovimientosStock(idCompra)` → `Compras(idCompra)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
+- `FK_Movimientos_Producto`: `MovimientosStock(idProducto)` → `Productos(idProducto)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
+- `FK_Movimientos_Usuario`: `MovimientosStock(idUsuario)` → `Usuarios(idUsuario)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
+- `FK_Movimientos_Venta`: `MovimientosStock(idVenta)` → `Ventas(idVenta)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 - `FK_PagosVenta_Ventas`: `PagosVenta(idVenta)` → `Ventas(idVenta)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 - `FK_Productos_Marca`: `Productos(idMarca)` → `Marcas(idMarca)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
 - `FK_Usuarios_Perfiles`: `Usuarios(idPerfil)` → `Perfiles(idPerfil)`; DELETE NO_ACTION, UPDATE NO_ACTION; deshabilitada=False, no confiable=False.
@@ -287,6 +319,10 @@ Fecha: 2026-11-01. Extracción exclusivamente de sys.* mediante conexión QA val
 - `sp_Compras_Historial`: `@idActor int`; `@desde date`; `@hasta date`; `@idProveedor int`.
 - `sp_Compras_Registrar`: `@idActor int`; `@idProveedor int`; `@operacion uniqueidentifier`; `@detalles xml`.
 - `sp_DetalleVentas_Insertar`: `@idVenta int`; `@idProducto int`; `@cantidad int`; `@precioUnitario decimal(10,2)`; `@subtotal decimal(10,2)`.
+- `sp_Inventario_Ajustar`: `@idActor int`; `@idProducto int`; `@cantidad int`; `@stockEsperado int`; `@motivo nvarchar(250)`; `@operacion uniqueidentifier`.
+- `sp_Inventario_Historial`: `@idActor int`; `@desde date`; `@hasta date`; `@idProducto int`.
+- `sp_Inventario_Minimo`: `@idActor int`; `@idProducto int`; `@minimo int`.
+- `sp_Inventario_Stock`: `@idActor int`.
 - `sp_Marcas_AsociarProducto`: `@idActor int`; `@idProducto int`; `@idMarca int`.
 - `sp_Marcas_Buscar`: `@idActor int`; `@filtro nvarchar(100)`.
 - `sp_Marcas_Guardar`: `@idActor int`; `@id int`; `@nombre nvarchar(100)`; `@activo bit`.
