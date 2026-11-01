@@ -1,5 +1,7 @@
 ﻿# Resultado real del positivo de Compra e Inventario tras 008
 
+Actualizacion posterior: los diez negativos del archivo preparado fueron autorizados y aprobados; ver [RESULTADOS_008_NEGATIVOS_QA.md](RESULTADOS_008_NEGATIVOS_QA.md), con la precision de alcance del caso 10. Ventas/Caja sigue pendiente.
+
 Fecha local: 2026-11-01. Repositorio exclusivo ForzaSuplementos_GitHub. Se uso la autorizacion especifica para una unica ejecucion de tests/qa/Avance_Transaccional_QA.sql. No se ejecutaron otras suites SQL de escritura.
 
 ## Preflight y alcance ejecutado
