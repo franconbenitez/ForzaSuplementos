@@ -1,5 +1,7 @@
 ﻿# Aplicador estructural 007 preparado: sin despliegue
 
+Actualizacion posterior: el intento autorizado de despliegue fallo por la declaracion de CK_DetalleCompras_Subtotal. 007 no esta instalada. Ver [RESULTADOS_007_ESTRUCTURAL_QA.md](RESULTADOS_007_ESTRUCTURAL_QA.md). Este documento conserva la preparacion anterior al intento.
+
 Fecha local: 2026-10-31. Repositorio exclusivo ForzaSuplementos_GitHub. Complementa PREPARACION_007_COMPRAS_QA.md. No se ejecuto 007 ni una suite SQL de escritura en esta tarea.
 
 ## Estado real verificado
