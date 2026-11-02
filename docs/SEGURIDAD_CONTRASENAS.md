@@ -1,4 +1,6 @@
-# Seguridad de contraseñas — pendiente de SQL
+# Seguridad de contraseñas — historial de preparacion
+
+Estado al cierre 01/11/2026: 005 estructural YA desplegada en QA; Perfiles.activo y objetos de seguridad existen. PBKDF2 permanece INACTIVO y no se provisionaron credenciales. Los pasos siguientes describen la preparacion historica; no autorizan ejecucion ni activacion. Consultar RESULTADOS_005_ESTRUCTURAL_QA.md y CIERRE_ESTABLE_Y_COLOQUIO.md.
 
 005 NO ejecutada. PBKDF2-HMAC-SHA256, versión 1, 600000 iteraciones, salt aleatorio de 16 bytes y salida de 32 bytes. Comparación de todos los bytes sin salida temprana; formato y límites validados antes de derivar. No hay hash en Usuario ni formularios de administración. El servicio es reutilizable y el contrato CredencialAcceso es solo del flujo de autenticación.
 

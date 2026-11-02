@@ -1,6 +1,6 @@
 # Autorizaciones independientes propuestas para ensayos tras 008
 
-Fecha local: 2026-11-01. Estado actualizado: A fue autorizado y aprobado con rollback; ver RESULTADOS_008_POSITIVO_QA.md. B tambien fue autorizado y sus diez casos aprobaron con rollback: ver RESULTADOS_008_NEGATIVOS_QA.md. C aprobo en una nueva ejecucion autorizada tras el cierre manual de la Caja preexistente; rollback e integridad de 18 tablas verificados. El bloqueo anterior permanece documentado. Ver RESULTADOS_VENTAS_CAJA_008_QA.md. D sigue PENDIENTE, NO ejecutado. El permiso estructural 008 no autoriza ninguno de estos archivos. Se propone autorizar y completar una etapa antes de solicitar la siguiente.
+Fecha local: 2026-11-01. Estado actualizado: A fue autorizado y aprobado con rollback; ver RESULTADOS_008_POSITIVO_QA.md. B tambien fue autorizado y sus diez casos aprobaron con rollback: ver RESULTADOS_008_NEGATIVOS_QA.md. C aprobo en una nueva ejecucion autorizada tras el cierre manual de la Caja preexistente; rollback e integridad de 18 tablas verificados. El bloqueo anterior permanece documentado. Ver RESULTADOS_VENTAS_CAJA_008_QA.md. D fue autorizado separadamente y sus ocho casos aprobaron con rollback individual; ver RESULTADOS_NEGATIVOS_VENTAS_CAJA_008_QA.md. El permiso estructural 008 no autoriza ninguno de estos archivos. Se propone autorizar y completar una etapa antes de solicitar la siguiente.
 
 En cada etapa se debe verificar servidor local esperado, base exacta ForzaSuplementosDB_QA, marca Forza-QA-Aislada-v1, estructura 18 tablas/50 SP, ausencia de transaccion previa o incompatible y contratos instalados. Conservar evidencia privada, conteos/huellas antes y despues, verificar el rollback y @@TRANCOUNT=0. Solo los registros ficticios del runner pueden modificarse. Los IDENTITY pueden avanzar y no se reseedean. Ante cualquier error o rollback no comprobable, detenerse sin reintentar, reparar ni ejecutar reversiones adicionales. Ninguna etapa autoriza cambiar credenciales/PBKDF2, escribir otras bases, aplicar migraciones ni hacer push.
 
@@ -28,7 +28,7 @@ Autorizo una sola ejecucion exclusivamente de tests/qa/Ventas_Caja_008_Rollback_
 
 Este permiso implica explicitamente operaciones de Caja solo sobre sesiones ficticias nuevas; la autorizacion estructural NO las incluia.
 
-## D. Ocho negativos de Ventas y Caja: permiso posterior separado
+## D. Ocho negativos de Ventas y Caja: ejecutados y aprobados bajo permiso separado
 
 Texto propuesto:
 
